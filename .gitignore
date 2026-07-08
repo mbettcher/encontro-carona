@@ -1,33 +1,121 @@
-HELP.md
-target/
-.mvn/wrapper/maven-wrapper.jar
-!**/src/main/**/target/
-!**/src/test/**/target/
+# ==========================================================
+# Sistema operacional
+# ==========================================================
+.DS_Store
+Thumbs.db
+desktop.ini
 
-### STS ###
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
-.sts4-cache
+# ==========================================================
+# Logs
+# ==========================================================
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
 
-### IntelliJ IDEA ###
-.idea
+# ==========================================================
+# IntelliJ IDEA
+# ==========================================================
+.idea/
 *.iws
 *.iml
 *.ipr
+out/
 
-### NetBeans ###
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
+# ==========================================================
+# VS Code
+# ==========================================================
+.vscode/
+
+# ==========================================================
+# STS / Eclipse
+# ==========================================================
+.apt_generated/
+.classpath
+.factorypath
+.project
+.settings/
+.springBeans
+.sts4-cache/
+
+# ==========================================================
+# NetBeans
+# ==========================================================
+nbproject/private/
+nbbuild/
+dist/
+nbdist/
+.nb-gradle/
+
+# ==========================================================
+# Maven / Java / Spring Boot
+# ==========================================================
+target/
+**/target/
+.mvn/wrapper/maven-wrapper.jar
+
+# Mantém target/build internos de source, se algum dia existirem
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# ==========================================================
+# Gradle, caso venha a ser usado futuramente
+# ==========================================================
+.gradle/
 build/
+**/build/
+
 !**/src/main/**/build/
 !**/src/test/**/build/
 
-### VS Code ###
-.vscode/
+# ==========================================================
+# Angular / Node
+# ==========================================================
+node_modules/
+**/node_modules/
+
+.angular/
+**/.angular/
+
+dist/
+**/dist/
+
+coverage/
+**/coverage/
+
+.nx/
+.cache/
+**/.cache/
+
+# ==========================================================
+# Arquivos de ambiente
+# ==========================================================
+.env
+.env.*
+!.env.example
+
+# ==========================================================
+# Banco/local/temporários
+# ==========================================================
+*.db
+*.sqlite
+*.sqlite3
+tmp/
+temp/
+
+# ==========================================================
+# Docker / volumes locais opcionais
+# ==========================================================
+docker-data/
+volumes/
+
+# ==========================================================
+# Arquivos compactados gerados localmente
+# ==========================================================
+*.zip
+*.rar
+*.7z
+*.tar
+*.gz
