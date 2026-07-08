@@ -325,3 +325,31 @@ evento-gestao.service.ts
 ```
 
 Em um próximo bloco, se não houver mais dependência dele, o `core/api.service.ts` poderá ser removido com segurança.
+
+### Padrão de frontend Angular
+
+O frontend foi organizado por feature, mantendo cada funcionalidade com arquivos separados:
+
+```text
+feature/
+├── feature.component.ts
+├── feature.component.html
+├── feature.component.scss
+└── feature.service.ts
+```
+
+Nos templates, usar o control flow moderno do Angular:
+
+```html
+@if (mensagemErro()) {
+  <div class="alert alert-danger">{{ mensagemErro() }}</div>
+}
+
+@for (item of itens(); track item.id) {
+  <tr>
+    <td>{{ item.nome }}</td>
+  </tr>
+}
+```
+
+Evitar `*ngIf` e `*ngFor` nos novos templates.

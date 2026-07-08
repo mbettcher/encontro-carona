@@ -1,12 +1,22 @@
-<h2 class="h4 mb-3">Operação do Evento</h2>
-    <div class="row g-3">
-      <div class="col-12 col-md-6 col-xl-3" *ngFor="let item of itens">
-        <div class="card shadow-sm border-0 h-100">
-          <div class="card-body">
-            <div class="ec-card-icon mb-3"><i [class]="item.icon"></i></div>
-            <h3 class="h6">{{ item.titulo }}</h3>
-            <p class="text-muted small mb-0">{{ item.descricao }}</p>
-          </div>
-        </div>
+<h2 class="h4 mb-4">
+  <i class="fa-solid fa-qrcode me-2"></i>
+  Operação do encontro
+</h2>
+
+<div class="row g-3">
+  @for (item of itens; track item.titulo) {
+  <div class="col-12 col-md-6 col-xl-3">
+    <div class="card shadow-sm border-0 h-100">
+      <div class="card-body">
+        <i [class]="item.icon + ' fa-2x text-primary mb-3'"></i>
+        <h3 class="h6">{{ item.titulo }}</h3>
+        <p class="text-muted small mb-0">{{ item.descricao }}</p>
       </div>
     </div>
+  </div>
+  }
+</div>
+
+<div class="alert alert-warning mt-4">
+  As telas operacionais de QR Code, check-in, Caderno do Choro, checkout e mapa serão ativadas nos próximos blocos.
+</div>

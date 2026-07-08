@@ -395,3 +395,13 @@ app.component.scss
 ```
 
 Isso mantém o layout principal mais legível e segue o mesmo padrão das features.
+
+## Padrão Angular adotado para templates
+
+A partir desta versão do frontend, os templates devem usar o novo control flow do Angular:
+
+- Usar `@if` no lugar de `*ngIf`.
+- Usar `@for` no lugar de `*ngFor` quando houver repetição de listas.
+- Manter cada feature com `component.ts`, `component.html`, `component.scss` e `service.ts`.
+
+Esse padrão deixa o frontend mais alinhado ao Angular 21 e evita templates grandes dentro dos arquivos TypeScript.
