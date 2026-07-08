@@ -1,1 +1,54 @@
-/* Estilos específicos da feature Pessoas. */
+.pessoas-page {
+    .form-label {
+        font-weight: 600;
+    }
+
+    .empty-state {
+        i {
+            font-size: 2.5rem;
+        }
+    }
+
+    .observacao-preview {
+        max-width: 22rem;
+    }
+
+    :host ::ng-deep {
+        .p-card {
+            border-radius: 1rem;
+        }
+
+        .p-card-body {
+            padding-top: 1rem;
+        }
+
+        .p-datatable-thead>tr>th {
+            white-space: nowrap;
+            font-size: 0.875rem;
+        }
+
+        .p-datatable-tbody>tr>td {
+            vertical-align: middle;
+        }
+
+        .p-button {
+            border-radius: 0.5rem;
+        }
+
+        .p-inputtext,
+        .p-select,
+        .p-textarea {
+            width: 100%;
+        }
+    }
+}
+
+@media (max-width: 768px) {
+    .pessoas-page {
+        :host ::ng-deep {
+            .p-datatable-wrapper {
+                border-radius: 0.75rem;
+            }
+        }
+    }
+}
