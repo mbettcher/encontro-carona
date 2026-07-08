@@ -1,17 +1,39 @@
+import { DatePipe } from '@angular/common';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { Evento, EventoRequest, ParoquiaResumo } from '../../shared/models';
+
+import { MessageService } from 'primeng/api';
+import { ButtonModule } from 'primeng/button';
+import { CardModule } from 'primeng/card';
+import { CheckboxModule } from 'primeng/checkbox';
+import { InputTextModule } from 'primeng/inputtext';
+import { SelectModule } from 'primeng/select';
+import { TableModule } from 'primeng/table';
+import { TagModule } from 'primeng/tag';
+
+import { Evento, EventoRequest, EventoStatus, ParoquiaResumo } from '../../shared/models';
 import { EventosService } from './eventos.service';
-import { DatePipe } from '@angular/common';
+
+interface StatusOpcao {
+  label: string;
+  value: EventoStatus;
+}
 
 @Component({
   selector: 'app-eventos',
   standalone: true,
   imports: [
+    DatePipe,
     ReactiveFormsModule,
     RouterLink,
-    DatePipe
+    ButtonModule,
+    CardModule,
+    CheckboxModule,
+    InputTextModule,
+    SelectModule,
+    TableModule,
+    TagModule
   ],
   templateUrl: './eventos.component.html',
   styleUrl: './eventos.component.scss'
@@ -19,15 +41,20 @@ import { DatePipe } from '@angular/common';
 export class EventosComponent implements OnInit {
   private readonly service = inject(EventosService);
   private readonly fb = inject(FormBuilder);
+  private readonly messageService = inject(MessageService);
 
   readonly eventos = signal<Evento[]>([]);
   readonly paroquias = signal<ParoquiaResumo[]>([]);
-
   readonly carregando = signal(false);
   readonly salvando = signal(false);
-  readonly mensagemErro = signal('');
-  readonly mensagemSucesso = signal('');
   readonly eventoEmEdicao = signal<Evento | null>(null);
+
+  readonly statusOpcoes: StatusOpcao[] = [
+    { label: 'Planejado', value: 'PLANEJADO' },
+    { label: 'Em andamento', value: 'EM_ANDAMENTO' },
+    { label: 'Encerrado', value: 'ENCERRADO' },
+    { label: 'Cancelado', value: 'CANCELADO' }
+  ];
 
   readonly tituloFormulario = computed(() =>
     this.eventoEmEdicao() ? 'Editar evento' : 'Novo evento'
@@ -40,7 +67,7 @@ export class EventosComponent implements OnInit {
     local: ['', [Validators.maxLength(200)]],
     dataInicio: ['', [Validators.required]],
     dataFim: ['', [Validators.required]],
-    status: ['PLANEJADO' as EventoRequest['status'], [Validators.required]],
+    status: ['PLANEJADO' as EventoStatus, [Validators.required]],
     monitoramentoAtivo: [false],
     monitoramentoInicio: ['05:00'],
     monitoramentoFim: ['20:00']
@@ -54,21 +81,37 @@ export class EventosComponent implements OnInit {
   carregarParoquias(): void {
     this.service.listarParoquias().subscribe({
       next: paroquias => this.paroquias.set(paroquias),
-      error: () => this.mensagemErro.set('Não foi possível carregar as paróquias.')
+      error: erro => {
+        console.error('Erro ao carregar paróquias', erro);
+
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Erro ao carregar',
+          detail: 'Não foi possível carregar as paróquias.',
+          life: 5000
+        });
+      }
     });
   }
 
   carregarEventos(): void {
     this.carregando.set(true);
-    this.mensagemErro.set('');
 
     this.service.listar().subscribe({
       next: eventos => {
         this.eventos.set(eventos);
         this.carregando.set(false);
       },
-      error: () => {
-        this.mensagemErro.set('Não foi possível carregar os eventos.');
+      error: erro => {
+        console.error('Erro ao carregar eventos', erro);
+
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Erro ao carregar',
+          detail: 'Não foi possível carregar os eventos.',
+          life: 5000
+        });
+
         this.carregando.set(false);
       }
     });
@@ -77,16 +120,32 @@ export class EventosComponent implements OnInit {
   salvar(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
-      this.mensagemErro.set('Preencha os campos obrigatórios antes de salvar.');
+
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Formulário incompleto',
+        detail: 'Preencha os campos obrigatórios antes de salvar.',
+        life: 4000
+      });
+
       return;
     }
 
     const payload = this.montarPayload();
     const eventoAtual = this.eventoEmEdicao();
 
+    if (payload.dataInicio > payload.dataFim) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Período inválido',
+        detail: 'A data de início não pode ser posterior à data de fim.',
+        life: 5000
+      });
+
+      return;
+    }
+
     this.salvando.set(true);
-    this.mensagemErro.set('');
-    this.mensagemSucesso.set('');
 
     const requisicao = eventoAtual
       ? this.service.atualizar(eventoAtual.id, payload)
@@ -94,14 +153,27 @@ export class EventosComponent implements OnInit {
 
     requisicao.subscribe({
       next: () => {
-        this.mensagemSucesso.set(eventoAtual ? 'Evento atualizado com sucesso.' : 'Evento cadastrado com sucesso.');
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Sucesso',
+          detail: eventoAtual ? 'Evento atualizado com sucesso.' : 'Evento cadastrado com sucesso.',
+          life: 4000
+        });
+
         this.salvando.set(false);
         this.limparFormulario();
         this.carregarEventos();
       },
       error: erro => {
         console.error('Erro ao salvar evento', erro);
-        this.mensagemErro.set('Não foi possível salvar o evento. Confira os dados informados.');
+
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Erro ao salvar',
+          detail: 'Não foi possível salvar o evento. Confira os dados informados.',
+          life: 6000
+        });
+
         this.salvando.set(false);
       }
     });
@@ -109,16 +181,14 @@ export class EventosComponent implements OnInit {
 
   editar(evento: Evento): void {
     this.eventoEmEdicao.set(evento);
-    this.mensagemErro.set('');
-    this.mensagemSucesso.set('');
 
     this.form.patchValue({
       paroquiaId: evento.paroquiaId,
       nome: evento.nome,
       tema: evento.tema ?? '',
       local: evento.local ?? '',
-      dataInicio: this.paraInputDateTime(evento.dataInicio),
-      dataFim: this.paraInputDateTime(evento.dataFim),
+      dataInicio: this.paraInputDate(evento.dataInicio),
+      dataFim: this.paraInputDate(evento.dataFim),
       status: evento.status,
       monitoramentoAtivo: evento.monitoramentoAtivo,
       monitoramentoInicio: evento.monitoramentoInicio ?? '05:00',
@@ -128,6 +198,32 @@ export class EventosComponent implements OnInit {
 
   cancelarEdicao(): void {
     this.limparFormulario();
+  }
+
+  labelStatus(status: EventoStatus): string {
+    return this.statusOpcoes.find(opcao => opcao.value === status)?.label ?? status;
+  }
+
+  severityStatus(status: EventoStatus): 'success' | 'info' | 'warn' | 'danger' | 'secondary' {
+    switch (status) {
+      case 'PLANEJADO':
+        return 'info';
+      case 'EM_ANDAMENTO':
+        return 'success';
+      case 'ENCERRADO':
+        return 'secondary';
+      case 'CANCELADO':
+        return 'danger';
+    }
+  }
+
+  nomeParoquia(evento: Evento): string {
+    if (evento.paroquiaNome) {
+      return evento.paroquiaNome;
+    }
+
+    const paroquia = this.paroquias().find(item => item.id === evento.paroquiaId);
+    return paroquia?.nome ?? `Paróquia #${evento.paroquiaId}`;
   }
 
   private limparFormulario(): void {
@@ -170,9 +266,9 @@ export class EventosComponent implements OnInit {
   }
 
   /**
- * O input datetime-local retorna algo como "2026-07-08T09:00".
- * O backend atual usa LocalDate no EventoRequest, então enviamos apenas "2026-07-08".
- */
+   * Backend usa LocalDate no EventoRequest.
+   * Formato esperado pela API: yyyy-MM-dd.
+   */
   private paraLocalDate(valor: string): string {
     if (!valor) {
       return valor;
@@ -182,19 +278,13 @@ export class EventosComponent implements OnInit {
   }
 
   /**
- * Converte data recebida da API para o formato aceito pelo input datetime-local.
- * Como a API retorna LocalDate ("2026-07-08"), adicionamos um horário padrão
- * apenas para preencher o campo visual do formulário.
- */
-  private paraInputDateTime(valor: string): string {
+   * Converte data recebida da API para o formato aceito pelo input date.
+   */
+  private paraInputDate(valor: string): string {
     if (!valor) {
       return '';
     }
 
-    if (valor.length === 10) {
-      return `${valor}T08:00`;
-    }
-
-    return valor.substring(0, 16);
+    return valor.substring(0, 10);
   }
 }

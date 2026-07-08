@@ -1,4 +1,4 @@
-<div class="container-fluid py-4">
+<div class="container-fluid py-4 eventos-page">
   <div class="d-flex flex-column flex-lg-row justify-content-between gap-3 mb-4">
     <div>
       <h1 class="h3 mb-1">Eventos</h1>
@@ -8,250 +8,232 @@
     </div>
   </div>
 
-  @if (mensagemErro()) {
-  <div class="alert alert-danger" role="alert">
-    <i class="fa-solid fa-triangle-exclamation me-2"></i>
-    {{ mensagemErro() }}
-  </div>
-  }
-
-  @if (mensagemSucesso()) {
-  <div class="alert alert-success" role="alert">
-    <i class="fa-solid fa-circle-check me-2"></i>
-    {{ mensagemSucesso() }}
-  </div>
-  }
-
   <div class="row g-4">
     <div class="col-12 col-xl-4">
-      <div class="card shadow-sm border-0">
-        <div class="card-header bg-white">
-          <h2 class="h5 mb-0">{{ tituloFormulario() }}</h2>
-        </div>
+      <p-card styleClass="shadow-sm border-0 h-100">
+        <ng-template pTemplate="header">
+          <div class="px-4 pt-4">
+            <h2 class="h5 mb-1">{{ tituloFormulario() }}</h2>
+            <p class="text-body-secondary small mb-0">
+              Dados principais do encontro.
+            </p>
+          </div>
+        </ng-template>
 
-        <div class="card-body">
-          <form [formGroup]="form" (ngSubmit)="salvar()" class="d-grid gap-3">
-            <div>
-              <label for="paroquiaId" class="form-label">Paróquia *</label>
-              <select id="paroquiaId" class="form-select" formControlName="paroquiaId">
-                <option [ngValue]="0">Selecione...</option>
+        <form [formGroup]="form" (ngSubmit)="salvar()" class="d-grid gap-3">
+          <div>
+            <label for="paroquiaId" class="form-label">Paróquia *</label>
 
-                @for (paroquia of paroquias(); track paroquia.id) {
-                <option [ngValue]="paroquia.id">{{ paroquia.nome }}</option>
-                }
-              </select>
+            <p-select inputId="paroquiaId" [options]="paroquias()" optionLabel="nome" optionValue="id"
+              formControlName="paroquiaId" placeholder="Selecione a paróquia" styleClass="w-100" />
 
-              @if (form.controls.paroquiaId.touched && form.controls.paroquiaId.invalid) {
+            @if (form.controls.paroquiaId.touched && form.controls.paroquiaId.invalid) {
+            <div class="form-text text-danger">
+              Selecione a paróquia do evento.
+            </div>
+            }
+          </div>
+
+          <div>
+            <label for="nome" class="form-label">Nome do evento *</label>
+
+            <input id="nome" pInputText type="text" class="w-100" formControlName="nome"
+              placeholder="Ex.: Encontro de Jovens 2026" />
+
+            @if (form.controls.nome.touched && form.controls.nome.invalid) {
+            <div class="form-text text-danger">
+              Informe o nome do evento.
+            </div>
+            }
+          </div>
+
+          <div>
+            <label for="tema" class="form-label">Tema</label>
+
+            <input id="tema" pInputText type="text" class="w-100" formControlName="tema"
+              placeholder="Ex.: Chamados à missão" />
+          </div>
+
+          <div>
+            <label for="local" class="form-label">Local</label>
+
+            <input id="local" pInputText type="text" class="w-100" formControlName="local"
+              placeholder="Ex.: Salão paroquial" />
+          </div>
+
+          <div class="row g-3">
+            <div class="col-12 col-md-6">
+              <label for="dataInicio" class="form-label">Início *</label>
+
+              <input id="dataInicio" pInputText type="date" class="w-100" formControlName="dataInicio" />
+
+              @if (form.controls.dataInicio.touched && form.controls.dataInicio.invalid) {
               <div class="form-text text-danger">
-                Selecione a paróquia do evento.
+                Informe a data de início.
               </div>
               }
             </div>
 
-            <div>
-              <label for="nome" class="form-label">Nome do evento *</label>
-              <input id="nome" type="text" class="form-control" formControlName="nome"
-                placeholder="Ex.: Encontro de Jovens 2026">
+            <div class="col-12 col-md-6">
+              <label for="dataFim" class="form-label">Fim *</label>
 
-              @if (form.controls.nome.touched && form.controls.nome.invalid) {
+              <input id="dataFim" pInputText type="date" class="w-100" formControlName="dataFim" />
+
+              @if (form.controls.dataFim.touched && form.controls.dataFim.invalid) {
               <div class="form-text text-danger">
-                Informe o nome do evento.
+                Informe a data de fim.
               </div>
               }
             </div>
+          </div>
 
-            <div>
-              <label for="tema" class="form-label">Tema</label>
-              <input id="tema" type="text" class="form-control" formControlName="tema"
-                placeholder="Ex.: Chamados à missão">
-            </div>
+          <div>
+            <label for="status" class="form-label">Status</label>
 
-            <div>
-              <label for="local" class="form-label">Local</label>
-              <input id="local" type="text" class="form-control" formControlName="local"
-                placeholder="Ex.: Salão paroquial">
-            </div>
+            <p-select inputId="status" [options]="statusOpcoes" optionLabel="label" optionValue="value"
+              formControlName="status" styleClass="w-100" />
+          </div>
 
-            <div class="row g-3">
-              <div class="col-12 col-md-6">
-                <label for="dataInicio" class="form-label">Início *</label>
-                <input id="dataInicio" type="datetime-local" class="form-control" formControlName="dataInicio">
+          <div class="monitoramento-box">
+            <div class="d-flex gap-3 align-items-start">
+              <p-checkbox inputId="monitoramentoAtivo" formControlName="monitoramentoAtivo" [binary]="true" />
 
-                @if (form.controls.dataInicio.touched && form.controls.dataInicio.invalid) {
-                <div class="form-text text-danger">
-                  Informe a data/hora de início.
-                </div>
-                }
-              </div>
-
-              <div class="col-12 col-md-6">
-                <label for="dataFim" class="form-label">Fim *</label>
-                <input id="dataFim" type="datetime-local" class="form-control" formControlName="dataFim">
-
-                @if (form.controls.dataFim.touched && form.controls.dataFim.invalid) {
-                <div class="form-text text-danger">
-                  Informe a data/hora de fim.
-                </div>
-                }
-              </div>
-            </div>
-
-            <div>
-              <label for="status" class="form-label">Status</label>
-              <select id="status" class="form-select" formControlName="status">
-                <option value="PLANEJADO">Planejado</option>
-                <option value="EM_ANDAMENTO">Em andamento</option>
-                <option value="ENCERRADO">Encerrado</option>
-                <option value="CANCELADO">Cancelado</option>
-              </select>
-            </div>
-
-            <div class="border rounded p-3 bg-body-tertiary">
-              <div class="form-check form-switch mb-3">
-                <input id="monitoramentoAtivo" class="form-check-input" type="checkbox"
-                  formControlName="monitoramentoAtivo">
+              <div>
                 <label class="form-check-label fw-semibold" for="monitoramentoAtivo">
                   Preparar monitoramento dos tios carona
                 </label>
-              </div>
 
-              <p class="small text-body-secondary mb-3">
-                Lista de desejos: futuramente o app poderá monitorar os tios carona no mapa somente dentro da janela
-                configurada.
-              </p>
-
-              <div class="row g-3">
-                <div class="col-12 col-md-6">
-                  <label for="monitoramentoInicio" class="form-label">Início do monitoramento</label>
-                  <input id="monitoramentoInicio" type="time" class="form-control"
-                    formControlName="monitoramentoInicio">
-                </div>
-
-                <div class="col-12 col-md-6">
-                  <label for="monitoramentoFim" class="form-label">Fim do monitoramento</label>
-                  <input id="monitoramentoFim" type="time" class="form-control" formControlName="monitoramentoFim">
-                </div>
+                <p class="small text-body-secondary mb-0">
+                  Lista de desejos: futuramente o app poderá monitorar os tios carona no mapa
+                  somente dentro da janela configurada.
+                </p>
               </div>
             </div>
 
-            <div class="d-flex gap-2">
-              <button type="submit" class="btn btn-primary" [disabled]="salvando()">
-                @if (salvando()) {
-                <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
-                }
+            <div class="row g-3 mt-2">
+              <div class="col-12 col-md-6">
+                <label for="monitoramentoInicio" class="form-label">Início do monitoramento</label>
 
-                <i class="fa-solid fa-floppy-disk me-2"></i>
-                Salvar
-              </button>
+                <input id="monitoramentoInicio" pInputText type="time" class="w-100"
+                  formControlName="monitoramentoInicio" />
+              </div>
 
-              @if (eventoEmEdicao()) {
-              <button type="button" class="btn btn-secondary" (click)="cancelarEdicao()">
-                Cancelar
-              </button>
-              }
+              <div class="col-12 col-md-6">
+                <label for="monitoramentoFim" class="form-label">Fim do monitoramento</label>
+
+                <input id="monitoramentoFim" pInputText type="time" class="w-100" formControlName="monitoramentoFim" />
+              </div>
             </div>
-          </form>
-        </div>
-      </div>
+          </div>
+
+          <div class="d-flex flex-column flex-sm-row gap-2">
+            <p-button type="submit" label="Salvar" icon="fa-solid fa-floppy-disk" [loading]="salvando()" />
+
+            @if (eventoEmEdicao()) {
+            <p-button type="button" label="Cancelar" severity="secondary" variant="outlined" icon="fa-solid fa-xmark"
+              (onClick)="cancelarEdicao()" />
+            }
+          </div>
+        </form>
+      </p-card>
     </div>
 
     <div class="col-12 col-xl-8">
-      <div class="card shadow-sm border-0">
-        <div class="card-header bg-white d-flex justify-content-between align-items-center">
-          <h2 class="h5 mb-0">Eventos cadastrados</h2>
+      <p-card styleClass="shadow-sm border-0">
+        <ng-template pTemplate="header">
+          <div class="px-4 pt-4 d-flex justify-content-between align-items-start gap-3">
+            <div>
+              <h2 class="h5 mb-1">Eventos cadastrados</h2>
+              <p class="text-body-secondary small mb-0">
+                {{ eventos().length }} evento(s) cadastrado(s)
+              </p>
+            </div>
 
-          @if (carregando()) {
-          <span class="small text-body-secondary">
-            <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
-            Carregando...
-          </span>
-          }
-        </div>
-
-        <div class="card-body p-0">
-          @if (eventos().length === 0 && !carregando()) {
-          <div class="p-4 text-center text-body-secondary">
-            Nenhum evento cadastrado ainda.
+            @if (carregando()) {
+            <span class="small text-body-secondary">
+              <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+              Carregando...
+            </span>
+            }
           </div>
-          } @else {
-          <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
-              <thead class="table-light">
-                <tr>
-                  <th>Evento</th>
-                  <th>Paróquia</th>
-                  <th>Período</th>
-                  <th>Status</th>
-                  <th>Monitoramento</th>
-                  <th class="text-end">Ações</th>
-                </tr>
-              </thead>
+        </ng-template>
 
-              <tbody>
-                @for (evento of eventos(); track evento.id) {
-                <tr>
-                  <td>
-                    <div class="fw-semibold">{{ evento.nome }}</div>
+        @if (eventos().length === 0 && !carregando()) {
+        <div class="empty-state text-center py-5">
+          <i class="fa-solid fa-calendar-days text-body-secondary mb-3"></i>
+          <h3 class="h6 mb-1">Nenhum evento cadastrado</h3>
+          <p class="text-body-secondary small mb-0">
+            Cadastre o primeiro encontro para iniciar a organização.
+          </p>
+        </div>
+        } @else {
+        <p-table [value]="eventos()" [loading]="carregando()" [paginator]="true" [rows]="10"
+          [rowsPerPageOptions]="[10, 20, 50]" responsiveLayout="scroll" styleClass="p-datatable-sm">
+          <ng-template pTemplate="header">
+            <tr>
+              <th>Evento</th>
+              <th>Paróquia</th>
+              <th>Período</th>
+              <th>Status</th>
+              <th>Monitoramento</th>
+              <th class="text-end">Ações</th>
+            </tr>
+          </ng-template>
 
-                    @if (evento.tema) {
-                    <div class="small text-body-secondary">{{ evento.tema }}</div>
-                    }
+          <ng-template pTemplate="body" let-evento>
+            <tr>
+              <td>
+                <div class="fw-semibold">{{ evento.nome }}</div>
 
-                    @if (evento.local) {
-                    <div class="small text-body-secondary">
-                      <i class="fa-solid fa-location-dot me-1"></i>
-                      {{ evento.local }}
-                    </div>
-                    }
-                  </td>
-
-                  <td>{{ evento.paroquiaNome || 'Paróquia #' + evento.paroquiaId }}</td>
-
-                  <td>
-                    <div class="small">{{ evento.dataInicio | date:'dd/MM/yyyy HH:mm' }}</div>
-                    <div class="small text-body-secondary">{{ evento.dataFim | date:'dd/MM/yyyy HH:mm' }}</div>
-                  </td>
-
-                  <td>
-                    <span class="badge text-bg-secondary">{{ evento.status }}</span>
-                  </td>
-
-                  <td>
-                    @if (evento.monitoramentoAtivo) {
-                    <span class="badge text-bg-success">
-                      {{ evento.monitoramentoInicio || '05:00' }} às {{ evento.monitoramentoFim || '20:00' }}
-                    </span>
-                    } @else {
-                    <span class="badge text-bg-light text-body-secondary">Inativo</span>
-                    }
-                  </td>
-
-                  <td class="text-end">
-                    <div class="btn-group btn-group-sm">
-                      <button type="button" class="btn btn-primary me-2" (click)="editar(evento)">
-                        <i class="fa-solid fa-pen-to-square me-1"></i>
-                        Editar
-                      </button>
-
-                      <a class="btn btn-secondary me-2" [routerLink]="['/eventos', evento.id, 'gestao']">
-                        <i class="fa-solid fa-users-gear me-1"></i>
-                        Gestão
-                      </a>
-
-                      <a class="btn btn-success" [routerLink]="['/eventos', evento.id, 'operacao']">
-                        <i class="fa-solid fa-clipboard-check me-1"></i>
-                        Operação
-                      </a>
-                    </div>
-                  </td>
-                </tr>
+                @if (evento.tema) {
+                <div class="small text-body-secondary">{{ evento.tema }}</div>
                 }
-              </tbody>
-            </table>
-          </div>
-          }
-        </div>
-      </div>
+
+                @if (evento.local) {
+                <div class="small text-body-secondary">
+                  <i class="fa-solid fa-location-dot me-1"></i>
+                  {{ evento.local }}
+                </div>
+                }
+              </td>
+
+              <td>{{ nomeParoquia(evento) }}</td>
+
+              <td>
+                <div class="small">{{ evento.dataInicio | date:'dd/MM/yyyy' }}</div>
+                <div class="small text-body-secondary">{{ evento.dataFim | date:'dd/MM/yyyy' }}</div>
+              </td>
+
+              <td>
+                <p-tag [value]="labelStatus(evento.status)" [severity]="severityStatus(evento.status)" />
+              </td>
+
+              <td>
+                @if (evento.monitoramentoAtivo) {
+                <p-tag severity="success"
+                  [value]="(evento.monitoramentoInicio || '05:00') + ' às ' + (evento.monitoramentoFim || '20:00')" />
+                } @else {
+                <p-tag value="Inativo" severity="secondary" />
+                }
+              </td>
+
+              <td class="text-end">
+                <div class="d-flex flex-column flex-lg-row justify-content-end gap-2">
+                  <p-button type="button" label="Editar" icon="fa-solid fa-pen-to-square" size="small"
+                    severity="warn" (onClick)="editar(evento)" />
+
+                  <p-button label="Gestão" icon="fa-solid fa-users-gear" size="small" severity="info"
+                    [routerLink]="['/eventos', evento.id, 'gestao']" />
+
+                  <p-button label="Operação" icon="fa-solid fa-clipboard-check" size="small" severity="success"
+                    [routerLink]="['/eventos', evento.id, 'operacao']" />
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+        }
+      </p-card>
     </div>
   </div>
 </div>
