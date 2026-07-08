@@ -1,244 +1,501 @@
-<div class="d-flex flex-column flex-lg-row justify-content-between gap-3 mb-3">
-  <div>
-    <a routerLink="/eventos" class="small text-decoration-none"><i class="fa-solid fa-arrow-left me-1"></i>Voltar para eventos</a>
-    <h2 class="h4 mb-1 mt-1">Gestão do evento</h2>
-    @if (evento(); as ev) {
-    <div class="text-muted small">{{ ev.nome }} · {{ ev.dataInicio }} a {{ ev.dataFim }}</div>
-    }
+<div class="container-fluid py-4 evento-gestao-page">
+  <div class="d-flex flex-column flex-xl-row justify-content-between gap-3 mb-4">
+    <div>
+      <h1 class="h3 mb-1">Gestão do Evento</h1>
+
+      @if (evento()) {
+      <p class="text-body-secondary mb-0">
+        {{ evento()?.nome }}
+      </p>
+      } @else {
+      <p class="text-body-secondary mb-0">
+        Preparação operacional do encontro.
+      </p>
+      }
+    </div>
+
+    <div class="d-flex flex-column flex-sm-row gap-2">
+      <p-button label="Voltar para eventos" icon="fa-solid fa-arrow-left" severity="secondary" variant="outlined"
+        [routerLink]="['/eventos']" />
+
+      <p-button label="Ir para operação" icon="fa-solid fa-clipboard-check" severity="success"
+        [routerLink]="['/eventos', eventoId, 'operacao']" />
+    </div>
   </div>
 
-  <button class="btn btn-primary align-self-start" type="button" (click)="carregarTudo()">
-    <i class="fa-solid fa-rotate me-1"></i>Atualizar dados
-  </button>
+  <div class="row g-3 mb-4">
+    <div class="col-12 col-md-6 col-xl-3">
+      <p-card styleClass="summary-card">
+        <div class="d-flex align-items-center justify-content-between">
+          <div>
+            <div class="text-body-secondary small">Tios carona</div>
+            <div class="fs-3 fw-bold">{{ tiosCarona().length }}</div>
+          </div>
+          <i class="fa-solid fa-car-side"></i>
+        </div>
+      </p-card>
+    </div>
+
+    <div class="col-12 col-md-6 col-xl-3">
+      <p-card styleClass="summary-card">
+        <div class="d-flex align-items-center justify-content-between">
+          <div>
+            <div class="text-body-secondary small">Duplas</div>
+            <div class="fs-3 fw-bold">{{ duplas().length }}</div>
+          </div>
+          <i class="fa-solid fa-people-arrows"></i>
+        </div>
+      </p-card>
+    </div>
+
+    <div class="col-12 col-md-6 col-xl-3">
+      <p-card styleClass="summary-card">
+        <div class="d-flex align-items-center justify-content-between">
+          <div>
+            <div class="text-body-secondary small">Sobrinhos</div>
+            <div class="fs-3 fw-bold">{{ sobrinhos().length }}</div>
+          </div>
+          <i class="fa-solid fa-child-reaching"></i>
+        </div>
+      </p-card>
+    </div>
+
+    <div class="col-12 col-md-6 col-xl-3">
+      <p-card styleClass="summary-card">
+        <div class="d-flex align-items-center justify-content-between">
+          <div>
+            <div class="text-body-secondary small">Vínculos</div>
+            <div class="fs-3 fw-bold">{{ vinculos().length }}</div>
+          </div>
+          <i class="fa-solid fa-link"></i>
+        </div>
+      </p-card>
+    </div>
+  </div>
+
+  <div class="gestao-tabs mb-4">
+    <button type="button" class="tab-button" [class.active]="abaAtiva() === 'TIOS'" (click)="alterarAba('TIOS')">
+      <i class="fa-solid fa-car-side me-2"></i>
+      Tios carona
+    </button>
+
+    <button type="button" class="tab-button" [class.active]="abaAtiva() === 'DUPLAS'" (click)="alterarAba('DUPLAS')">
+      <i class="fa-solid fa-people-arrows me-2"></i>
+      Duplas
+    </button>
+
+    <button type="button" class="tab-button" [class.active]="abaAtiva() === 'SOBRINHOS'"
+      (click)="alterarAba('SOBRINHOS')">
+      <i class="fa-solid fa-child-reaching me-2"></i>
+      Sobrinhos
+    </button>
+
+    <button type="button" class="tab-button" [class.active]="abaAtiva() === 'VINCULOS'"
+      (click)="alterarAba('VINCULOS')">
+      <i class="fa-solid fa-link me-2"></i>
+      Vínculos
+    </button>
+  </div>
+
+  @if (abaAtiva() === 'TIOS') {
+  <div class="row g-4">
+    <div class="col-12 col-xl-4">
+      <p-card styleClass="shadow-sm border-0 h-100">
+        <ng-template pTemplate="header">
+          <div class="px-4 pt-4">
+            <h2 class="h5 mb-1">Adicionar tio carona</h2>
+            <p class="text-body-secondary small mb-0">
+              Selecione uma pessoa cadastrada como Tio Carona.
+            </p>
+          </div>
+        </ng-template>
+
+        <form [formGroup]="tioForm" (ngSubmit)="adicionarTioCarona()" class="d-grid gap-3">
+          <div>
+            <label for="pessoaId" class="form-label">Pessoa *</label>
+            <p-select inputId="pessoaId" [options]="opcoesPessoasTioCarona()" optionLabel="label" optionValue="value"
+              formControlName="pessoaId" placeholder="Selecione o tio carona" styleClass="w-100" />
+
+            @if (tioForm.controls.pessoaId.touched && tioForm.controls.pessoaId.invalid) {
+            <div class="form-text text-danger">
+              Selecione uma pessoa.
+            </div>
+            }
+          </div>
+
+          <div>
+            <label for="observacoesTio" class="form-label">Observações</label>
+            <textarea id="observacoesTio" pTextarea rows="4" class="w-100" formControlName="observacoes"
+              placeholder="Observações sobre a participação no evento"></textarea>
+          </div>
+
+          <p-button type="submit" label="Adicionar ao evento" icon="fa-solid fa-plus" [loading]="salvandoTio()" />
+        </form>
+      </p-card>
+    </div>
+
+    <div class="col-12 col-xl-8">
+      <p-card styleClass="shadow-sm border-0">
+        <ng-template pTemplate="header">
+          <div class="px-4 pt-4">
+            <h2 class="h5 mb-1">Tios carona do evento</h2>
+            <p class="text-body-secondary small mb-0">
+              {{ tiosCarona().length }} tio(s) vinculado(s)
+            </p>
+          </div>
+        </ng-template>
+
+        @if (tiosCarona().length === 0) {
+        <div class="empty-state text-center py-5">
+          <i class="fa-solid fa-car-side text-body-secondary mb-3"></i>
+          <h3 class="h6 mb-1">Nenhum tio carona vinculado</h3>
+          <p class="text-body-secondary small mb-0">
+            Adicione pessoas do tipo Tio Carona para formar duplas.
+          </p>
+        </div>
+        } @else {
+        <p-table [value]="tiosCarona()" responsiveLayout="scroll" styleClass="p-datatable-sm">
+          <ng-template pTemplate="header">
+            <tr>
+              <th>Nome</th>
+              <th>Status</th>
+              <th>Observações</th>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="body" let-tio>
+            <tr>
+              <td class="fw-semibold">{{ tio.pessoaNome }}</td>
+              <td>
+                <p-tag [value]="labelStatusTio(tio.status)" [severity]="severityStatusTio(tio.status)" />
+              </td>
+              <td>
+                @if (tio.observacoes) {
+                <span class="small">{{ tio.observacoes }}</span>
+                } @else {
+                <span class="small text-body-secondary">Sem observações</span>
+                }
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+        }
+      </p-card>
+    </div>
+  </div>
+  }
+
+  @if (abaAtiva() === 'DUPLAS') {
+  <div class="row g-4">
+    <div class="col-12 col-xl-4">
+      <p-card styleClass="shadow-sm border-0 h-100">
+        <ng-template pTemplate="header">
+          <div class="px-4 pt-4">
+            <h2 class="h5 mb-1">Formar dupla</h2>
+            <p class="text-body-secondary small mb-0">
+              Cada dupla deve ser composta por dois tios carona.
+            </p>
+          </div>
+        </ng-template>
+
+        <form [formGroup]="duplaForm" (ngSubmit)="criarDupla()" class="d-grid gap-3">
+          <div>
+            <label for="tio1Id" class="form-label">Tio carona 1 *</label>
+            <p-select inputId="tio1Id" [options]="opcoesTiosEvento()" optionLabel="label" optionValue="value"
+              formControlName="tio1Id" placeholder="Selecione" styleClass="w-100" />
+          </div>
+
+          <div>
+            <label for="tio2Id" class="form-label">Tio carona 2 *</label>
+            <p-select inputId="tio2Id" [options]="opcoesTiosEvento()" optionLabel="label" optionValue="value"
+              formControlName="tio2Id" placeholder="Selecione" styleClass="w-100" />
+          </div>
+
+          <div>
+            <label for="apelido" class="form-label">Apelido da dupla</label>
+            <input id="apelido" pInputText type="text" class="w-100" formControlName="apelido"
+              placeholder="Ex.: Dupla Azul" />
+          </div>
+
+          <p-button type="submit" label="Criar dupla" icon="fa-solid fa-people-arrows" [loading]="salvandoDupla()" />
+        </form>
+      </p-card>
+    </div>
+
+    <div class="col-12 col-xl-8">
+      <p-card styleClass="shadow-sm border-0">
+        <ng-template pTemplate="header">
+          <div class="px-4 pt-4">
+            <h2 class="h5 mb-1">Duplas formadas</h2>
+            <p class="text-body-secondary small mb-0">
+              {{ duplas().length }} dupla(s)
+            </p>
+          </div>
+        </ng-template>
+
+        @if (duplas().length === 0) {
+        <div class="empty-state text-center py-5">
+          <i class="fa-solid fa-people-arrows text-body-secondary mb-3"></i>
+          <h3 class="h6 mb-1">Nenhuma dupla formada</h3>
+          <p class="text-body-secondary small mb-0">
+            Adicione tios carona ao evento antes de formar duplas.
+          </p>
+        </div>
+        } @else {
+        <p-table [value]="duplas()" responsiveLayout="scroll" styleClass="p-datatable-sm">
+          <ng-template pTemplate="header">
+            <tr>
+              <th>Código</th>
+              <th>Dupla</th>
+              <th>Apelido</th>
+              <th>Status</th>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="body" let-dupla>
+            <tr>
+              <td class="fw-semibold">{{ dupla.codigo }}</td>
+              <td>
+                <div>{{ dupla.tio1Nome }}</div>
+                <div class="small text-body-secondary">{{ dupla.tio2Nome }}</div>
+              </td>
+              <td>
+                @if (dupla.apelido) {
+                <span>{{ dupla.apelido }}</span>
+                } @else {
+                <span class="small text-body-secondary">Sem apelido</span>
+                }
+              </td>
+              <td>
+                <p-tag [value]="labelStatusDupla(dupla.status)" [severity]="severityStatusDupla(dupla.status)" />
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+        }
+      </p-card>
+    </div>
+  </div>
+  }
+
+  @if (abaAtiva() === 'SOBRINHOS') {
+  <div class="row g-4">
+    <div class="col-12 col-xl-4">
+      <p-card styleClass="shadow-sm border-0 h-100">
+        <ng-template pTemplate="header">
+          <div class="px-4 pt-4">
+            <h2 class="h5 mb-1">Cadastrar sobrinho</h2>
+            <p class="text-body-secondary small mb-0">
+              Dados básicos do jovem/adolescente participante.
+            </p>
+          </div>
+        </ng-template>
+
+        <form [formGroup]="sobrinhoForm" (ngSubmit)="criarSobrinho()" class="d-grid gap-3">
+          <div>
+            <label for="nomeSobrinho" class="form-label">Nome *</label>
+            <input id="nomeSobrinho" pInputText type="text" class="w-100" formControlName="nome"
+              placeholder="Nome completo" />
+
+            @if (sobrinhoForm.controls.nome.touched && sobrinhoForm.controls.nome.invalid) {
+            <div class="form-text text-danger">
+              Informe o nome do sobrinho.
+            </div>
+            }
+          </div>
+
+          <div>
+            <label for="telefoneSobrinho" class="form-label">Telefone</label>
+            <input id="telefoneSobrinho" pInputText type="text" class="w-100" formControlName="telefone"
+              placeholder="(00) 00000-0000" />
+          </div>
+
+          <div>
+            <label for="responsavelNome" class="form-label">Responsável</label>
+            <input id="responsavelNome" pInputText type="text" class="w-100" formControlName="responsavelNome"
+              placeholder="Nome do responsável" />
+          </div>
+
+          <div>
+            <label for="responsavelTelefone" class="form-label">Telefone do responsável</label>
+            <input id="responsavelTelefone" pInputText type="text" class="w-100" formControlName="responsavelTelefone"
+              placeholder="(00) 00000-0000" />
+          </div>
+
+          <div>
+            <label for="dataNascimentoSobrinho" class="form-label">Data de nascimento</label>
+            <input id="dataNascimentoSobrinho" pInputText type="date" class="w-100" formControlName="dataNascimento" />
+          </div>
+
+          <div>
+            <label for="enderecoSobrinho" class="form-label">Endereço</label>
+            <input id="enderecoSobrinho" pInputText type="text" class="w-100" formControlName="endereco"
+              placeholder="Endereço do sobrinho" />
+          </div>
+
+          <div>
+            <label for="restricaoAlimentar" class="form-label">Restrição alimentar</label>
+            <textarea id="restricaoAlimentar" pTextarea rows="3" class="w-100" formControlName="restricaoAlimentar"
+              placeholder="Ex.: alergias, restrições alimentares"></textarea>
+          </div>
+
+          <div>
+            <label for="observacaoMedica" class="form-label">Observação médica</label>
+            <textarea id="observacaoMedica" pTextarea rows="3" class="w-100" formControlName="observacaoMedica"
+              placeholder="Informação relevante para a equipe"></textarea>
+          </div>
+
+          <p-button type="submit" label="Cadastrar sobrinho" icon="fa-solid fa-child-reaching"
+            [loading]="salvandoSobrinho()" />
+        </form>
+      </p-card>
+    </div>
+
+    <div class="col-12 col-xl-8">
+      <p-card styleClass="shadow-sm border-0">
+        <ng-template pTemplate="header">
+          <div class="px-4 pt-4">
+            <h2 class="h5 mb-1">Sobrinhos cadastrados</h2>
+            <p class="text-body-secondary small mb-0">
+              {{ sobrinhos().length }} sobrinho(s)
+            </p>
+          </div>
+        </ng-template>
+
+        @if (sobrinhos().length === 0) {
+        <div class="empty-state text-center py-5">
+          <i class="fa-solid fa-child-reaching text-body-secondary mb-3"></i>
+          <h3 class="h6 mb-1">Nenhum sobrinho cadastrado</h3>
+          <p class="text-body-secondary small mb-0">
+            Cadastre os sobrinhos para depois vinculá-los às duplas.
+          </p>
+        </div>
+        } @else {
+        <p-table [value]="sobrinhos()" responsiveLayout="scroll" styleClass="p-datatable-sm">
+          <ng-template pTemplate="header">
+            <tr>
+              <th>Nome</th>
+              <th>Responsável</th>
+              <th>Contato</th>
+              <th>Status</th>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="body" let-sobrinho>
+            <tr>
+              <td class="fw-semibold">{{ sobrinho.nome }}</td>
+              <td>
+                @if (sobrinho.responsavelNome) {
+                <span>{{ sobrinho.responsavelNome }}</span>
+                } @else {
+                <span class="small text-body-secondary">Não informado</span>
+                }
+              </td>
+              <td>
+                @if (sobrinho.telefone) {
+                <div class="small">
+                  <i class="fa-solid fa-phone me-1"></i>
+                  {{ sobrinho.telefone }}
+                </div>
+                }
+
+                @if (sobrinho.responsavelTelefone) {
+                <div class="small text-body-secondary">
+                  Resp.: {{ sobrinho.responsavelTelefone }}
+                </div>
+                }
+
+                @if (!sobrinho.telefone && !sobrinho.responsavelTelefone) {
+                <span class="small text-body-secondary">Não informado</span>
+                }
+              </td>
+              <td>
+                <p-tag [value]="labelStatusSobrinho(sobrinho.status)"
+                  [severity]="severityStatusSobrinho(sobrinho.status)" />
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+        }
+      </p-card>
+    </div>
+  </div>
+  }
+
+  @if (abaAtiva() === 'VINCULOS') {
+  <div class="row g-4">
+    <div class="col-12 col-xl-4">
+      <p-card styleClass="shadow-sm border-0 h-100">
+        <ng-template pTemplate="header">
+          <div class="px-4 pt-4">
+            <h2 class="h5 mb-1">Vincular sobrinho à dupla</h2>
+            <p class="text-body-secondary small mb-0">
+              Cada sobrinho deve ser acompanhado por uma dupla.
+            </p>
+          </div>
+        </ng-template>
+
+        <form [formGroup]="vinculoForm" (ngSubmit)="vincularSobrinho()" class="d-grid gap-3">
+          <div>
+            <label for="sobrinhoId" class="form-label">Sobrinho *</label>
+            <p-select inputId="sobrinhoId" [options]="opcoesSobrinhos()" optionLabel="label" optionValue="value"
+              formControlName="sobrinhoId" placeholder="Selecione o sobrinho" styleClass="w-100" />
+          </div>
+
+          <div>
+            <label for="duplaId" class="form-label">Dupla *</label>
+            <p-select inputId="duplaId" [options]="opcoesDuplas()" optionLabel="label" optionValue="value"
+              formControlName="duplaId" placeholder="Selecione a dupla" styleClass="w-100" />
+          </div>
+
+          <p-button type="submit" label="Vincular" icon="fa-solid fa-link" [loading]="salvandoVinculo()" />
+        </form>
+      </p-card>
+    </div>
+
+    <div class="col-12 col-xl-8">
+      <p-card styleClass="shadow-sm border-0">
+        <ng-template pTemplate="header">
+          <div class="px-4 pt-4">
+            <h2 class="h5 mb-1">Vínculos cadastrados</h2>
+            <p class="text-body-secondary small mb-0">
+              {{ vinculos().length }} vínculo(s)
+            </p>
+          </div>
+        </ng-template>
+
+        @if (vinculos().length === 0) {
+        <div class="empty-state text-center py-5">
+          <i class="fa-solid fa-link text-body-secondary mb-3"></i>
+          <h3 class="h6 mb-1">Nenhum vínculo cadastrado</h3>
+          <p class="text-body-secondary small mb-0">
+            Vincule os sobrinhos às duplas de tios carona.
+          </p>
+        </div>
+        } @else {
+        <p-table [value]="vinculos()" responsiveLayout="scroll" styleClass="p-datatable-sm">
+          <ng-template pTemplate="header">
+            <tr>
+              <th>Sobrinho</th>
+              <th>Dupla</th>
+              <th>Status</th>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="body" let-vinculo>
+            <tr>
+              <td class="fw-semibold">{{ vinculo.sobrinhoNome }}</td>
+              <td>{{ vinculo.duplaCodigo }}</td>
+              <td>
+                <p-tag [value]="labelStatusVinculo(vinculo.status)"
+                  [severity]="severityStatusVinculo(vinculo.status)" />
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+        }
+      </p-card>
+    </div>
+  </div>
+  }
 </div>
-
-@if (mensagemErro()) {
-<div class="alert alert-danger">{{ mensagemErro() }}</div>
-}
-@if (mensagemSucesso()) {
-<div class="alert alert-success">{{ mensagemSucesso() }}</div>
-}
-
-<ul class="nav nav-pills mb-3">
-  <li class="nav-item"><button class="nav-link" [class.active]="aba() === 'tios'" (click)="aba.set('tios')">1. Tios carona</button></li>
-  <li class="nav-item"><button class="nav-link" [class.active]="aba() === 'duplas'" (click)="aba.set('duplas')">2. Duplas</button></li>
-  <li class="nav-item"><button class="nav-link" [class.active]="aba() === 'sobrinhos'" (click)="aba.set('sobrinhos')">3. Sobrinhos</button></li>
-  <li class="nav-item"><button class="nav-link" [class.active]="aba() === 'vinculos'" (click)="aba.set('vinculos')">4. Vínculos</button></li>
-</ul>
-
-@if (aba() === 'tios') {
-<section class="row g-3">
-  <div class="col-12 col-xl-4">
-    <form class="card shadow-sm border-0" [formGroup]="tioForm" (ngSubmit)="adicionarTio()">
-      <div class="card-header bg-white"><strong>Adicionar tio carona ao evento</strong></div>
-      <div class="card-body row g-3">
-        <div class="col-12">
-          <label class="form-label" for="pessoa">Pessoa *</label>
-          <select class="form-select" formControlName="pessoaId" id="pessoa">
-            <option [ngValue]="0">Selecione...</option>
-            @for (pessoa of pessoasTioCarona(); track pessoa.id) {
-            <option [ngValue]="pessoa.id">{{ pessoa.nome }}</option>
-            }
-          </select>
-          <div class="form-text">A pessoa precisa estar cadastrada com tipo Tio carona na tela Pessoas.</div>
-        </div>
-        <div class="col-12">
-          <label class="form-label" for="observacoes">Observações</label>
-          <textarea class="form-control" rows="3" formControlName="observacoes" id="observacoes"></textarea>
-        </div>
-      </div>
-      <div class="card-footer bg-white text-end">
-        <button class="btn btn-primary" type="submit" [disabled]="tioForm.invalid || tioForm.value.pessoaId === 0 || salvando()">Adicionar</button>
-      </div>
-    </form>
-  </div>
-
-  <div class="col-12 col-xl-8">
-    <div class="card shadow-sm border-0">
-      <div class="card-header bg-white d-flex justify-content-between">
-        <strong>Tios do evento</strong>
-        <span class="badge text-bg-light">{{ tios().length }}</span>
-      </div>
-      <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0">
-          <thead class="table-light"><tr><th>Nome</th><th>Status</th><th>Observações</th></tr></thead>
-          <tbody>
-          @for (tio of tios(); track tio.id) {
-          <tr>
-            <td><strong>{{ tio.pessoaNome }}</strong><div class="small text-muted">Pessoa #{{ tio.pessoaId }} · Tio evento #{{ tio.id }}</div></td>
-            <td><span class="badge text-bg-success">{{ tio.status }}</span></td>
-            <td>{{ tio.observacoes || '-' }}</td>
-          </tr>
-          }
-
-          @if (!carregando() && tios().length === 0) {
-          <tr><td colspan="3" class="text-center text-muted py-4">Nenhum tio carona adicionado.</td></tr>
-          }
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-</section>
-}
-
-@if (aba() === 'duplas') {
-<section class="row g-3">
-  <div class="col-12 col-xl-4">
-    <form class="card shadow-sm border-0" [formGroup]="duplaForm" (ngSubmit)="criarDupla()">
-      <div class="card-header bg-white"><strong>Formar dupla</strong></div>
-      <div class="card-body row g-3">
-        <div class="col-12">
-          <label class="form-label" for="tio1">Tio carona 1 *</label>
-          <select class="form-select" formControlName="tio1Id" id="tio1">
-            <option [ngValue]="0">Selecione...</option>
-            @for (tio of tios(); track tio.id) {
-            <option [ngValue]="tio.id">{{ tio.pessoaNome }}</option>
-            }
-          </select>
-        </div>
-        <div class="col-12">
-          <label class="form-label" for="tio2">Tio carona 2 *</label>
-          <select class="form-select" formControlName="tio2Id" id="tio2">
-            <option [ngValue]="0">Selecione...</option>
-            @for (tio of tios(); track tio.id) {
-            <option [ngValue]="tio.id">{{ tio.pessoaNome }}</option>
-            }
-          </select>
-        </div>
-        <div class="col-12">
-          <label class="form-label" for="apelido">Apelido da dupla</label>
-          <input class="form-control" formControlName="apelido" placeholder="Ex.: Dupla Azul" id="apelido"/>
-        </div>
-      </div>
-      <div class="card-footer bg-white text-end">
-        <button class="btn btn-primary" type="submit" [disabled]="duplaForm.invalid || salvando()">Criar dupla</button>
-      </div>
-    </form>
-  </div>
-
-  <div class="col-12 col-xl-8">
-    <div class="card shadow-sm border-0">
-      <div class="card-header bg-white d-flex justify-content-between"><strong>Duplas formadas</strong><span class="badge text-bg-light">{{ duplas().length }}</span></div>
-      <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0">
-          <thead class="table-light"><tr><th>Código</th><th>Tios carona</th><th>Status</th></tr></thead>
-          <tbody>
-          @for (dupla of duplas(); track dupla.id) {
-          <tr>
-            <td><strong>{{ dupla.codigo }}</strong><div class="small text-muted">{{ dupla.apelido || 'Sem apelido' }}</div></td>
-            <td>{{ dupla.tio1Nome }}<br />{{ dupla.tio2Nome }}</td>
-            <td><span class="badge text-bg-success">{{ dupla.status }}</span></td>
-          </tr>
-          }
-
-          @if (!carregando() && duplas().length === 0) {
-          <tr><td colspan="3" class="text-center text-muted py-4">Nenhuma dupla formada.</td></tr>
-          }
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-</section>
-}
-
-@if (aba() === 'sobrinhos') {
-<section class="row g-3">
-  <div class="col-12 col-xl-5">
-    <form class="card shadow-sm border-0" [formGroup]="sobrinhoForm" (ngSubmit)="criarSobrinho()">
-      <div class="card-header bg-white"><strong>Cadastrar sobrinho</strong></div>
-      <div class="card-body row g-3">
-        <div class="col-12"><label class="form-label" for="nome">Nome *</label><input class="form-control" formControlName="nome" id="nome"/></div>
-        <div class="col-12 col-md-6"><label class="form-label" for="telefone">Telefone</label><input class="form-control" formControlName="telefone" id="telefone"/></div>
-        <div class="col-12 col-md-6"><label class="form-label" for="dtnascimento">Data nascimento</label><input class="form-control" type="date" formControlName="dataNascimento" id="dtnascimento"/></div>
-        <div class="col-12 col-md-6"><label class="form-label" for="responsavel">Responsável</label><input class="form-control" formControlName="responsavelNome" id="responsavel"/></div>
-        <div class="col-12 col-md-6"><label class="form-label" for="responsaveltelefone">Telefone responsável</label><input class="form-control" formControlName="responsavelTelefone" id="responsaveltelefone"/></div>
-        <div class="col-12"><label class="form-label" for="endereco">Endereço</label><input class="form-control" formControlName="endereco" id="endereco"/></div>
-        <div class="col-12"><label class="form-label" for="restricao">Restrição alimentar</label><input class="form-control" formControlName="restricaoAlimentar" id="restricao"/></div>
-        <div class="col-12"><label class="form-label" for="observacaomedica">Observação médica</label><textarea class="form-control" rows="2" formControlName="observacaoMedica" id="observacaomedica"></textarea></div>
-      </div>
-      <div class="card-footer bg-white text-end"><button class="btn btn-primary" type="submit" [disabled]="sobrinhoForm.invalid || salvando()">Cadastrar sobrinho</button></div>
-    </form>
-  </div>
-
-  <div class="col-12 col-xl-7">
-    <div class="card shadow-sm border-0">
-      <div class="card-header bg-white d-flex justify-content-between"><strong>Sobrinhos cadastrados</strong><span class="badge text-bg-light">{{ sobrinhos().length }}</span></div>
-      <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0">
-          <thead class="table-light"><tr><th>Nome</th><th>Responsável</th><th>Status</th></tr></thead>
-          <tbody>
-          @for (sobrinho of sobrinhos(); track sobrinho.id) {
-          <tr>
-            <td><strong>{{ sobrinho.nome }}</strong><div class="small text-muted">{{ sobrinho.telefone || 'Sem telefone' }}</div></td>
-            <td>{{ sobrinho.responsavelNome || '-' }}<div class="small text-muted">{{ sobrinho.responsavelTelefone || '' }}</div></td>
-            <td><span class="badge text-bg-secondary">{{ sobrinho.status }}</span></td>
-          </tr>
-          }
-
-          @if (!carregando() && sobrinhos().length === 0) {
-          <tr><td colspan="3" class="text-center text-muted py-4">Nenhum sobrinho cadastrado.</td></tr>
-          }
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-</section>
-}
-
-@if (aba() === 'vinculos') {
-<section class="row g-3">
-  <div class="col-12 col-xl-4">
-    <form class="card shadow-sm border-0" [formGroup]="vinculoForm" (ngSubmit)="vincularSobrinho()">
-      <div class="card-header bg-white"><strong>Vincular sobrinho à dupla</strong></div>
-      <div class="card-body row g-3">
-        <div class="col-12">
-          <label class="form-label" for="sobrinho">Sobrinho *</label>
-          <select class="form-select" formControlName="sobrinhoId" id="sobrinho">
-            <option [ngValue]="0">Selecione...</option>
-            @for (sobrinho of sobrinhos(); track sobrinho.id) {
-            <option [ngValue]="sobrinho.id">{{ sobrinho.nome }}</option>
-            }
-          </select>
-        </div>
-        <div class="col-12">
-          <label class="form-label" for="dupla">Dupla *</label>
-          <select class="form-select" formControlName="duplaId" (change)="carregarVinculosDaDupla()" id="dupla">
-            <option [ngValue]="0">Selecione...</option>
-            @for (dupla of duplas(); track dupla.id) {
-            <option [ngValue]="dupla.id">{{ dupla.codigo }} · {{ dupla.tio1Nome }} e {{ dupla.tio2Nome }}</option>
-            }
-          </select>
-        </div>
-      </div>
-      <div class="card-footer bg-white text-end"><button class="btn btn-primary" type="submit" [disabled]="vinculoForm.invalid || salvando()">Vincular</button></div>
-    </form>
-  </div>
-
-  <div class="col-12 col-xl-8">
-    <div class="card shadow-sm border-0">
-      <div class="card-header bg-white d-flex justify-content-between"><strong>Sobrinhos vinculados à dupla</strong><span class="badge text-bg-light">{{ vinculos().length }}</span></div>
-      <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0">
-          <thead class="table-light"><tr><th>Sobrinho</th><th>Dupla</th><th>Status</th></tr></thead>
-          <tbody>
-          @for (vinculo of vinculos(); track vinculo.id) {
-          <tr>
-            <td><strong>{{ vinculo.sobrinhoNome }}</strong><div class="small text-muted">Sobrinho #{{ vinculo.sobrinhoId }}</div></td>
-            <td>{{ vinculo.duplaCodigo }}</td>
-            <td><span class="badge text-bg-success">{{ vinculo.status }}</span></td>
-          </tr>
-          }
-
-          @if (vinculos().length === 0) {
-          <tr><td colspan="3" class="text-center text-muted py-4">Selecione uma dupla ou crie um vínculo.</td></tr>
-          }
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-</section>
-}
