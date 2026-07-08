@@ -71,14 +71,21 @@ export class EventoGestaoComponent implements OnInit {
   readonly salvandoSobrinho = signal(false);
   readonly salvandoVinculo = signal(false);
 
-  readonly opcoesPessoasTioCarona = computed<OpcaoNumerica[]>(() =>
-    this.pessoas()
+  readonly opcoesPessoasTioCarona = computed<OpcaoNumerica[]>(() => {
+    const pessoasJaAdicionadas = new Set(
+      this.tiosCarona()
+        .filter(tio => tio.status === 'ATIVO')
+        .map(tio => tio.pessoaId)
+    );
+
+    return this.pessoas()
       .filter(pessoa => pessoa.tipo === 'TIO_CARONA')
+      .filter(pessoa => !pessoasJaAdicionadas.has(pessoa.id))
       .map(pessoa => ({
         label: pessoa.nome,
         value: pessoa.id
-      }))
-  );
+      }));
+  });
 
   readonly opcoesTiosEvento = computed<OpcaoNumerica[]>(() =>
     this.tiosCarona()
@@ -177,8 +184,14 @@ export class EventoGestaoComponent implements OnInit {
         this.carregarTiosCarona();
       },
       error: erro => {
-        console.error('Erro ao adicionar tio carona', erro);
-        this.toastError('Não foi possível adicionar o tio carona ao evento.');
+        console.error('Erro ao adicionar tio carona', {
+          status: erro.status,
+          url: erro.url,
+          error: erro.error,
+          message: erro.message
+        });
+
+        this.toastError('Não foi possível adicionar o tio carona ao evento. Confira se ele já não foi adicionado.');
         this.salvandoTio.set(false);
       }
     });

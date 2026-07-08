@@ -25,7 +25,7 @@
 
   <div class="row g-3 mb-4">
     <div class="col-12 col-md-6 col-xl-3">
-      <p-card styleClass="summary-card">
+      <p-card class="summary-card">
         <div class="d-flex align-items-center justify-content-between">
           <div>
             <div class="text-body-secondary small">Tios carona</div>
@@ -37,7 +37,7 @@
     </div>
 
     <div class="col-12 col-md-6 col-xl-3">
-      <p-card styleClass="summary-card">
+      <p-card class="summary-card">
         <div class="d-flex align-items-center justify-content-between">
           <div>
             <div class="text-body-secondary small">Duplas</div>
@@ -49,7 +49,7 @@
     </div>
 
     <div class="col-12 col-md-6 col-xl-3">
-      <p-card styleClass="summary-card">
+      <p-card class="summary-card">
         <div class="d-flex align-items-center justify-content-between">
           <div>
             <div class="text-body-secondary small">Sobrinhos</div>
@@ -61,7 +61,7 @@
     </div>
 
     <div class="col-12 col-md-6 col-xl-3">
-      <p-card styleClass="summary-card">
+      <p-card class="summary-card">
         <div class="d-flex align-items-center justify-content-between">
           <div>
             <div class="text-body-secondary small">Vínculos</div>
@@ -100,7 +100,7 @@
   @if (abaAtiva() === 'TIOS') {
   <div class="row g-4">
     <div class="col-12 col-xl-4">
-      <p-card styleClass="shadow-sm border-0 h-100">
+      <p-card class="shadow-sm border-0 h-100">
         <ng-template pTemplate="header">
           <div class="px-4 pt-4">
             <h2 class="h5 mb-1">Adicionar tio carona</h2>
@@ -114,7 +114,15 @@
           <div>
             <label for="pessoaId" class="form-label">Pessoa *</label>
             <p-select inputId="pessoaId" [options]="opcoesPessoasTioCarona()" optionLabel="label" optionValue="value"
-              formControlName="pessoaId" placeholder="Selecione o tio carona" styleClass="w-100" />
+              formControlName="pessoaId" placeholder="Selecione o tio carona" class="w-100" />
+
+            @if (opcoesPessoasTioCarona().length === 0) {
+            <div class="alert alert-warning py-2 px-3 mb-0 mt-2 small">
+              <i class="fa-solid fa-circle-info me-2"></i>
+              Não há tios carona disponíveis para adicionar. Cadastre novas pessoas do tipo TIO_CARONA ou verifique se
+              todos já foram adicionados ao evento.
+            </div>
+            }
 
             @if (tioForm.controls.pessoaId.touched && tioForm.controls.pessoaId.invalid) {
             <div class="form-text text-danger">
@@ -135,7 +143,7 @@
     </div>
 
     <div class="col-12 col-xl-8">
-      <p-card styleClass="shadow-sm border-0">
+      <p-card class="shadow-sm border-0">
         <ng-template pTemplate="header">
           <div class="px-4 pt-4">
             <h2 class="h5 mb-1">Tios carona do evento</h2>
@@ -154,7 +162,7 @@
           </p>
         </div>
         } @else {
-        <p-table [value]="tiosCarona()" responsiveLayout="scroll" styleClass="p-datatable-sm">
+        <p-table [value]="tiosCarona()" responsiveLayout="scroll" class="p-datatable-sm">
           <ng-template pTemplate="header">
             <tr>
               <th>Nome</th>
@@ -188,7 +196,7 @@
   @if (abaAtiva() === 'DUPLAS') {
   <div class="row g-4">
     <div class="col-12 col-xl-4">
-      <p-card styleClass="shadow-sm border-0 h-100">
+      <p-card class="shadow-sm border-0 h-100">
         <ng-template pTemplate="header">
           <div class="px-4 pt-4">
             <h2 class="h5 mb-1">Formar dupla</h2>
@@ -202,13 +210,13 @@
           <div>
             <label for="tio1Id" class="form-label">Tio carona 1 *</label>
             <p-select inputId="tio1Id" [options]="opcoesTiosEvento()" optionLabel="label" optionValue="value"
-              formControlName="tio1Id" placeholder="Selecione" styleClass="w-100" />
+              formControlName="tio1Id" placeholder="Selecione" class="w-100" />
           </div>
 
           <div>
             <label for="tio2Id" class="form-label">Tio carona 2 *</label>
             <p-select inputId="tio2Id" [options]="opcoesTiosEvento()" optionLabel="label" optionValue="value"
-              formControlName="tio2Id" placeholder="Selecione" styleClass="w-100" />
+              formControlName="tio2Id" placeholder="Selecione" class="w-100" />
           </div>
 
           <div>
@@ -223,7 +231,7 @@
     </div>
 
     <div class="col-12 col-xl-8">
-      <p-card styleClass="shadow-sm border-0">
+      <p-card class="shadow-sm border-0">
         <ng-template pTemplate="header">
           <div class="px-4 pt-4">
             <h2 class="h5 mb-1">Duplas formadas</h2>
@@ -242,7 +250,7 @@
           </p>
         </div>
         } @else {
-        <p-table [value]="duplas()" responsiveLayout="scroll" styleClass="p-datatable-sm">
+        <p-table [value]="duplas()" responsiveLayout="scroll" class="p-datatable-sm">
           <ng-template pTemplate="header">
             <tr>
               <th>Código</th>
@@ -281,7 +289,7 @@
   @if (abaAtiva() === 'SOBRINHOS') {
   <div class="row g-4">
     <div class="col-12 col-xl-4">
-      <p-card styleClass="shadow-sm border-0 h-100">
+      <p-card class="shadow-sm border-0 h-100">
         <ng-template pTemplate="header">
           <div class="px-4 pt-4">
             <h2 class="h5 mb-1">Cadastrar sobrinho</h2>
@@ -352,7 +360,7 @@
     </div>
 
     <div class="col-12 col-xl-8">
-      <p-card styleClass="shadow-sm border-0">
+      <p-card class="shadow-sm border-0">
         <ng-template pTemplate="header">
           <div class="px-4 pt-4">
             <h2 class="h5 mb-1">Sobrinhos cadastrados</h2>
@@ -371,7 +379,7 @@
           </p>
         </div>
         } @else {
-        <p-table [value]="sobrinhos()" responsiveLayout="scroll" styleClass="p-datatable-sm">
+        <p-table [value]="sobrinhos()" responsiveLayout="scroll" class="p-datatable-sm">
           <ng-template pTemplate="header">
             <tr>
               <th>Nome</th>
@@ -425,7 +433,7 @@
   @if (abaAtiva() === 'VINCULOS') {
   <div class="row g-4">
     <div class="col-12 col-xl-4">
-      <p-card styleClass="shadow-sm border-0 h-100">
+      <p-card class="shadow-sm border-0 h-100">
         <ng-template pTemplate="header">
           <div class="px-4 pt-4">
             <h2 class="h5 mb-1">Vincular sobrinho à dupla</h2>
@@ -439,13 +447,13 @@
           <div>
             <label for="sobrinhoId" class="form-label">Sobrinho *</label>
             <p-select inputId="sobrinhoId" [options]="opcoesSobrinhos()" optionLabel="label" optionValue="value"
-              formControlName="sobrinhoId" placeholder="Selecione o sobrinho" styleClass="w-100" />
+              formControlName="sobrinhoId" placeholder="Selecione o sobrinho" class="w-100" />
           </div>
 
           <div>
             <label for="duplaId" class="form-label">Dupla *</label>
             <p-select inputId="duplaId" [options]="opcoesDuplas()" optionLabel="label" optionValue="value"
-              formControlName="duplaId" placeholder="Selecione a dupla" styleClass="w-100" />
+              formControlName="duplaId" placeholder="Selecione a dupla" class="w-100" />
           </div>
 
           <p-button type="submit" label="Vincular" icon="fa-solid fa-link" [loading]="salvandoVinculo()" />
@@ -454,7 +462,7 @@
     </div>
 
     <div class="col-12 col-xl-8">
-      <p-card styleClass="shadow-sm border-0">
+      <p-card class="shadow-sm border-0">
         <ng-template pTemplate="header">
           <div class="px-4 pt-4">
             <h2 class="h5 mb-1">Vínculos cadastrados</h2>
@@ -473,7 +481,7 @@
           </p>
         </div>
         } @else {
-        <p-table [value]="vinculos()" responsiveLayout="scroll" styleClass="p-datatable-sm">
+        <p-table [value]="vinculos()" responsiveLayout="scroll" class="p-datatable-sm">
           <ng-template pTemplate="header">
             <tr>
               <th>Sobrinho</th>
