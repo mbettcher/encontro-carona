@@ -26,31 +26,48 @@ export interface ParoquiaRequest {
   responsavel?: string;
 }
 
+export interface ParoquiaResumo {
+  id: number;
+  nome: string;
+}
+
 export interface Evento {
   id: number;
   paroquiaId: number;
-  paroquiaNome: string;
+  paroquiaNome?: string;
   nome: string;
   tema?: string;
+  local?: string;
   dataInicio: string;
   dataFim: string;
-  local?: string;
-  status: EventoStatus;
+  status: 'PLANEJADO' | 'EM_ANDAMENTO' | 'ENCERRADO' | 'CANCELADO';
+  monitoramentoAtivo: boolean;
   monitoramentoInicio?: string;
   monitoramentoFim?: string;
-  monitoramentoAtivo: boolean;
 }
 
 export interface EventoRequest {
   paroquiaId: number;
   nome: string;
   tema?: string;
+  local?: string;
+
+  /**
+   * Backend usa LocalDate.
+   * Formato esperado pela API: yyyy-MM-dd.
+   */
   dataInicio: string;
   dataFim: string;
-  local?: string;
-  monitoramentoInicio?: string;
-  monitoramentoFim?: string;
+
+  status: 'PLANEJADO' | 'EM_ANDAMENTO' | 'ENCERRADO' | 'CANCELADO';
   monitoramentoAtivo: boolean;
+
+  /**
+   * Backend usa LocalTime.
+   * Formato esperado pela API: HH:mm.
+   */
+  monitoramentoInicio?: string | null;
+  monitoramentoFim?: string | null;
 }
 
 export interface Pessoa {

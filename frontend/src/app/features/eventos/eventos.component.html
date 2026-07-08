@@ -1,156 +1,256 @@
-<div class="d-flex flex-column flex-lg-row justify-content-between gap-3 mb-3">
-  <div>
-    <h2 class="h4 mb-1">Eventos</h2>
-    <div class="text-muted small">Crie o encontro e configure a janela futura de monitoramento.</div>
-  </div>
-</div>
-
-<div class="row g-3">
-  <div class="col-12 col-xl-5">
-    <form class="card shadow-sm border-0" [formGroup]="form" (ngSubmit)="salvar()">
-      <div class="card-header bg-white"><strong>{{ editandoId() ? 'Editar evento' : 'Novo evento' }}</strong></div>
-
-      <div class="card-body row g-3">
-        <div class="col-12">
-          <label class="form-label">Paróquia *</label>
-          <select class="form-select" formControlName="paroquiaId">
-            <option [ngValue]="0">Selecione...</option>
-            @for (paroquia of paroquias(); track paroquia.id) {
-            <option [ngValue]="paroquia.id">{{ paroquia.nome }}</option>
-            }
-          </select>
-        </div>
-        <div class="col-12">
-          <label class="form-label">Nome do encontro *</label>
-          <input class="form-control" formControlName="nome" placeholder="Ex.: Encontro de Jovens 2026" />
-        </div>
-        <div class="col-12">
-          <label class="form-label">Tema</label>
-          <input class="form-control" formControlName="tema" />
-        </div>
-        <div class="col-12 col-md-6">
-          <label class="form-label">Data início *</label>
-          <input class="form-control" type="date" formControlName="dataInicio" />
-        </div>
-        <div class="col-12 col-md-6">
-          <label class="form-label">Data fim *</label>
-          <input class="form-control" type="date" formControlName="dataFim" />
-        </div>
-        <div class="col-12">
-          <label class="form-label">Local</label>
-          <input class="form-control" formControlName="local" />
-        </div>
-
-        <div class="col-12">
-          <hr class="my-1" />
-          <strong class="small text-uppercase text-muted">Lista de desejos: monitoramento no mapa</strong>
-        </div>
-        <div class="col-12 col-md-6">
-          <label class="form-label">Monitorar a partir de</label>
-          <input class="form-control" type="time" formControlName="monitoramentoInicio" />
-        </div>
-        <div class="col-12 col-md-6">
-          <label class="form-label">Monitorar até</label>
-          <input class="form-control" type="time" formControlName="monitoramentoFim" />
-        </div>
-        <div class="col-12">
-          <div class="form-check form-switch">
-            <input class="form-check-input" type="checkbox" role="switch" formControlName="monitoramentoAtivo"
-              id="monitoramentoAtivo" />
-            <label class="form-check-label" for="monitoramentoAtivo">Preparar evento para monitoramento dos tios
-              carona</label>
-          </div>
-          <div class="form-text">O mapa em si entra em bloco futuro; a janela já fica configurada no evento.</div>
-        </div>
-      </div>
-
-      <div class="card-footer bg-white d-flex justify-content-between align-items-center">
-        <div class="d-flex flex-column gap-1">
-          @if (mensagemErro()) {
-          <span class="small text-danger">{{ mensagemErro() }}</span>
-          }
-          @if (mensagemSucesso()) {
-          <span class="small text-success">{{ mensagemSucesso() }}</span>
-          }
-        </div>
-
-        <div class="d-flex gap-2">
-          <button class="btn btn-sm btn-warning align-self-start" type="button" (click)="novo()">
-            <i class="fa-solid fa-file-circle-minus me-1"></i>Limpar Formulário
-          </button>
-
-          <button class="btn btn-sm btn-primary ms-auto" type="submit"
-            [disabled]="form.invalid || form.value.paroquiaId === 0 || salvando()">
-            <i class="fa-solid fa-floppy-disk me-1"></i>{{ salvando() ? 'Salvando...' : 'Salvar' }}
-          </button>
-        </div>
-      </div>
-    </form>
+<div class="container-fluid py-4">
+  <div class="d-flex flex-column flex-lg-row justify-content-between gap-3 mb-4">
+    <div>
+      <h1 class="h3 mb-1">Eventos</h1>
+      <p class="text-body-secondary mb-0">
+        Cadastre os encontros da paróquia e configure a base operacional do evento.
+      </p>
+    </div>
   </div>
 
-  <div class="col-12 col-xl-7">
-    <div class="card shadow-sm border-0">
-      <div class="card-header bg-white d-flex justify-content-between">
-        <strong>Eventos cadastrados</strong>
-        <span class="badge text-bg-light">{{ itens().length }}</span>
-      </div>
+  @if (mensagemErro()) {
+  <div class="alert alert-danger" role="alert">
+    <i class="fa-solid fa-triangle-exclamation me-2"></i>
+    {{ mensagemErro() }}
+  </div>
+  }
 
-      <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0">
-          <thead class="table-light">
-            <tr>
-              <th>Evento</th>
-              <th>Período</th>
-              <th>Monitoramento</th>
-              <th class="text-end">Ações</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (item of itens(); track item.id) {
-            <tr>
-              <td><strong>{{ item.nome }}</strong>
-                <div class="small text-muted">{{ item.paroquiaNome }} · {{ item.local || 'Sem local' }}</div>
-              </td>
-              <td>{{ item.dataInicio }} a {{ item.dataFim }}<div><span class="badge text-bg-secondary">{{ item.status
-                    }}</span></div>
-              </td>
-              <td>
-                @if (item.monitoramentoAtivo) {
-                <span class="badge text-bg-success">{{ item.monitoramentoInicio || '--:--' }} às {{
-                  item.monitoramentoFim || '--:--' }}</span>
-                } @else {
-                <span class="badge text-bg-light">Inativo</span>
+  @if (mensagemSucesso()) {
+  <div class="alert alert-success" role="alert">
+    <i class="fa-solid fa-circle-check me-2"></i>
+    {{ mensagemSucesso() }}
+  </div>
+  }
+
+  <div class="row g-4">
+    <div class="col-12 col-xl-4">
+      <div class="card shadow-sm border-0">
+        <div class="card-header bg-white">
+          <h2 class="h5 mb-0">{{ tituloFormulario() }}</h2>
+        </div>
+
+        <div class="card-body">
+          <form [formGroup]="form" (ngSubmit)="salvar()" class="d-grid gap-3">
+            <div>
+              <label for="paroquiaId" class="form-label">Paróquia *</label>
+              <select id="paroquiaId" class="form-select" formControlName="paroquiaId">
+                <option [ngValue]="0">Selecione...</option>
+
+                @for (paroquia of paroquias(); track paroquia.id) {
+                <option [ngValue]="paroquia.id">{{ paroquia.nome }}</option>
                 }
-              </td>
-              <td class="text-end">
-                <div class="btn-group btn-group-sm">
-                  <button class="btn btn-warning me-2" type="button" (click)="editar(item)">
-                    <i class="fa-solid fa-pen-to-square me-1"></i>Editar
-                  </button>
-                  <a class="btn btn-success me-2" [routerLink]="['/eventos', item.id, 'operacao']">
-                    <i class="fa-solid fa-gauge-high me-1"></i>Operação
-                  </a>
-                  <a class="btn btn-primary" [routerLink]="['/eventos', item.id, 'gestao']">
-                    <i class="fa-solid fa-people-group me-1"></i>Gerir
-                  </a>
+              </select>
+
+              @if (form.controls.paroquiaId.touched && form.controls.paroquiaId.invalid) {
+              <div class="form-text text-danger">
+                Selecione a paróquia do evento.
+              </div>
+              }
+            </div>
+
+            <div>
+              <label for="nome" class="form-label">Nome do evento *</label>
+              <input id="nome" type="text" class="form-control" formControlName="nome"
+                placeholder="Ex.: Encontro de Jovens 2026">
+
+              @if (form.controls.nome.touched && form.controls.nome.invalid) {
+              <div class="form-text text-danger">
+                Informe o nome do evento.
+              </div>
+              }
+            </div>
+
+            <div>
+              <label for="tema" class="form-label">Tema</label>
+              <input id="tema" type="text" class="form-control" formControlName="tema"
+                placeholder="Ex.: Chamados à missão">
+            </div>
+
+            <div>
+              <label for="local" class="form-label">Local</label>
+              <input id="local" type="text" class="form-control" formControlName="local"
+                placeholder="Ex.: Salão paroquial">
+            </div>
+
+            <div class="row g-3">
+              <div class="col-12 col-md-6">
+                <label for="dataInicio" class="form-label">Início *</label>
+                <input id="dataInicio" type="datetime-local" class="form-control" formControlName="dataInicio">
+
+                @if (form.controls.dataInicio.touched && form.controls.dataInicio.invalid) {
+                <div class="form-text text-danger">
+                  Informe a data/hora de início.
                 </div>
-              </td>
-            </tr>
-            }
+                }
+              </div>
 
-            @if (!carregando() && itens().length === 0) {
-            <tr>
-              <td colspan="4" class="text-center text-muted py-4">Nenhum evento encontrado.</td>
-            </tr>
-            }
+              <div class="col-12 col-md-6">
+                <label for="dataFim" class="form-label">Fim *</label>
+                <input id="dataFim" type="datetime-local" class="form-control" formControlName="dataFim">
 
-            @if (carregando()) {
-            <tr>
-              <td colspan="4" class="text-center text-muted py-4">Carregando...</td>
-            </tr>
-            }
-          </tbody>
-        </table>
+                @if (form.controls.dataFim.touched && form.controls.dataFim.invalid) {
+                <div class="form-text text-danger">
+                  Informe a data/hora de fim.
+                </div>
+                }
+              </div>
+            </div>
+
+            <div>
+              <label for="status" class="form-label">Status</label>
+              <select id="status" class="form-select" formControlName="status">
+                <option value="PLANEJADO">Planejado</option>
+                <option value="EM_ANDAMENTO">Em andamento</option>
+                <option value="ENCERRADO">Encerrado</option>
+                <option value="CANCELADO">Cancelado</option>
+              </select>
+            </div>
+
+            <div class="border rounded p-3 bg-body-tertiary">
+              <div class="form-check form-switch mb-3">
+                <input id="monitoramentoAtivo" class="form-check-input" type="checkbox"
+                  formControlName="monitoramentoAtivo">
+                <label class="form-check-label fw-semibold" for="monitoramentoAtivo">
+                  Preparar monitoramento dos tios carona
+                </label>
+              </div>
+
+              <p class="small text-body-secondary mb-3">
+                Lista de desejos: futuramente o app poderá monitorar os tios carona no mapa somente dentro da janela
+                configurada.
+              </p>
+
+              <div class="row g-3">
+                <div class="col-12 col-md-6">
+                  <label for="monitoramentoInicio" class="form-label">Início do monitoramento</label>
+                  <input id="monitoramentoInicio" type="time" class="form-control"
+                    formControlName="monitoramentoInicio">
+                </div>
+
+                <div class="col-12 col-md-6">
+                  <label for="monitoramentoFim" class="form-label">Fim do monitoramento</label>
+                  <input id="monitoramentoFim" type="time" class="form-control" formControlName="monitoramentoFim">
+                </div>
+              </div>
+            </div>
+
+            <div class="d-flex gap-2">
+              <button type="submit" class="btn btn-primary" [disabled]="salvando()">
+                @if (salvando()) {
+                <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+                }
+
+                <i class="fa-solid fa-floppy-disk me-2"></i>
+                Salvar
+              </button>
+
+              @if (eventoEmEdicao()) {
+              <button type="button" class="btn btn-secondary" (click)="cancelarEdicao()">
+                Cancelar
+              </button>
+              }
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-xl-8">
+      <div class="card shadow-sm border-0">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+          <h2 class="h5 mb-0">Eventos cadastrados</h2>
+
+          @if (carregando()) {
+          <span class="small text-body-secondary">
+            <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+            Carregando...
+          </span>
+          }
+        </div>
+
+        <div class="card-body p-0">
+          @if (eventos().length === 0 && !carregando()) {
+          <div class="p-4 text-center text-body-secondary">
+            Nenhum evento cadastrado ainda.
+          </div>
+          } @else {
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>Evento</th>
+                  <th>Paróquia</th>
+                  <th>Período</th>
+                  <th>Status</th>
+                  <th>Monitoramento</th>
+                  <th class="text-end">Ações</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                @for (evento of eventos(); track evento.id) {
+                <tr>
+                  <td>
+                    <div class="fw-semibold">{{ evento.nome }}</div>
+
+                    @if (evento.tema) {
+                    <div class="small text-body-secondary">{{ evento.tema }}</div>
+                    }
+
+                    @if (evento.local) {
+                    <div class="small text-body-secondary">
+                      <i class="fa-solid fa-location-dot me-1"></i>
+                      {{ evento.local }}
+                    </div>
+                    }
+                  </td>
+
+                  <td>{{ evento.paroquiaNome || 'Paróquia #' + evento.paroquiaId }}</td>
+
+                  <td>
+                    <div class="small">{{ evento.dataInicio | date:'dd/MM/yyyy HH:mm' }}</div>
+                    <div class="small text-body-secondary">{{ evento.dataFim | date:'dd/MM/yyyy HH:mm' }}</div>
+                  </td>
+
+                  <td>
+                    <span class="badge text-bg-secondary">{{ evento.status }}</span>
+                  </td>
+
+                  <td>
+                    @if (evento.monitoramentoAtivo) {
+                    <span class="badge text-bg-success">
+                      {{ evento.monitoramentoInicio || '05:00' }} às {{ evento.monitoramentoFim || '20:00' }}
+                    </span>
+                    } @else {
+                    <span class="badge text-bg-light text-body-secondary">Inativo</span>
+                    }
+                  </td>
+
+                  <td class="text-end">
+                    <div class="btn-group btn-group-sm">
+                      <button type="button" class="btn btn-primary me-2" (click)="editar(evento)">
+                        <i class="fa-solid fa-pen-to-square me-1"></i>
+                        Editar
+                      </button>
+
+                      <a class="btn btn-secondary me-2" [routerLink]="['/eventos', evento.id, 'gestao']">
+                        <i class="fa-solid fa-users-gear me-1"></i>
+                        Gestão
+                      </a>
+
+                      <a class="btn btn-success" [routerLink]="['/eventos', evento.id, 'operacao']">
+                        <i class="fa-solid fa-clipboard-check me-1"></i>
+                        Operação
+                      </a>
+                    </div>
+                  </td>
+                </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+          }
+        </div>
       </div>
     </div>
   </div>
