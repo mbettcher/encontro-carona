@@ -1,93 +1,195 @@
-import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+
+import { MessageService } from 'primeng/api';
+import { ButtonModule } from 'primeng/button';
+import { CardModule } from 'primeng/card';
+import { InputTextModule } from 'primeng/inputtext';
+import { TableModule } from 'primeng/table';
+import { TagModule } from 'primeng/tag';
+
 import { Paroquia, ParoquiaRequest } from '../../shared/models';
-import { extrairMensagemErro } from '../../shared/utils/http-error.util';
 import { ParoquiasService } from './paroquias.service';
 
 @Component({
-  standalone: true,
   selector: 'app-paroquias',
-  imports: [CommonModule, ReactiveFormsModule],
+  standalone: true,
+  imports: [
+    ReactiveFormsModule,
+    ButtonModule,
+    CardModule,
+    InputTextModule,
+    TableModule,
+    TagModule
+  ],
   templateUrl: './paroquias.component.html',
   styleUrl: './paroquias.component.scss'
 })
 export class ParoquiasComponent implements OnInit {
-  private readonly paroquiasService = inject(ParoquiasService);
+  private readonly service = inject(ParoquiasService);
   private readonly fb = inject(FormBuilder);
+  private readonly messageService = inject(MessageService);
 
-  itens = signal<Paroquia[]>([]);
-  carregando = signal(false);
-  salvando = signal(false);
-  editandoId = signal<number | null>(null);
-  mensagemErro = signal('');
-  mensagemSucesso = signal('');
+  readonly paroquias = signal<Paroquia[]>([]);
+  readonly carregando = signal(false);
+  readonly salvando = signal(false);
+  readonly paroquiaEmEdicao = signal<Paroquia | null>(null);
 
-  form = this.fb.nonNullable.group({
-    nome: ['', [Validators.required, Validators.maxLength(150)]],
-    endereco: ['', [Validators.maxLength(180)]],
-    cidade: ['', [Validators.maxLength(80)]],
+  readonly tituloFormulario = computed(() =>
+    this.paroquiaEmEdicao() ? 'Editar paróquia' : 'Nova paróquia'
+  );
+
+  readonly form = this.fb.nonNullable.group({
+    nome: ['', [Validators.required, Validators.maxLength(160)]],
+    endereco: ['', [Validators.maxLength(220)]],
+    cidade: ['', [Validators.maxLength(120)]],
     uf: ['', [Validators.maxLength(2)]],
     telefone: ['', [Validators.maxLength(30)]],
-    email: ['', [Validators.email, Validators.maxLength(120)]],
-    responsavel: ['', [Validators.maxLength(120)]]
+    email: ['', [Validators.email, Validators.maxLength(160)]],
+    responsavel: ['', [Validators.maxLength(160)]]
   });
 
   ngOnInit(): void {
-    this.carregar();
+    this.carregarParoquias();
   }
 
-  carregar(): void {
+  carregarParoquias(): void {
     this.carregando.set(true);
-    this.paroquiasService.listar().subscribe({
-      next: dados => this.itens.set(dados),
-      error: error => this.mensagemErro.set(extrairMensagemErro(error)),
-      complete: () => this.carregando.set(false)
-    });
-  }
 
-  editar(item: Paroquia): void {
-    this.editandoId.set(item.id);
-    this.mensagemErro.set('');
-    this.mensagemSucesso.set('');
-    this.form.patchValue({
-      nome: item.nome,
-      endereco: item.endereco || '',
-      cidade: item.cidade || '',
-      uf: item.uf || '',
-      telefone: item.telefone || '',
-      email: item.email || '',
-      responsavel: item.responsavel || ''
-    });
-  }
+    this.service.listar().subscribe({
+      next: paroquias => {
+        this.paroquias.set(paroquias);
+        this.carregando.set(false);
+      },
+      error: erro => {
+        console.error('Erro ao carregar paróquias', erro);
 
-  novo(): void {
-    this.editandoId.set(null);
-    this.form.reset();
-    this.mensagemErro.set('');
-    this.mensagemSucesso.set('');
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Erro ao carregar',
+          detail: 'Não foi possível carregar as paróquias.',
+          life: 5000
+        });
+
+        this.carregando.set(false);
+      }
+    });
   }
 
   salvar(): void {
-    if (this.form.invalid) return;
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Formulário incompleto',
+        detail: 'Informe ao menos o nome da paróquia e corrija os campos inválidos.',
+        life: 4500
+      });
+
+      return;
+    }
+
+    const payload = this.montarPayload();
+    const paroquiaAtual = this.paroquiaEmEdicao();
+
     this.salvando.set(true);
-    this.mensagemErro.set('');
-    this.mensagemSucesso.set('');
 
-    const request = this.form.getRawValue() as ParoquiaRequest;
-    const id = this.editandoId();
-    const operacao = id
-      ? this.paroquiasService.atualizar(id, request)
-      : this.paroquiasService.criar(request);
+    const requisicao = paroquiaAtual
+      ? this.service.atualizar(paroquiaAtual.id, payload)
+      : this.service.criar(payload);
 
-    operacao.subscribe({
+    requisicao.subscribe({
       next: () => {
-        this.mensagemSucesso.set(id ? 'Paróquia atualizada com sucesso.' : 'Paróquia cadastrada com sucesso.');
-        this.novo();
-        this.carregar();
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Sucesso',
+          detail: paroquiaAtual ? 'Paróquia atualizada com sucesso.' : 'Paróquia cadastrada com sucesso.',
+          life: 4000
+        });
+
+        this.salvando.set(false);
+        this.limparFormulario();
+        this.carregarParoquias();
       },
-      error: error => this.mensagemErro.set(extrairMensagemErro(error)),
-      complete: () => this.salvando.set(false)
+      error: erro => {
+        console.error('Erro ao salvar paróquia', erro);
+
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Erro ao salvar',
+          detail: 'Não foi possível salvar a paróquia. Confira os dados informados.',
+          life: 6000
+        });
+
+        this.salvando.set(false);
+      }
     });
+  }
+
+  editar(paroquia: Paroquia): void {
+    this.paroquiaEmEdicao.set(paroquia);
+
+    this.form.patchValue({
+      nome: paroquia.nome,
+      endereco: paroquia.endereco ?? '',
+      cidade: paroquia.cidade ?? '',
+      uf: paroquia.uf ?? '',
+      telefone: paroquia.telefone ?? '',
+      email: paroquia.email ?? '',
+      responsavel: paroquia.responsavel ?? ''
+    });
+  }
+
+  cancelarEdicao(): void {
+    this.limparFormulario();
+  }
+
+  enderecoFormatado(paroquia: Paroquia): string {
+    const partes = [
+      paroquia.endereco,
+      paroquia.cidade,
+      paroquia.uf
+    ].filter(Boolean);
+
+    return partes.length > 0 ? partes.join(' - ') : 'Não informado';
+  }
+
+  private limparFormulario(): void {
+    this.paroquiaEmEdicao.set(null);
+
+    this.form.reset({
+      nome: '',
+      endereco: '',
+      cidade: '',
+      uf: '',
+      telefone: '',
+      email: '',
+      responsavel: ''
+    });
+  }
+
+  private montarPayload(): ParoquiaRequest {
+    const valor = this.form.getRawValue();
+
+    return {
+      nome: valor.nome.trim(),
+      endereco: this.normalizarTextoOpcional(valor.endereco),
+      cidade: this.normalizarTextoOpcional(valor.cidade),
+      uf: this.normalizarUf(valor.uf),
+      telefone: this.normalizarTextoOpcional(valor.telefone),
+      email: this.normalizarTextoOpcional(valor.email),
+      responsavel: this.normalizarTextoOpcional(valor.responsavel)
+    };
+  }
+
+  private normalizarTextoOpcional(valor: string): string | undefined {
+    const texto = valor?.trim();
+    return texto ? texto : undefined;
+  }
+
+  private normalizarUf(valor: string): string | undefined {
+    const texto = valor?.trim().toUpperCase();
+    return texto ? texto : undefined;
   }
 }

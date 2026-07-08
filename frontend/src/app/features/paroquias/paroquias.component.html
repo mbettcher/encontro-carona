@@ -1,126 +1,194 @@
-<div class="d-flex flex-column flex-lg-row justify-content-between gap-3 mb-3">
-  <div>
-    <h2 class="h4 mb-1">
-      <i class="fas fa-church me-2"></i>
-      Paróquias
-    </h2>
-    <div class="text-muted small">Cadastre a paróquia organizadora do encontro.</div>
-  </div>
-</div>
-
-<div class="row g-3">
-  <div class="col-12 col-xl-5">
-    <form class="card shadow-sm border-0" [formGroup]="form" (ngSubmit)="salvar()">
-      <div class="card-header bg-white">
-        <strong>{{ editandoId() ? 'Editar paróquia' : 'Nova paróquia' }}</strong>
-      </div>
-
-      <div class="card-body row g-3">
-        <div class="col-12">
-          <label class="form-label" for="nome">Nome *</label>
-          <input class="form-control" formControlName="nome" placeholder="Ex.: Paróquia São José" id="nome" />
-        </div>
-        <div class="col-12">
-          <label class="form-label" for="endereco">Endereço</label>
-          <input class="form-control" formControlName="endereco" placeholder="Rua, número, bairro" id="endereco" />
-        </div>
-        <div class="col-8">
-          <label class="form-label" for="cidade">Cidade</label>
-          <input class="form-control" formControlName="cidade" id="cidade" />
-        </div>
-        <div class="col-4">
-          <label class="form-label" for="uf">UF</label>
-          <input class="form-control text-uppercase" formControlName="uf" maxlength="2" id="uf" />
-        </div>
-        <div class="col-12 col-md-6">
-          <label class="form-label" for="telefone">Telefone</label>
-          <input class="form-control" formControlName="telefone" id="telefone" />
-        </div>
-        <div class="col-12 col-md-6">
-          <label class="form-label" for="email">E-mail</label>
-          <input class="form-control" formControlName="email" type="email" id="email" />
-        </div>
-        <div class="col-12">
-          <label class="form-label" for="responsavel">Responsável</label>
-          <input class="form-control" formControlName="responsavel" id="responsavel" />
-        </div>
-      </div>
-
-      <div class="card-footer bg-white d-flex justify-content-between align-items-center">
-        <div class="d-flex flex-column gap-1">
-          @if (mensagemErro()) {
-          <span class="small text-danger">{{ mensagemErro() }}</span>
-          }
-          @if (mensagemSucesso()) {
-          <span class="small text-success">{{ mensagemSucesso() }}</span>
-          }
-        </div>
-
-        <div class="d-flex gap-2">
-          <button class="btn btn-sm btn-warning" type="button" (click)="novo()">
-            <i class="fa-solid fa-file-circle-plus me-1"></i>Limpar formulário
-          </button>
-          <button class="btn btn-sm btn-primary" type="submit" [disabled]="form.invalid || salvando()">
-            <i class="fa-solid fa-floppy-disk me-1"></i>{{ salvando() ? 'Salvando...' : 'Salvar' }}
-          </button>
-        </div>
-      </div>
-    </form>
+<div class="container-fluid py-4 paroquias-page">
+  <div class="d-flex flex-column flex-lg-row justify-content-between gap-3 mb-4">
+    <div>
+      <h1 class="h3 mb-1">Paróquias</h1>
+      <p class="text-body-secondary mb-0">
+        Cadastre os dados básicos da paróquia responsável pelo encontro.
+      </p>
+    </div>
   </div>
 
-  <div class="col-12 col-xl-7">
-    <div class="card shadow-sm border-0">
-      <div class="card-header bg-white d-flex justify-content-between">
-        <strong>Paróquias cadastradas</strong>
-        <span class="badge text-bg-light">{{ itens().length }} registro(s)</span>
-      </div>
+  <div class="row g-4">
+    <div class="col-12 col-xl-4">
+      <p-card styleClass="shadow-sm border-0 h-100">
+        <ng-template pTemplate="header">
+          <div class="px-4 pt-4">
+            <h2 class="h5 mb-1">{{ tituloFormulario() }}</h2>
+            <p class="text-body-secondary small mb-0">
+              Essas informações aparecem nos cadastros, relatórios e futuras credenciais.
+            </p>
+          </div>
+        </ng-template>
 
-      <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0">
-          <thead class="table-light">
-            <tr>
-              <th>Nome</th>
-              <th>Cidade/UF</th>
-              <th>Responsável</th>
-              <th class="text-end">Ação</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (item of itens(); track item.id) {
-            <tr>
-              <td>
-                <strong>{{ item.nome }}</strong>
-                <div class="small text-muted">{{ item.email || 'Sem e-mail' }}</div>
-              </td>
-              <td>
-                {{ item.cidade || '-' }}
-                @if (item.uf) {
-                <span>/{{ item.uf }}</span>
-                }
-              </td>
-              <td>{{ item.responsavel || '-' }}</td>
-              <td class="text-end">
-                <button class="btn btn-sm btn-primary" type="button" (click)="editar(item)">
-                  <i class="fa-solid fa-pen-to-square me-1"></i>Editar
-                </button>
-              </td>
-            </tr>
-            }
+        <form [formGroup]="form" (ngSubmit)="salvar()" class="d-grid gap-3">
+          <div>
+            <label for="nome" class="form-label">Nome da paróquia *</label>
+            <input id="nome" pInputText type="text" class="w-100" formControlName="nome"
+              placeholder="Ex.: Paróquia São José" />
 
-            @if (!carregando() && itens().length === 0) {
-            <tr>
-              <td colspan="4" class="text-center text-muted py-4">Nenhuma paróquia encontrada.</td>
-            </tr>
+            @if (form.controls.nome.touched && form.controls.nome.invalid) {
+            <div class="form-text text-danger">
+              Informe o nome da paróquia.
+            </div>
             }
+          </div>
+
+          <div>
+            <label for="endereco" class="form-label">Endereço</label>
+            <input id="endereco" pInputText type="text" class="w-100" formControlName="endereco"
+              placeholder="Rua, número, bairro" />
+          </div>
+
+          <div class="row g-3">
+            <div class="col-12 col-md-8">
+              <label for="cidade" class="form-label">Cidade</label>
+              <input id="cidade" pInputText type="text" class="w-100" formControlName="cidade"
+                placeholder="Ex.: Juiz de Fora" />
+            </div>
+
+            <div class="col-12 col-md-4">
+              <label for="uf" class="form-label">UF</label>
+              <input id="uf" pInputText type="text" class="w-100 text-uppercase" formControlName="uf" maxlength="2"
+                placeholder="MG" />
+
+              @if (form.controls.uf.touched && form.controls.uf.invalid) {
+              <div class="form-text text-danger">
+                UF deve ter no máximo 2 caracteres.
+              </div>
+              }
+            </div>
+          </div>
+
+          <div>
+            <label for="responsavel" class="form-label">Responsável</label>
+            <input id="responsavel" pInputText type="text" class="w-100" formControlName="responsavel"
+              placeholder="Nome do responsável" />
+          </div>
+
+          <div class="row g-3">
+            <div class="col-12 col-md-6">
+              <label for="telefone" class="form-label">Telefone</label>
+              <input id="telefone" pInputText type="text" class="w-100" formControlName="telefone"
+                placeholder="(00) 00000-0000" />
+            </div>
+
+            <div class="col-12 col-md-6">
+              <label for="email" class="form-label">E-mail</label>
+              <input id="email" pInputText type="email" class="w-100" formControlName="email"
+                placeholder="paroquia@email.com" />
+
+              @if (form.controls.email.touched && form.controls.email.invalid) {
+              <div class="form-text text-danger">
+                Informe um e-mail válido.
+              </div>
+              }
+            </div>
+          </div>
+
+          <div class="d-flex flex-column flex-sm-row gap-2">
+            <p-button type="submit" label="Salvar" icon="fa-solid fa-floppy-disk" [loading]="salvando()" />
+
+            @if (paroquiaEmEdicao()) {
+            <p-button type="button" label="Cancelar" severity="secondary" variant="outlined" icon="fa-solid fa-xmark"
+              (onClick)="cancelarEdicao()" />
+            }
+          </div>
+        </form>
+      </p-card>
+    </div>
+
+    <div class="col-12 col-xl-8">
+      <p-card styleClass="shadow-sm border-0">
+        <ng-template pTemplate="header">
+          <div class="px-4 pt-4 d-flex justify-content-between align-items-start gap-3">
+            <div>
+              <h2 class="h5 mb-1">Paróquias cadastradas</h2>
+              <p class="text-body-secondary small mb-0">
+                {{ paroquias().length }} registro(s)
+              </p>
+            </div>
 
             @if (carregando()) {
-            <tr>
-              <td colspan="4" class="text-center text-muted py-4">Carregando...</td>
-            </tr>
+            <span class="small text-body-secondary">
+              <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+              Carregando...
+            </span>
             }
-          </tbody>
-        </table>
-      </div>
+          </div>
+        </ng-template>
+
+        @if (paroquias().length === 0 && !carregando()) {
+        <div class="empty-state text-center py-5">
+          <i class="fa-solid fa-church text-body-secondary mb-3"></i>
+          <h3 class="h6 mb-1">Nenhuma paróquia cadastrada</h3>
+          <p class="text-body-secondary small mb-0">
+            Cadastre a paróquia principal para começar a organizar os eventos.
+          </p>
+        </div>
+        } @else {
+        <p-table [value]="paroquias()" [loading]="carregando()" [paginator]="true" [rows]="10"
+          [rowsPerPageOptions]="[10, 20, 50]" responsiveLayout="scroll" styleClass="p-datatable-sm">
+          <ng-template pTemplate="header">
+            <tr>
+              <th>Paróquia</th>
+              <th>Endereço</th>
+              <th>Contato</th>
+              <th>Responsável</th>
+              <th class="text-end">Ações</th>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="body" let-paroquia>
+            <tr>
+              <td>
+                <div class="fw-semibold">{{ paroquia.nome }}</div>
+
+                @if (paroquia.uf) {
+                <p-tag [value]="paroquia.uf" severity="info" styleClass="mt-1" />
+                }
+              </td>
+
+              <td>
+                <span class="small">{{ enderecoFormatado(paroquia) }}</span>
+              </td>
+
+              <td>
+                @if (paroquia.telefone) {
+                <div class="small">
+                  <i class="fa-solid fa-phone me-1"></i>
+                  {{ paroquia.telefone }}
+                </div>
+                }
+
+                @if (paroquia.email) {
+                <div class="small text-body-secondary">
+                  <i class="fa-solid fa-envelope me-1"></i>
+                  {{ paroquia.email }}
+                </div>
+                }
+
+                @if (!paroquia.telefone && !paroquia.email) {
+                <span class="small text-body-secondary">Não informado</span>
+                }
+              </td>
+
+              <td>
+                @if (paroquia.responsavel) {
+                <span class="small">{{ paroquia.responsavel }}</span>
+                } @else {
+                <span class="small text-body-secondary">Não informado</span>
+                }
+              </td>
+
+              <td class="text-end">
+                <p-button type="button" label="Editar" icon="fa-solid fa-pen-to-square" size="small"
+                  severity="warn" (onClick)="editar(paroquia)" />
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+        }
+      </p-card>
     </div>
   </div>
 </div>
