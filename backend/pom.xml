@@ -12,7 +12,7 @@
 
     <groupId>br.com.paroquia</groupId>
     <artifactId>encontro-carona-api</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.0.0</version>
     <name>encontro-carona-api</name>
     <description>API para controle de tios carona, sobrinhos, check-in e encontro paroquial.</description>
 
@@ -34,8 +34,8 @@
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.flywaydb</groupId>
-            <artifactId>flyway-core</artifactId>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-flyway</artifactId>
         </dependency>
         <dependency>
             <groupId>org.flywaydb</groupId>
