@@ -1,0 +1,80 @@
+<div class="d-flex flex-column flex-lg-row justify-content-between gap-3 mb-3">
+      <div>
+        <h2 class="h4 mb-1">Paróquias</h2>
+        <div class="text-muted small">Cadastre a paróquia organizadora do encontro.</div>
+      </div>
+      <button class="btn btn-outline-secondary align-self-start" type="button" (click)="novo()">
+        <i class="fa-solid fa-file-circle-plus me-1"></i>Limpar formulário
+      </button>
+    </div>
+
+    <div class="row g-3">
+      <div class="col-12 col-xl-5">
+        <form class="card shadow-sm border-0" [formGroup]="form" (ngSubmit)="salvar()">
+          <div class="card-header bg-white">
+            <strong>{{ editandoId() ? 'Editar paróquia' : 'Nova paróquia' }}</strong>
+          </div>
+          <div class="card-body row g-3">
+            <div class="col-12">
+              <label class="form-label">Nome *</label>
+              <input class="form-control" formControlName="nome" placeholder="Ex.: Paróquia São José" />
+            </div>
+            <div class="col-12">
+              <label class="form-label">Endereço</label>
+              <input class="form-control" formControlName="endereco" placeholder="Rua, número, bairro" />
+            </div>
+            <div class="col-8">
+              <label class="form-label">Cidade</label>
+              <input class="form-control" formControlName="cidade" />
+            </div>
+            <div class="col-4">
+              <label class="form-label">UF</label>
+              <input class="form-control text-uppercase" formControlName="uf" maxlength="2" />
+            </div>
+            <div class="col-12 col-md-6">
+              <label class="form-label">Telefone</label>
+              <input class="form-control" formControlName="telefone" />
+            </div>
+            <div class="col-12 col-md-6">
+              <label class="form-label">E-mail</label>
+              <input class="form-control" formControlName="email" type="email" />
+            </div>
+            <div class="col-12">
+              <label class="form-label">Responsável</label>
+              <input class="form-control" formControlName="responsavel" />
+            </div>
+          </div>
+          <div class="card-footer bg-white d-flex justify-content-between align-items-center">
+            <span class="small text-danger" *ngIf="mensagemErro()">{{ mensagemErro() }}</span>
+            <span class="small text-success" *ngIf="mensagemSucesso()">{{ mensagemSucesso() }}</span>
+            <button class="btn btn-primary ms-auto" type="submit" [disabled]="form.invalid || salvando()">
+              <i class="fa-solid fa-floppy-disk me-1"></i>{{ salvando() ? 'Salvando...' : 'Salvar' }}
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <div class="col-12 col-xl-7">
+        <div class="card shadow-sm border-0">
+          <div class="card-header bg-white d-flex justify-content-between">
+            <strong>Paróquias cadastradas</strong>
+            <span class="badge text-bg-light">{{ itens().length }} registro(s)</span>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+              <thead class="table-light"><tr><th>Nome</th><th>Cidade/UF</th><th>Responsável</th><th class="text-end">Ação</th></tr></thead>
+              <tbody>
+                <tr *ngFor="let item of itens()">
+                  <td><strong>{{ item.nome }}</strong><div class="small text-muted">{{ item.email || 'Sem e-mail' }}</div></td>
+                  <td>{{ item.cidade || '-' }}<span *ngIf="item.uf">/{{ item.uf }}</span></td>
+                  <td>{{ item.responsavel || '-' }}</td>
+                  <td class="text-end"><button class="btn btn-sm btn-outline-primary" type="button" (click)="editar(item)"><i class="fa-solid fa-pen-to-square me-1"></i>Editar</button></td>
+                </tr>
+                <tr *ngIf="!carregando() && itens().length === 0"><td colspan="4" class="text-center text-muted py-4">Nenhuma paróquia encontrada.</td></tr>
+                <tr *ngIf="carregando()"><td colspan="4" class="text-center text-muted py-4">Carregando...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>

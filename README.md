@@ -2,6 +2,64 @@
 
 Projeto inicial para controle de paróquia, evento, tios carona, duplas, sobrinhos, credenciais com QR Code, check-in, entrega dos Cadernos do Choro, checkout e futura localização em mapa.
 
+## Correção importante: porta do PostgreSQL no Docker
+
+Para evitar conflito com uma instalação local do PostgreSQL, o `docker-compose.yml` usa a porta **55432** no Windows/host e mantém a porta **5432** dentro do container:
+
+```yaml
+ports:
+  - "55432:5432"
+```
+
+Por isso, a aplicação Spring Boot deve apontar para:
+
+```properties
+jdbc:postgresql://localhost:55432/encontro_carona
+```
+
+O arquivo `backend/src/main/resources/application.yml` já está configurado assim por padrão:
+
+```yaml
+spring:
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:55432/encontro_carona}
+    username: ${DB_USERNAME:encontro}
+    password: ${DB_PASSWORD:encontro}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+```
+
+Se desejar usar outra porta, altere a porta do lado esquerdo no Docker e a URL JDBC no backend. Exemplo: `5555:5432` exige `jdbc:postgresql://localhost:5555/encontro_carona`.
+
+### Como validar o banco antes de subir o backend
+
+Na pasta `infra`:
+
+```bash
+docker compose up -d
+docker ps
+```
+
+Teste a conexão:
+
+```bash
+docker exec -it encontro-carona-postgres psql -U encontro -d encontro_carona -c "select current_database(), current_user;"
+```
+
+Depois suba o backend pela pasta `backend`:
+
+```bash
+./mvnw spring-boot:run
+```
+
+No Windows, se não existir `mvnw.cmd` no pacote, use:
+
+```bash
+mvn spring-boot:run
+```
+
+
 ## Decisão arquitetural
 
 Nesta primeira versão o projeto foi iniciado como **monolito modular**:
@@ -124,3 +182,146 @@ http://localhost:4200
 - criar endpoint para gerar credencial;
 - criar layout imprimível da credencial no Angular;
 - preparar leitura por câmera no frontend.
+
+
+## Correção Flyway no Spring Boot 4
+
+Se o backend conectar no PostgreSQL, mas falhar com erro semelhante a:
+
+```text
+Schema validation: missing table [dupla_tio_carona]
+```
+
+isso indica que o Hibernate conseguiu acessar o banco, mas o Flyway não executou as migrations antes da validação do schema.
+
+Neste projeto, a correção aplicada foi usar o starter próprio do Spring Boot 4 para Flyway:
+
+```xml
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-flyway</artifactId>
+</dependency>
+```
+
+Após aplicar essa correção, reinicie o banco de desenvolvimento para permitir que as migrations sejam recriadas do zero:
+
+```bash
+cd infra
+docker compose down -v
+docker compose up -d
+```
+
+Depois suba o backend:
+
+```bash
+cd ../backend
+mvn clean spring-boot:run
+```
+
+No log de inicialização devem aparecer mensagens do Flyway aplicando as migrations `V1__estrutura_inicial.sql` e `V2__sementes_dev.sql`.
+
+Para validar as tabelas:
+
+```bash
+docker exec -it encontro-carona-postgres psql -U encontro -d encontro_carona -c "\dt"
+```
+
+Para validar o histórico do Flyway:
+
+```bash
+docker exec -it encontro-carona-postgres psql -U encontro -d encontro_carona -c "select installed_rank, version, description, success from flyway_schema_history;"
+```
+
+## Bloco 2 - CRUD inicial no frontend
+
+O Bloco 2 adiciona telas reais de cadastro no Angular 21.
+
+### O que já é possível fazer
+
+- Cadastrar e editar paróquias.
+- Cadastrar e editar eventos.
+- Configurar janela futura de monitoramento no evento, por exemplo das 05:00 às 20:00.
+- Cadastrar e editar pessoas.
+- Adicionar pessoas do tipo Tio carona ao evento.
+- Formar duplas de tios carona.
+- Cadastrar sobrinhos dentro do evento.
+- Vincular sobrinhos a uma dupla.
+
+### URLs principais do frontend
+
+- `/paroquias`: cadastro de paróquias.
+- `/pessoas`: cadastro de pessoas.
+- `/eventos`: cadastro de eventos.
+- `/eventos/:eventoId/gestao`: gestão operacional do evento.
+
+### Ordem recomendada para usar o sistema
+
+1. Cadastre uma paróquia.
+2. Cadastre um evento vinculado à paróquia.
+3. Cadastre pessoas do tipo `TIO_CARONA`.
+4. Acesse o botão `Gerir` no evento.
+5. Adicione os tios carona ao evento.
+6. Forme duplas com dois tios.
+7. Cadastre os sobrinhos.
+8. Vincule cada sobrinho a uma dupla.
+
+### Limites conscientes deste bloco
+
+- Não há autenticação ainda.
+- Não há remoção de registros ainda.
+- A tela de gestão usa os endpoints disponíveis no backend do Bloco 1.
+- Check-in, checkout, credenciais com QR Code e entrega do Caderno do Choro entram nos próximos blocos.
+- O mapa de monitoramento segue registrado como lista de desejos/roadmap, com janela de horário já representada no cadastro do evento.
+
+## Refatoração do Bloco 2 - Frontend por feature
+
+Após a primeira validação do frontend, a estrutura Angular foi reorganizada para facilitar leitura, manutenção e evolução.
+
+Cada feature agora segue o padrão:
+
+```text
+frontend/src/app/features/<feature>/
+├── <feature>.component.ts
+├── <feature>.component.html
+├── <feature>.component.scss
+└── <feature>.service.ts
+```
+
+### Por que essa mudança foi feita
+
+- Evita componentes muito grandes com template inline.
+- Separa responsabilidade visual, lógica e acesso à API.
+- Facilita manutenção por tela/funcionalidade.
+- Facilita futuras revisões de UX.
+- Evita um `ApiService` central crescer demais e virar um ponto de acoplamento.
+
+### Features refatoradas
+
+```text
+features/dashboard/
+features/paroquias/
+features/eventos/
+features/pessoas/
+features/evento-gestao/
+features/operacao/
+```
+
+### Padrão adotado
+
+- `component.ts`: controla estado, forms, signals e ações de tela.
+- `component.html`: contém somente o template visual.
+- `component.scss`: reservado para estilos específicos da feature.
+- `service.ts`: contém chamadas HTTP ou dados próprios da feature.
+
+### Observação sobre `core/api.service.ts`
+
+O arquivo foi mantido temporariamente para compatibilidade e referência, mas as novas telas do Bloco 2 já usam services próprios por feature, como:
+
+```text
+paroquias.service.ts
+eventos.service.ts
+pessoas.service.ts
+evento-gestao.service.ts
+```
+
+Em um próximo bloco, se não houver mais dependência dele, o `core/api.service.ts` poderá ser removido com segurança.

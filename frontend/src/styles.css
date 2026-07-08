@@ -17,11 +17,15 @@ body {
 }
 
 .ec-sidebar a {
+  border-radius: .6rem;
   color: rgba(255, 255, 255, .86);
+  padding: .65rem .75rem;
   text-decoration: none;
 }
 
-.ec-sidebar a:hover {
+.ec-sidebar a:hover,
+.ec-sidebar a.active {
+  background: rgba(255, 255, 255, .12);
   color: #fff;
 }
 
@@ -33,4 +37,23 @@ body {
   justify-content: center;
   border-radius: 12px;
   background: #f1f3f5;
+}
+
+.card {
+  border-radius: 1rem;
+}
+
+.card-header:first-child {
+  border-top-left-radius: 1rem;
+  border-top-right-radius: 1rem;
+}
+
+.table th {
+  font-size: .78rem;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+.form-label {
+  font-weight: 600;
 }
