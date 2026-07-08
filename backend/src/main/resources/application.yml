@@ -1,0 +1,28 @@
+spring:
+  application:
+    name: encontro-carona-api
+  datasource:
+    url: jdbc:postgresql://localhost:5432/encontro_carona
+    username: encontro
+    password: encontro
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+server:
+  port: 8080
+  servlet:
+    context-path: /
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html

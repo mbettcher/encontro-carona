@@ -1,0 +1,16 @@
+package br.com.paroquia.encontro.dto.request;
+
+import br.com.paroquia.encontro.domain.enums.PessoaTipo;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+
+import java.time.LocalDate;
+
+public record PessoaRequest(
+        @NotBlank String nome,
+        String telefone,
+        String email,
+        LocalDate dataNascimento,
+        @NotNull PessoaTipo tipo,
+        String observacoes) {
+}

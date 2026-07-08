@@ -1,0 +1,20 @@
+services:
+  postgres:
+    image: postgres:18
+    container_name: encontro-carona-postgres
+    environment:
+      POSTGRES_DB: encontro_carona
+      POSTGRES_USER: encontro
+      POSTGRES_PASSWORD: encontro
+    ports:
+      - "5432:5432"
+    volumes:
+      - encontro_carona_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U encontro -d encontro_carona"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  encontro_carona_pgdata:

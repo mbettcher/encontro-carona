@@ -1,0 +1,36 @@
+:root {
+  --ec-sidebar-width: 280px;
+}
+
+body {
+  background: #f7f7f9;
+}
+
+.ec-shell {
+  min-height: 100vh;
+}
+
+.ec-sidebar {
+  width: var(--ec-sidebar-width);
+  background: #212529;
+  color: #fff;
+}
+
+.ec-sidebar a {
+  color: rgba(255, 255, 255, .86);
+  text-decoration: none;
+}
+
+.ec-sidebar a:hover {
+  color: #fff;
+}
+
+.ec-card-icon {
+  width: 42px;
+  height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background: #f1f3f5;
+}
