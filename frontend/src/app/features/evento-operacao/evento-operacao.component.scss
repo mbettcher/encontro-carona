@@ -1,0 +1,23 @@
+.resumo-card {
+  border-left: 0.25rem solid rgba(13, 110, 253, 0.35) !important;
+}
+
+.modulo-card {
+  border: 1px solid rgba(0, 0, 0, 0.075);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.modulo-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.08);
+}
+
+.modulo-card-disabled {
+  opacity: 0.72;
+  background: #f8f9fa;
+}
+
+.modulo-card-disabled:hover {
+  transform: none;
+  box-shadow: none;
+}

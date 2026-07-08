@@ -8,7 +8,8 @@
   </div>
 
   <form class="d-flex gap-2" (ngSubmit)="carregar()">
-    <input class="form-control" [value]="busca()" (input)="busca.set($any($event.target).value)" placeholder="Buscar por nome" />
+    <input class="form-control" [value]="busca()" (input)="busca.set($any($event.target).value)"
+      placeholder="Buscar por nome" />
     <button class="btn btn-primary" type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
   </form>
 </div>
@@ -21,19 +22,19 @@
       <div class="card-body row g-3">
         <div class="col-12">
           <label class="form-label" for="nome">Nome *</label>
-          <input class="form-control" formControlName="nome" id="nome"/>
+          <input class="form-control" formControlName="nome" id="nome" />
         </div>
         <div class="col-12 col-md-6">
           <label class="form-label" for="telefone">Telefone</label>
-          <input class="form-control" formControlName="telefone" id="telefone"/>
+          <input class="form-control" formControlName="telefone" id="telefone" />
         </div>
         <div class="col-12 col-md-6">
           <label class="form-label" for="dtnascimento">Data de nascimento</label>
-          <input class="form-control" type="date" formControlName="dataNascimento" id="dtnascimento"/>
+          <input class="form-control" type="date" formControlName="dataNascimento" id="dtnascimento" />
         </div>
         <div class="col-12">
           <label class="form-label" for="email">E-mail</label>
-          <input class="form-control" type="email" formControlName="email" id="email"/>
+          <input class="form-control" type="email" formControlName="email" id="email" />
         </div>
         <div class="col-12">
           <label class="form-label" for="tipo">Tipo *</label>
@@ -51,19 +52,25 @@
       </div>
 
       <div class="card-footer bg-white d-flex justify-content-between align-items-center">
-        <button class="btn btn-warning" type="button" (click)="novo()">Limpar</button>
-        <div class="ms-auto d-flex align-items-center gap-3">
+        <div class="d-flex flex-column gap-1">
           @if (mensagemErro()) {
           <span class="small text-danger">{{ mensagemErro() }}</span>
           }
           @if (mensagemSucesso()) {
           <span class="small text-success">{{ mensagemSucesso() }}</span>
           }
-          <button class="btn btn-primary" type="submit" [disabled]="form.invalid || salvando()">
+        </div>
+
+        <div class="d-flex gap-2">
+          <button class="btn btn-sm btn-warning" type="button" (click)="novo()">
+            <i class="fa-solid fa-file-circle-minus me-1"></i>Limpar Formulário
+          </button>
+          <button class="btn btn-sm btn-primary" type="submit" [disabled]="form.invalid || salvando()">
             <i class="fa-solid fa-floppy-disk me-1"></i>{{ salvando() ? 'Salvando...' : 'Salvar' }}
           </button>
         </div>
       </div>
+
     </form>
   </div>
 
@@ -77,29 +84,41 @@
       <div class="table-responsive">
         <table class="table table-hover align-middle mb-0">
           <thead class="table-light">
-          <tr><th>Nome</th><th>Contato</th><th>Tipo</th><th class="text-end">Ação</th></tr>
+            <tr>
+              <th>Nome</th>
+              <th>Contato</th>
+              <th>Tipo</th>
+              <th class="text-end">Ação</th>
+            </tr>
           </thead>
           <tbody>
-          @for (item of itens(); track item.id) {
-          <tr>
-            <td><strong>{{ item.nome }}</strong><div class="small text-muted">{{ item.dataNascimento || 'Sem nascimento' }}</div></td>
-            <td>{{ item.telefone || '-' }}<div class="small text-muted">{{ item.email || 'Sem e-mail' }}</div></td>
-            <td><span class="badge text-bg-secondary">{{ rotuloTipo(item.tipo) }}</span></td>
-            <td class="text-end">
-              <button class="btn btn-sm btn-primary" type="button" (click)="editar(item)">
-                <i class="fa-solid fa-pen-to-square me-1"></i>Editar
-              </button>
-            </td>
-          </tr>
-          }
+            @for (item of itens(); track item.id) {
+            <tr>
+              <td><strong>{{ item.nome }}</strong>
+                <div class="small text-muted">{{ item.dataNascimento || 'Sem nascimento' }}</div>
+              </td>
+              <td>{{ item.telefone || '-' }}<div class="small text-muted">{{ item.email || 'Sem e-mail' }}</div>
+              </td>
+              <td><span class="badge text-bg-secondary">{{ rotuloTipo(item.tipo) }}</span></td>
+              <td class="text-end">
+                <button class="btn btn-sm btn-primary" type="button" (click)="editar(item)">
+                  <i class="fa-solid fa-pen-to-square me-1"></i>Editar
+                </button>
+              </td>
+            </tr>
+            }
 
-          @if (!carregando() && itens().length === 0) {
-          <tr><td colspan="4" class="text-center text-muted py-4">Nenhuma pessoa encontrada.</td></tr>
-          }
+            @if (!carregando() && itens().length === 0) {
+            <tr>
+              <td colspan="4" class="text-center text-muted py-4">Nenhuma pessoa encontrada.</td>
+            </tr>
+            }
 
-          @if (carregando()) {
-          <tr><td colspan="4" class="text-center text-muted py-4">Carregando...</td></tr>
-          }
+            @if (carregando()) {
+            <tr>
+              <td colspan="4" class="text-center text-muted py-4">Carregando...</td>
+            </tr>
+            }
           </tbody>
         </table>
       </div>
