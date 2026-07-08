@@ -4,6 +4,7 @@ import { provideHttpClient, withInterceptors } from '@angular/common/http';
 
 import { providePrimeNG } from 'primeng/config';
 import Aura from '@primeuix/themes/aura';
+import { MessageService } from 'primeng/api';
 
 import { AppComponent } from './app/app.component';
 import { routes } from './app/app.routes';
@@ -22,6 +23,8 @@ bootstrapApplication(AppComponent, {
         }
       },
       ripple: true
-    })
+    }),
+
+    MessageService
   ]
 }).catch(err => console.error(err));

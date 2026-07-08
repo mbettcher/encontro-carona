@@ -8,6 +8,7 @@ import { SelectModule } from 'primeng/select';
 import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
 import { TextareaModule } from 'primeng/textarea';
+import { MessageService } from 'primeng/api';
 
 import { Pessoa, PessoaRequest, PessoaTipo } from '../../shared/models';
 import { PessoasService } from './pessoas.service';
@@ -42,14 +43,14 @@ interface TipoFiltroOpcao {
   styleUrl: './pessoas.component.scss'
 })
 export class PessoasComponent implements OnInit {
+
   private readonly service = inject(PessoasService);
   private readonly fb = inject(FormBuilder);
+  private readonly messageService = inject(MessageService);
 
   readonly pessoas = signal<Pessoa[]>([]);
   readonly carregando = signal(false);
   readonly salvando = signal(false);
-  readonly mensagemErro = signal('');
-  readonly mensagemSucesso = signal('');
   readonly pessoaEmEdicao = signal<Pessoa | null>(null);
   readonly tipoFiltro = signal<TipoFiltro>('TODOS');
 
@@ -97,7 +98,6 @@ export class PessoasComponent implements OnInit {
 
   carregarPessoas(): void {
     this.carregando.set(true);
-    this.mensagemErro.set('');
 
     this.service.listar().subscribe({
       next: pessoas => {
@@ -106,7 +106,14 @@ export class PessoasComponent implements OnInit {
       },
       error: erro => {
         console.error('Erro ao carregar pessoas', erro);
-        this.mensagemErro.set('Não foi possível carregar as pessoas.');
+
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Erro ao carregar',
+          detail: 'Não foi possível carregar as pessoas.',
+          life: 5000
+        });
+
         this.carregando.set(false);
       }
     });
@@ -115,26 +122,36 @@ export class PessoasComponent implements OnInit {
   salvar(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
-      this.mensagemErro.set('Preencha os campos obrigatórios antes de salvar.');
+
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Formulário incompleto',
+        detail: 'Preencha os campos obrigatórios antes de salvar.',
+        life: 4000
+      });
+
       return;
     }
 
     const payload = this.montarPayload();
     const pessoaAtual = this.pessoaEmEdicao();
 
-    this.salvando.set(true);
-    this.mensagemErro.set('');
-    this.mensagemSucesso.set('');
+    this.salvando.set(false);
 
     const requisicao = pessoaAtual
       ? this.service.atualizar(pessoaAtual.id, payload)
       : this.service.criar(payload);
 
+    this.salvando.set(true);
+
     requisicao.subscribe({
       next: () => {
-        this.mensagemSucesso.set(
-          pessoaAtual ? 'Pessoa atualizada com sucesso.' : 'Pessoa cadastrada com sucesso.'
-        );
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Sucesso',
+          detail: pessoaAtual ? 'Pessoa atualizada com sucesso.' : 'Pessoa cadastrada com sucesso.',
+          life: 4000
+        });
 
         this.salvando.set(false);
         this.limparFormulario();
@@ -142,7 +159,14 @@ export class PessoasComponent implements OnInit {
       },
       error: erro => {
         console.error('Erro ao salvar pessoa', erro);
-        this.mensagemErro.set('Não foi possível salvar a pessoa. Confira os dados informados.');
+
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Erro ao salvar',
+          detail: 'Não foi possível salvar a pessoa. Confira os dados informados.',
+          life: 6000
+        });
+
         this.salvando.set(false);
       }
     });
@@ -150,8 +174,6 @@ export class PessoasComponent implements OnInit {
 
   editar(pessoa: Pessoa): void {
     this.pessoaEmEdicao.set(pessoa);
-    this.mensagemErro.set('');
-    this.mensagemSucesso.set('');
 
     this.form.patchValue({
       nome: pessoa.nome,

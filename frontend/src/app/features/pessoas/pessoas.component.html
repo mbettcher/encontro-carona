@@ -15,20 +15,6 @@
     </div>
   </div>
 
-  @if (mensagemErro()) {
-  <div class="alert alert-danger" role="alert">
-    <i class="fa-solid fa-triangle-exclamation me-2"></i>
-    {{ mensagemErro() }}
-  </div>
-  }
-
-  @if (mensagemSucesso()) {
-  <div class="alert alert-success" role="alert">
-    <i class="fa-solid fa-circle-check me-2"></i>
-    {{ mensagemSucesso() }}
-  </div>
-  }
-
   <div class="row g-4">
     <div class="col-12 col-xl-4">
       <p-card styleClass="shadow-sm border-0 h-100">

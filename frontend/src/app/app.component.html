@@ -1,30 +1,33 @@
-<div class="d-flex ec-shell">
-      <aside class="ec-sidebar p-3 d-none d-lg-block">
-        <h1 class="h5 mb-4"><i class="fa-solid fa-van-shuttle me-2"></i>EAC - Tio Carona</h1>
-        <nav class="d-grid gap-2">
-          <a routerLink="/dashboard" routerLinkActive="active"><i class="fa-solid fa-chart-line me-2"></i>Dashboard</a>
-          <a routerLink="/paroquias" routerLinkActive="active"><i class="fa-solid fa-church me-2"></i>Paróquias</a>
-          <a routerLink="/eventos" routerLinkActive="active"><i class="fa-solid fa-calendar-days me-2"></i>Eventos</a>
-          <a routerLink="/pessoas" routerLinkActive="active"><i class="fa-solid fa-users me-2"></i>Pessoas</a>
-          <a routerLink="/operacao" routerLinkActive="active"><i class="fa-solid fa-qrcode me-2"></i>Operação</a>
-        </nav>
-      </aside>
+<p-toast position="top-center" />
 
-      <main class="flex-fill">
-        <header class="bg-white border-bottom p-3 d-flex flex-column flex-md-row gap-2 justify-content-between align-items-md-center">
-          <div>
-            <strong>EAC - Encontro de Adolescentes com Cristo</strong>
-            <div class="small text-muted">Cadastro, caronas, check-in e operação do evento</div>
-          </div>
-          <nav class="d-flex d-lg-none gap-2 flex-wrap">
-            <a class="btn btn-sm btn-outline-secondary" routerLink="/dashboard">Dashboard</a>
-            <a class="btn btn-sm btn-outline-secondary" routerLink="/eventos">Eventos</a>
-            <a class="btn btn-sm btn-outline-secondary" routerLink="/pessoas">Pessoas</a>
-          </nav>
-          <span class="badge text-bg-primary align-self-start align-self-md-center">MVP · Bloco 2</span>
-        </header>
-        <section class="container-fluid p-3 p-md-4">
-          <router-outlet />
-        </section>
-      </main>
-    </div>
+<div class="d-flex ec-shell">
+  <aside class="ec-sidebar p-3 d-none d-lg-block">
+    <h1 class="h5 mb-4"><i class="fa-solid fa-van-shuttle me-2"></i>EAC - Tio Carona</h1>
+    <nav class="d-grid gap-2">
+      <a routerLink="/dashboard" routerLinkActive="active"><i class="fa-solid fa-chart-line me-2"></i>Dashboard</a>
+      <a routerLink="/paroquias" routerLinkActive="active"><i class="fa-solid fa-church me-2"></i>Paróquias</a>
+      <a routerLink="/eventos" routerLinkActive="active"><i class="fa-solid fa-calendar-days me-2"></i>Eventos</a>
+      <a routerLink="/pessoas" routerLinkActive="active"><i class="fa-solid fa-users me-2"></i>Pessoas</a>
+      <a routerLink="/operacao" routerLinkActive="active"><i class="fa-solid fa-qrcode me-2"></i>Operação</a>
+    </nav>
+  </aside>
+
+  <main class="flex-fill">
+    <header
+      class="bg-white border-bottom p-3 d-flex flex-column flex-md-row gap-2 justify-content-between align-items-md-center">
+      <div>
+        <strong>EAC - Encontro de Adolescentes com Cristo</strong>
+        <div class="small text-muted">Cadastro, caronas, check-in e operação do evento</div>
+      </div>
+      <nav class="d-flex d-lg-none gap-2 flex-wrap">
+        <a class="btn btn-sm btn-outline-secondary" routerLink="/dashboard">Dashboard</a>
+        <a class="btn btn-sm btn-outline-secondary" routerLink="/eventos">Eventos</a>
+        <a class="btn btn-sm btn-outline-secondary" routerLink="/pessoas">Pessoas</a>
+      </nav>
+      <span class="badge text-bg-primary align-self-start align-self-md-center">MVP · Bloco 2</span>
+    </header>
+    <section class="container-fluid p-3 p-md-4">
+      <router-outlet />
+    </section>
+  </main>
+</div>
