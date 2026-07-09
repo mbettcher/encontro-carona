@@ -142,14 +142,14 @@ export interface DuplaTioCaronaRequest {
   apelido?: string;
 }
 
-export type OperacaoPresencaSobrinho = 
-  'PRESENTE' 
-  | 'AUSENTE' 
+export type OperacaoPresencaSobrinho =
+  'PRESENTE'
+  | 'AUSENTE'
   | 'DESISTENTE';
 
-export type OrigemPresencaSobrinho = 
-  'MANUAL' 
-  | 'CREDENCIAL' 
+export type OrigemPresencaSobrinho =
+  'MANUAL'
+  | 'CREDENCIAL'
   | 'SISTEMA';
 
 export interface Sobrinho {
@@ -193,4 +193,42 @@ export interface SobrinhoDupla {
 export interface VincularSobrinhoRequest {
   sobrinhoId: number;
   duplaId: number;
+}
+
+export type StatusCadernoChoro =
+  | 'PENDENTE'
+  | 'ENTREGUE_A_DUPLA'
+  | 'RECEBIDO_DA_DUPLA'
+  | 'CONFERIDO'
+  | 'ANEXADO_AO_KIT'
+  | 'ENTREGUE_AO_SOBRINHO'
+  | 'PERDIDO'
+  | 'SUBSTITUIDO'
+  | 'CANCELADO';
+
+export interface CadernoChoro {
+  id: number;
+  eventoId: number;
+  duplaId: number;
+  duplaCodigo: string;
+  duplaApelido?: string;
+  tio1Nome: string;
+  tio2Nome: string;
+  sobrinhoId: number;
+  sobrinhoNome: string;
+  status: StatusCadernoChoro;
+  entregueADuplaEm?: string;
+  recebidoDaDuplaEm?: string;
+  conferidoEm?: string;
+  anexadoAoKitEm?: string;
+  entregueAoSobrinhoEm?: string;
+  observacao?: string;
+  criadoEm: string;
+}
+
+export interface CadernoChoroGeracaoResponse {
+  eventoId: number;
+  criados: number;
+  existentes: number;
+  total: number;
 }

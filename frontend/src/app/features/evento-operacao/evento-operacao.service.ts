@@ -10,6 +10,8 @@ import {
   SobrinhoDupla,
   TioCaronaEvento,
   OperacaoPresencaSobrinho,
+  CadernoChoro,
+  CadernoChoroGeracaoResponse
 } from '../../shared/models';
 
 @Injectable({
@@ -73,12 +75,105 @@ export class EventoOperacaoService {
     );
   }
 
+  listarCadernos(eventoId: number): Observable<CadernoChoro[]> {
+    return this.http.get<CadernoChoro[]>(`${this.apiUrl}/eventos/${eventoId}/cadernos`);
+  }
+
+  gerarCadernos(eventoId: number): Observable<CadernoChoroGeracaoResponse> {
+    return this.http.post<CadernoChoroGeracaoResponse>(
+      `${this.apiUrl}/eventos/${eventoId}/cadernos/gerar`,
+      {}
+    );
+  }
+
+  entregarCadernosADupla(
+    eventoId: number,
+    duplaId: number,
+    observacao?: string
+  ): Observable<CadernoChoro[]> {
+    return this.http.post<CadernoChoro[]>(
+      `${this.apiUrl}/eventos/${eventoId}/cadernos/duplas/${duplaId}/entregar-a-dupla`,
+      { observacao: observacao?.trim() || undefined }
+    );
+  }
+
+  receberCadernosDaDupla(
+    eventoId: number,
+    duplaId: number,
+    observacao?: string
+  ): Observable<CadernoChoro[]> {
+    return this.http.post<CadernoChoro[]>(
+      `${this.apiUrl}/eventos/${eventoId}/cadernos/duplas/${duplaId}/receber-da-dupla`,
+      { observacao: observacao?.trim() || undefined }
+    );
+  }
+
+  conferirCaderno(
+    eventoId: number,
+    cadernoId: number,
+    observacao?: string
+  ): Observable<CadernoChoro> {
+    return this.operarCaderno(eventoId, cadernoId, 'conferir', observacao);
+  }
+
+  anexarCadernoAoKit(
+    eventoId: number,
+    cadernoId: number,
+    observacao?: string
+  ): Observable<CadernoChoro> {
+    return this.operarCaderno(eventoId, cadernoId, 'anexar-ao-kit', observacao);
+  }
+
+  entregarCadernoAoSobrinho(
+    eventoId: number,
+    cadernoId: number,
+    observacao?: string
+  ): Observable<CadernoChoro> {
+    return this.operarCaderno(eventoId, cadernoId, 'entregar-ao-sobrinho', observacao);
+  }
+
+  marcarCadernoPerdido(
+    eventoId: number,
+    cadernoId: number,
+    observacao?: string
+  ): Observable<CadernoChoro> {
+    return this.operarCaderno(eventoId, cadernoId, 'perdido', observacao);
+  }
+
+  marcarCadernoSubstituido(
+    eventoId: number,
+    cadernoId: number,
+    observacao?: string
+  ): Observable<CadernoChoro> {
+    return this.operarCaderno(eventoId, cadernoId, 'substituido', observacao);
+  }
+
+  cancelarCaderno(
+    eventoId: number,
+    cadernoId: number,
+    observacao?: string
+  ): Observable<CadernoChoro> {
+    return this.operarCaderno(eventoId, cadernoId, 'cancelado', observacao);
+  }
+
+  private operarCaderno(
+    eventoId: number,
+    cadernoId: number,
+    operacao: string,
+    observacao?: string
+  ): Observable<CadernoChoro> {
+    return this.http.post<CadernoChoro>(
+      `${this.apiUrl}/eventos/${eventoId}/cadernos/${cadernoId}/${operacao}`,
+      { observacao: observacao?.trim() || undefined }
+    );
+  }
+
   registrarCheckinPorCodigo(eventoId: number, codigoIdentificacao: string): Observable<TioCaronaEvento> {
     return this.http.post<TioCaronaEvento>(`${this.apiUrl}/eventos/${eventoId}/tios-carona/operacao/check-in`, { codigoIdentificacao });
   }
 
   registrarCheckoutPorCodigo(eventoId: number, codigoIdentificacao: string): Observable<TioCaronaEvento> {
-    return this.http.post<TioCaronaEvento>(`${this.apiUrl}/eventos/${eventoId}/tios-carona/operacao/checkout`, { codigoIdentificacao } );
+    return this.http.post<TioCaronaEvento>(`${this.apiUrl}/eventos/${eventoId}/tios-carona/operacao/checkout`, { codigoIdentificacao });
   }
 
   registrarCheckinManual(eventoId: number, tioCaronaEventoId: number): Observable<TioCaronaEvento> {
@@ -90,12 +185,12 @@ export class EventoOperacaoService {
   }
 
   registrarPresencaSobrinho(eventoId: number, sobrinhoId: number, operacao: OperacaoPresencaSobrinho, observacao?: string): Observable<Sobrinho> {
-  return this.http.patch<Sobrinho>(
-    `${this.apiUrl}/eventos/${eventoId}/sobrinhos/${sobrinhoId}/presenca`,
-    {
-      operacao,
-      observacao: observacao?.trim() || undefined
-    }
-  );
-}
+    return this.http.patch<Sobrinho>(
+      `${this.apiUrl}/eventos/${eventoId}/sobrinhos/${sobrinhoId}/presenca`,
+      {
+        operacao,
+        observacao: observacao?.trim() || undefined
+      }
+    );
+  }
 }

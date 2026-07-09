@@ -13,12 +13,14 @@ import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
 
 import {
+  CadernoChoro,
   DuplaTioCarona,
   Evento,
+  OperacaoPresencaSobrinho,
   Sobrinho,
   SobrinhoDupla,
-  TioCaronaEvento,
-  OperacaoPresencaSobrinho
+  StatusCadernoChoro,
+  TioCaronaEvento
 } from '../../shared/models';
 import { EventoOperacaoService } from './evento-operacao.service';
 
@@ -49,18 +51,26 @@ export class EventoOperacaoComponent implements OnInit {
 
   readonly eventoId = Number(this.route.snapshot.paramMap.get('eventoId'));
 
-  readonly evento = signal<Evento | null>(null);
   readonly tiosCarona = signal<TioCaronaEvento[]>([]);
   readonly duplas = signal<DuplaTioCarona[]>([]);
   readonly sobrinhos = signal<Sobrinho[]>([]);
   readonly vinculos = signal<SobrinhoDupla[]>([]);
+  readonly cadernos = signal<CadernoChoro[]>([]);
+
   readonly carregando = signal(false);
   readonly processandoCodigo = signal(false);
+
+  readonly evento = signal<Evento | null>(null);
   readonly processandoManual = signal<number | null>(null);
   readonly processandoPresencaSobrinho = signal<number | null>(null);
+
   readonly filtroTiosOperacao = signal('');
   readonly filtroPresencaSobrinhos = signal('');
   readonly filtroSobrinhosEvento = signal('');
+  readonly filtroCadernos = signal('');
+  readonly duplaCadernoSelecionada = signal<number | null>(null);
+  readonly processandoCadernos = signal(false);
+  readonly processandoCadernoId = signal<number | null>(null);
 
   readonly codigoForm = this.fb.nonNullable.group({
     codigoIdentificacao: ['', [Validators.required, Validators.maxLength(80)]],
@@ -128,6 +138,59 @@ export class EventoOperacaoComponent implements OnInit {
 
     return Math.round((this.sobrinhosPresentes().length / total) * 100);
   });
+
+  readonly opcoesDuplasCaderno = computed(() =>
+    this.duplasAtivas().map(dupla => ({
+      label: dupla.apelido || dupla.codigo,
+      descricao: `${dupla.tio1Nome} e ${dupla.tio2Nome}`,
+      value: dupla.id
+    }))
+  );
+
+  readonly cadernosFiltrados = computed(() => {
+    const filtro = this.normalizarFiltro(this.filtroCadernos());
+    const duplaId = this.duplaCadernoSelecionada();
+
+    return this.cadernos()
+      .filter(caderno => !duplaId || caderno.duplaId === duplaId)
+      .filter(caderno => {
+        if (!filtro) {
+          return true;
+        }
+
+        return this.contemFiltro(caderno.sobrinhoNome, filtro) ||
+          this.contemFiltro(caderno.duplaCodigo, filtro) ||
+          this.contemFiltro(caderno.duplaApelido, filtro) ||
+          this.contemFiltro(caderno.tio1Nome, filtro) ||
+          this.contemFiltro(caderno.tio2Nome, filtro) ||
+          this.contemFiltro(caderno.status, filtro) ||
+          this.contemFiltro(this.labelStatusCaderno(caderno.status), filtro);
+      });
+  });
+
+  readonly cadernosPendentes = computed(() =>
+    this.cadernos().filter(caderno => caderno.status === 'PENDENTE')
+  );
+
+  readonly cadernosEntreguesADupla = computed(() =>
+    this.cadernos().filter(caderno => caderno.status === 'ENTREGUE_A_DUPLA')
+  );
+
+  readonly cadernosRecebidosDaDupla = computed(() =>
+    this.cadernos().filter(caderno => caderno.status === 'RECEBIDO_DA_DUPLA')
+  );
+
+  readonly cadernosConferidos = computed(() =>
+    this.cadernos().filter(caderno => caderno.status === 'CONFERIDO')
+  );
+
+  readonly cadernosNoKit = computed(() =>
+    this.cadernos().filter(caderno => caderno.status === 'ANEXADO_AO_KIT')
+  );
+
+  readonly cadernosEntreguesAoSobrinho = computed(() =>
+    this.cadernos().filter(caderno => caderno.status === 'ENTREGUE_AO_SOBRINHO')
+  );
 
   readonly operacaoPronta = computed(() =>
     this.tiosAtivos().length >= 2 &&
@@ -197,8 +260,27 @@ export class EventoOperacaoComponent implements OnInit {
     this.carregarDuplas();
     this.carregarSobrinhos();
     this.carregarVinculos();
+    this.carregarCadernos();
 
     window.setTimeout(() => this.carregando.set(false), 600);
+  }
+
+  private carregarCadernos(): void {
+    this.service.listarCadernos(this.eventoId).subscribe({
+      next: cadernos => this.cadernos.set(cadernos),
+      error: erro => {
+        console.error('Erro ao carregar cadernos do choro', erro);
+        this.toastError('Não foi possível carregar os cadernos do choro.');
+      }
+    });
+  }
+
+  alterarFiltroCadernos(valor: string): void {
+    this.filtroCadernos.set(valor);
+  }
+
+  alterarDuplaCadernoSelecionada(duplaId: number | null): void {
+    this.duplaCadernoSelecionada.set(duplaId);
   }
 
   alterarFiltroTiosOperacao(valor: string): void {
@@ -211,6 +293,129 @@ export class EventoOperacaoComponent implements OnInit {
 
   alterarFiltroSobrinhosEvento(valor: string): void {
     this.filtroSobrinhosEvento.set(valor);
+  }
+
+  gerarCadernos(): void {
+    this.processandoCadernos.set(true);
+
+    this.service.gerarCadernos(this.eventoId).subscribe({
+      next: resultado => {
+        this.toastSuccess(
+          `Cadernos gerados. Criados: ${resultado.criados}. Já existentes: ${resultado.existentes}. Total: ${resultado.total}.`
+        );
+        this.carregarCadernos();
+      },
+      error: erro => {
+        console.error('Erro ao gerar cadernos', erro);
+        this.toastError(this.mensagemErro(erro, 'Não foi possível gerar os cadernos do choro.'));
+      },
+      complete: () => this.processandoCadernos.set(false)
+    });
+  }
+
+  entregarCadernosADupla(): void {
+    const duplaId = this.duplaCadernoSelecionada();
+
+    if (!duplaId) {
+      this.toastWarn('Selecione uma dupla para entregar os cadernos.');
+      return;
+    }
+
+    this.processandoCadernos.set(true);
+
+    this.service.entregarCadernosADupla(this.eventoId, duplaId).subscribe({
+      next: cadernosAtualizados => {
+        this.atualizarCadernosNaLista(cadernosAtualizados);
+        this.toastSuccess(`${cadernosAtualizados.length} caderno(s) entregue(s) à dupla.`);
+      },
+      error: erro => {
+        console.error('Erro ao entregar cadernos à dupla', erro);
+        this.toastError(this.mensagemErro(erro, 'Não foi possível entregar os cadernos à dupla.'));
+      },
+      complete: () => this.processandoCadernos.set(false)
+    });
+  }
+
+  receberCadernosDaDupla(): void {
+    const duplaId = this.duplaCadernoSelecionada();
+
+    if (!duplaId) {
+      this.toastWarn('Selecione uma dupla para receber os cadernos.');
+      return;
+    }
+
+    this.processandoCadernos.set(true);
+
+    this.service.receberCadernosDaDupla(this.eventoId, duplaId).subscribe({
+      next: cadernosAtualizados => {
+        this.atualizarCadernosNaLista(cadernosAtualizados);
+        this.toastSuccess(`${cadernosAtualizados.length} caderno(s) recebido(s) da dupla.`);
+      },
+      error: erro => {
+        console.error('Erro ao receber cadernos da dupla', erro);
+        this.toastError(this.mensagemErro(erro, 'Não foi possível receber os cadernos da dupla.'));
+      },
+      complete: () => this.processandoCadernos.set(false)
+    });
+  }
+
+  conferirCaderno(caderno: CadernoChoro): void {
+    this.operarCadernoIndividual(caderno, 'CONFERIDO');
+  }
+
+  anexarCadernoAoKit(caderno: CadernoChoro): void {
+    this.operarCadernoIndividual(caderno, 'ANEXADO_AO_KIT');
+  }
+
+  entregarCadernoAoSobrinho(caderno: CadernoChoro): void {
+    this.operarCadernoIndividual(caderno, 'ENTREGUE_AO_SOBRINHO');
+  }
+
+  marcarCadernoPerdido(caderno: CadernoChoro): void {
+    this.operarCadernoIndividual(caderno, 'PERDIDO');
+  }
+
+  marcarCadernoSubstituido(caderno: CadernoChoro): void {
+    this.operarCadernoIndividual(caderno, 'SUBSTITUIDO');
+  }
+
+  cancelarCaderno(caderno: CadernoChoro): void {
+    this.operarCadernoIndividual(caderno, 'CANCELADO');
+  }
+
+  private operarCadernoIndividual(caderno: CadernoChoro, statusDestino: StatusCadernoChoro): void {
+    this.processandoCadernoId.set(caderno.id);
+
+    const requisicao = (() => {
+      switch (statusDestino) {
+        case 'CONFERIDO':
+          return this.service.conferirCaderno(this.eventoId, caderno.id);
+        case 'ANEXADO_AO_KIT':
+          return this.service.anexarCadernoAoKit(this.eventoId, caderno.id);
+        case 'ENTREGUE_AO_SOBRINHO':
+          return this.service.entregarCadernoAoSobrinho(this.eventoId, caderno.id);
+        case 'PERDIDO':
+          return this.service.marcarCadernoPerdido(this.eventoId, caderno.id);
+        case 'SUBSTITUIDO':
+          return this.service.marcarCadernoSubstituido(this.eventoId, caderno.id);
+        case 'CANCELADO':
+          return this.service.cancelarCaderno(this.eventoId, caderno.id);
+        default:
+          throw new Error('Operação de caderno inválida.');
+      }
+    })();
+
+    requisicao.subscribe({
+      next: cadernoAtualizado => {
+        this.atualizarCadernoNaLista(cadernoAtualizado);
+        this.toastSuccess(`Caderno de ${cadernoAtualizado.sobrinhoNome}: ${this.labelStatusCaderno(cadernoAtualizado.status)}.`);
+      },
+      error: erro => {
+        console.error('Erro ao operar caderno', erro);
+        this.toastError(this.mensagemErro(erro, 'Não foi possível atualizar o caderno do choro.'));
+      },
+      complete: () => this.processandoCadernoId.set(null)
+    });
   }
 
   registrarOperacaoPorCodigo(): void {
@@ -290,6 +495,28 @@ export class EventoOperacaoComponent implements OnInit {
     });
   }
 
+  private atualizarCadernoNaLista(cadernoAtualizado: CadernoChoro): void {
+    this.cadernos.update(cadernos =>
+      cadernos.map(caderno =>
+        caderno.id === cadernoAtualizado.id ? cadernoAtualizado : caderno
+      )
+    );
+  }
+
+  private atualizarCadernosNaLista(cadernosAtualizados: CadernoChoro[]): void {
+    const idsAtualizados = new Set(cadernosAtualizados.map(caderno => caderno.id));
+
+    this.cadernos.update(cadernos =>
+      cadernos.map(caderno => {
+        if (!idsAtualizados.has(caderno.id)) {
+          return caderno;
+        }
+
+        return cadernosAtualizados.find(item => item.id === caderno.id) || caderno;
+      })
+    );
+  }
+
   private atualizarSobrinhoNaLista(sobrinhoAtualizado: Sobrinho): void {
     this.sobrinhos.update(sobrinhos =>
       sobrinhos.map(sobrinho =>
@@ -341,6 +568,80 @@ export class EventoOperacaoComponent implements OnInit {
 
   severityOperacao(): 'success' | 'warn' {
     return this.operacaoPronta() ? 'success' : 'warn';
+  }
+
+  labelStatusCaderno(status: StatusCadernoChoro): string {
+    switch (status) {
+      case 'PENDENTE':
+        return 'Pendente';
+      case 'ENTREGUE_A_DUPLA':
+        return 'Entregue à dupla';
+      case 'RECEBIDO_DA_DUPLA':
+        return 'Recebido da dupla';
+      case 'CONFERIDO':
+        return 'Conferido';
+      case 'ANEXADO_AO_KIT':
+        return 'Anexado ao kit';
+      case 'ENTREGUE_AO_SOBRINHO':
+        return 'Entregue ao sobrinho';
+      case 'PERDIDO':
+        return 'Perdido';
+      case 'SUBSTITUIDO':
+        return 'Substituído';
+      case 'CANCELADO':
+        return 'Cancelado';
+      default:
+        return status;
+    }
+  }
+
+  severityStatusCaderno(status: StatusCadernoChoro): 'info' | 'success' | 'warn' | 'danger' | 'secondary' {
+    switch (status) {
+      case 'PENDENTE':
+        return 'warn';
+      case 'ENTREGUE_A_DUPLA':
+        return 'info';
+      case 'RECEBIDO_DA_DUPLA':
+        return 'info';
+      case 'CONFERIDO':
+        return 'success';
+      case 'ANEXADO_AO_KIT':
+        return 'success';
+      case 'ENTREGUE_AO_SOBRINHO':
+        return 'success';
+      case 'PERDIDO':
+        return 'danger';
+      case 'SUBSTITUIDO':
+        return 'warn';
+      case 'CANCELADO':
+        return 'secondary';
+      default:
+        return 'secondary';
+    }
+  }
+
+  podeConferirCaderno(caderno: CadernoChoro): boolean {
+    return caderno.status === 'RECEBIDO_DA_DUPLA';
+  }
+
+  podeAnexarCadernoAoKit(caderno: CadernoChoro): boolean {
+    return caderno.status === 'CONFERIDO';
+  }
+
+  podeEntregarCadernoAoSobrinho(caderno: CadernoChoro): boolean {
+    return caderno.status === 'ANEXADO_AO_KIT';
+  }
+
+  podeMarcarCadernoPerdido(caderno: CadernoChoro): boolean {
+    return !['ENTREGUE_AO_SOBRINHO', 'CANCELADO'].includes(caderno.status);
+  }
+
+  podeMarcarCadernoSubstituido(caderno: CadernoChoro): boolean {
+    return !['ENTREGUE_AO_SOBRINHO', 'CANCELADO'].includes(caderno.status);
+  }
+
+  podeCancelarCaderno(caderno: CadernoChoro): boolean {
+    return caderno.status !== 'ENTREGUE_AO_SOBRINHO' && caderno.status !== 'CANCELADO';
   }
 
   labelSobrinhoStatus(status: string): string {

@@ -243,17 +243,17 @@
   </div>
 
   <div class="col-12 col-md-4 col-xl-2">
-    <p-card class="operation-action-card h-100">
+    <p-card styleClass="operation-action-card h-100">
       <div class="action-icon">
         <i class="fa-solid fa-book-bible"></i>
       </div>
 
       <h3 class="h6 mb-1">Caderno do Choro</h3>
       <p class="text-body-secondary small mb-3">
-        Futuramente controlará a entrega por sobrinho.
+        Controle dos cadernos por dupla e kit final.
       </p>
 
-      <p-button label="Em breve" severity="secondary" variant="outlined" size="small" [disabled]="true" />
+      <p-tag value="Ativo" severity="success" />
     </p-card>
   </div>
 
@@ -344,9 +344,10 @@
 
   <div class="table-responsive-wrapper">
 
-    <p-table [value]="tiosOperacaoFiltrados()" class="p-datatable-sm min-width-table" [paginator]="true"
-      [rows]="10" [rowsPerPageOptions]="[10, 20, 50]" [showCurrentPageReport]="true"
-      currentPageReportTemplate="Exibindo {first} a {last} de {totalRecords} registros" paginatorDropdownAppendTo="body">
+    <p-table [value]="tiosOperacaoFiltrados()" class="p-datatable-sm min-width-table" [paginator]="true" [rows]="10"
+      [rowsPerPageOptions]="[10, 20, 50]" [showCurrentPageReport]="true"
+      currentPageReportTemplate="Exibindo {first} a {last} de {totalRecords} registros"
+      paginatorDropdownAppendTo="body">
       <ng-template pTemplate="header">
         <tr>
           <th>Tio carona</th>
@@ -535,8 +536,7 @@
             } @else {
             <div class="d-flex flex-column flex-xl-row justify-content-end gap-2">
               <p-button label="Presente" icon="fa-solid fa-user-check" size="small" severity="success"
-                [loading]="processandoPresencaSobrinho() === sobrinho.id"
-                [disabled]="!podeMarcarPresente(sobrinho)"
+                [loading]="processandoPresencaSobrinho() === sobrinho.id" [disabled]="!podeMarcarPresente(sobrinho)"
                 (onClick)="registrarPresencaSobrinho(sobrinho, 'PRESENTE')" />
 
               <p-button label="Ausente" icon="fa-solid fa-user-clock" size="small" severity="warn"
@@ -544,13 +544,223 @@
                 (onClick)="registrarPresencaSobrinho(sobrinho, 'AUSENTE')" />
 
               <p-button label="Desistente" icon="fa-solid fa-user-xmark" size="small" severity="danger"
-                [loading]="processandoPresencaSobrinho() === sobrinho.id"
-                [disabled]="!podeMarcarDesistente(sobrinho)"
+                [loading]="processandoPresencaSobrinho() === sobrinho.id" [disabled]="!podeMarcarDesistente(sobrinho)"
                 (onClick)="registrarPresencaSobrinho(sobrinho, 'DESISTENTE')" />
             </div>
             }
           </td>
 
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+  }
+</p-card>
+
+<p-card styleClass="shadow-sm border-0 mb-4">
+  <ng-template pTemplate="header">
+    <div class="px-4 pt-4 d-flex flex-column flex-xl-row justify-content-between gap-3">
+      <div>
+        <h2 class="h5 mb-1">Caderno do Choro</h2>
+        <p class="text-body-secondary small mb-0">
+          Controle dos cadernos secretos por dupla, conferência da equipe e kit de encerramento.
+        </p>
+      </div>
+
+      <div class="d-flex flex-wrap gap-2">
+        <p-button label="Gerar cadernos" icon="fa-solid fa-wand-magic-sparkles" severity="info" variant="outlined"
+          size="small" [loading]="processandoCadernos()" (onClick)="gerarCadernos()" />
+      </div>
+    </div>
+  </ng-template>
+
+  <div class="row g-3 mb-3">
+    <div class="col-12 col-md-4 col-xl-2">
+      <div class="status-mini-card">
+        <div class="small text-body-secondary">Pendentes</div>
+        <strong>{{ cadernosPendentes().length }}</strong>
+      </div>
+    </div>
+
+    <div class="col-12 col-md-4 col-xl-2">
+      <div class="status-mini-card">
+        <div class="small text-body-secondary">Com a dupla</div>
+        <strong>{{ cadernosEntreguesADupla().length }}</strong>
+      </div>
+    </div>
+
+    <div class="col-12 col-md-4 col-xl-2">
+      <div class="status-mini-card">
+        <div class="small text-body-secondary">Recebidos</div>
+        <strong>{{ cadernosRecebidosDaDupla().length }}</strong>
+      </div>
+    </div>
+
+    <div class="col-12 col-md-4 col-xl-2">
+      <div class="status-mini-card">
+        <div class="small text-body-secondary">Conferidos</div>
+        <strong>{{ cadernosConferidos().length }}</strong>
+      </div>
+    </div>
+
+    <div class="col-12 col-md-4 col-xl-2">
+      <div class="status-mini-card">
+        <div class="small text-body-secondary">No kit</div>
+        <strong>{{ cadernosNoKit().length }}</strong>
+      </div>
+    </div>
+
+    <div class="col-12 col-md-4 col-xl-2">
+      <div class="status-mini-card">
+        <div class="small text-body-secondary">Entregues</div>
+        <strong>{{ cadernosEntreguesAoSobrinho().length }}</strong>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-3 mb-3">
+    <div class="col-12 col-xl-4">
+      <label for="duplaCaderno" class="form-label">Dupla</label>
+
+      <p-select inputId="duplaCaderno" [options]="opcoesDuplasCaderno()" optionLabel="label" optionValue="value"
+        placeholder="Todas as duplas" styleClass="w-100" panelStyleClass="vinculo-select-panel" [filter]="true"
+        filterBy="label,descricao" [showClear]="true" [ngModel]="duplaCadernoSelecionada()"
+        (ngModelChange)="alterarDuplaCadernoSelecionada($event)" appendTo="body">
+        <ng-template pTemplate="selectedItem" let-opcao>
+          @if (opcao) {
+          <div class="select-dupla-selected">
+            <div class="fw-semibold text-truncate">{{ opcao.label }}</div>
+          </div>
+          }
+        </ng-template>
+
+        <ng-template pTemplate="item" let-opcao>
+          <div class="select-dupla-option">
+            <div class="fw-semibold text-truncate">{{ opcao.label }}</div>
+            <div class="small text-body-secondary text-truncate">{{ opcao.descricao }}</div>
+          </div>
+        </ng-template>
+      </p-select>
+    </div>
+
+    <div class="col-12 col-xl-4 d-flex align-items-end">
+      <div class="d-flex flex-column flex-sm-row gap-2 w-100">
+        <p-button label="Entregar à dupla" icon="fa-solid fa-hand-holding-heart" severity="info"
+          size="small" styleClass="w-100" [loading]="processandoCadernos()" [disabled]="!duplaCadernoSelecionada()"
+          (onClick)="entregarCadernosADupla()" />
+
+        <p-button label="Receber da dupla" icon="fa-solid fa-people-carry-box" severity="warn"
+          size="small" styleClass="w-100" [loading]="processandoCadernos()" [disabled]="!duplaCadernoSelecionada()"
+          (onClick)="receberCadernosDaDupla()" />
+      </div>
+    </div>
+
+    <div class="col-12 col-xl-4 d-flex align-items-end">
+      <div class="table-search w-100">
+        <span class="p-input-icon-left w-100">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input pInputText type="text" class="w-100" placeholder="Pesquisar caderno, sobrinho, dupla ou status..."
+            [value]="filtroCadernos()" (input)="alterarFiltroCadernos($any($event.target).value)" />
+        </span>
+      </div>
+    </div>
+  </div>
+
+  @if (cadernos().length === 0) {
+  <div class="empty-state text-center py-5">
+    <i class="fa-solid fa-book-bible text-body-secondary mb-3"></i>
+    <h3 class="h6 mb-1">Nenhum caderno gerado</h3>
+    <p class="text-body-secondary small mb-0">
+      Gere os cadernos a partir dos vínculos ativos entre sobrinhos e duplas.
+    </p>
+  </div>
+  } @else {
+  <div class="operation-table-toolbar mb-3">
+    <div>
+      <div class="fw-semibold small">Lista de cadernos</div>
+      <div class="text-body-secondary small">
+        {{ cadernosFiltrados().length }} de {{ cadernos().length }} caderno(s)
+      </div>
+    </div>
+  </div>
+
+  <div class="table-responsive-wrapper">
+    <p-table [value]="cadernosFiltrados()" styleClass="p-datatable-sm min-width-table caderno-table" [paginator]="true"
+      [rows]="10" [rowsPerPageOptions]="[10, 20, 50]" [showCurrentPageReport]="true"
+      currentPageReportTemplate="Exibindo {first} a {last} de {totalRecords} registros"
+      paginatorDropdownAppendTo="body">
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Sobrinho</th>
+          <th>Dupla</th>
+          <th>Status</th>
+          <th>Entregue à dupla</th>
+          <th>Recebido da dupla</th>
+          <th>Kit</th>
+          <th class="text-end">Ações</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-caderno>
+        <tr>
+          <td class="fw-semibold">{{ caderno.sobrinhoNome }}</td>
+
+          <td>
+            <div class="fw-semibold small">
+              {{ caderno.duplaApelido || caderno.duplaCodigo }}
+            </div>
+            <div class="small text-body-secondary">
+              {{ caderno.tio1Nome }} e {{ caderno.tio2Nome }}
+            </div>
+          </td>
+
+          <td>
+            <p-tag [value]="labelStatusCaderno(caderno.status)" [severity]="severityStatusCaderno(caderno.status)" />
+          </td>
+
+          <td>
+            @if (caderno.entregueADuplaEm) {
+            <span class="small">{{ caderno.entregueADuplaEm | date:'dd/MM/yyyy HH:mm' }}</span>
+            } @else {
+            <span class="small text-body-secondary">Não registrado</span>
+            }
+          </td>
+
+          <td>
+            @if (caderno.recebidoDaDuplaEm) {
+            <span class="small">{{ caderno.recebidoDaDuplaEm | date:'dd/MM/yyyy HH:mm' }}</span>
+            } @else {
+            <span class="small text-body-secondary">Não registrado</span>
+            }
+          </td>
+
+          <td>
+            @if (caderno.anexadoAoKitEm) {
+            <span class="small">{{ caderno.anexadoAoKitEm | date:'dd/MM/yyyy HH:mm' }}</span>
+            } @else {
+            <span class="small text-body-secondary">Não anexado</span>
+            }
+          </td>
+
+          <td class="text-end">
+            <div class="d-flex flex-column flex-xl-row justify-content-end gap-2">
+              <p-button label="Conferir" icon="fa-solid fa-clipboard-check" size="small" severity="warn"
+                [loading]="processandoCadernoId() === caderno.id"
+                [disabled]="!podeConferirCaderno(caderno)" (onClick)="conferirCaderno(caderno)" />
+
+              <p-button label="Anexar" icon="fa-solid fa-box" size="small" severity="info"
+                [loading]="processandoCadernoId() === caderno.id" [disabled]="!podeAnexarCadernoAoKit(caderno)"
+                (onClick)="anexarCadernoAoKit(caderno)" />
+
+              <p-button label="Entregar" icon="fa-solid fa-gift" size="small" severity="success"
+                [loading]="processandoCadernoId() === caderno.id" [disabled]="!podeEntregarCadernoAoSobrinho(caderno)"
+                (onClick)="entregarCadernoAoSobrinho(caderno)" />
+
+              <p-button label="Perdido" icon="fa-solid fa-triangle-exclamation" size="small" severity="danger"
+                [loading]="processandoCadernoId() === caderno.id"
+                [disabled]="!podeMarcarCadernoPerdido(caderno)" (onClick)="marcarCadernoPerdido(caderno)" />
+            </div>
+          </td>
         </tr>
       </ng-template>
     </p-table>
@@ -597,8 +807,8 @@
 
   <div class="table-responsive-wrapper">
 
-    <p-table [value]="sobrinhosEventoFiltrados()" class="p-datatable-sm min-width-table" [paginator]="true"
-      [rows]="10" [rowsPerPageOptions]="[10, 20, 50]" [showCurrentPageReport]="true" paginatorDropdownAppendTo="body"
+    <p-table [value]="sobrinhosEventoFiltrados()" class="p-datatable-sm min-width-table" [paginator]="true" [rows]="10"
+      [rowsPerPageOptions]="[10, 20, 50]" [showCurrentPageReport]="true" paginatorDropdownAppendTo="body"
       currentPageReportTemplate="Exibindo {first} a {last} de {totalRecords} registros">
       <ng-template pTemplate="header">
         <tr>
