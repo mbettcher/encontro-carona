@@ -71,48 +71,8 @@ export class EventoGestaoComponent implements OnInit {
   readonly salvandoSobrinho = signal(false);
   readonly salvandoVinculo = signal(false);
 
-  readonly opcoesPessoasTioCarona = computed<OpcaoNumerica[]>(() => {
-    const pessoasJaAdicionadas = new Set(
-      this.tiosCarona()
-        .filter(tio => tio.status === 'ATIVO')
-        .map(tio => tio.pessoaId)
-    );
-
-    return this.pessoas()
-      .filter(pessoa => pessoa.tipo === 'TIO_CARONA')
-      .filter(pessoa => !pessoasJaAdicionadas.has(pessoa.id))
-      .map(pessoa => ({
-        label: pessoa.nome,
-        value: pessoa.id
-      }));
-  });
-
-  readonly opcoesTiosEvento = computed<OpcaoNumerica[]>(() =>
-    this.tiosCarona()
-      .filter(tio => tio.status === 'ATIVO')
-      .map(tio => ({
-        label: tio.pessoaNome,
-        value: tio.id
-      }))
-  );
-
-  readonly opcoesDuplas = computed<OpcaoNumerica[]>(() =>
-    this.duplas()
-      .filter(dupla => dupla.status === 'ATIVA')
-      .map(dupla => ({
-        label: `${dupla.codigo} - ${dupla.tio1Nome} e ${dupla.tio2Nome}`,
-        value: dupla.id
-      }))
-  );
-
-  readonly opcoesSobrinhos = computed<OpcaoNumerica[]>(() =>
-    this.sobrinhos()
-      .filter(sobrinho => sobrinho.status === 'INSCRITO' || sobrinho.status === 'PRESENTE')
-      .map(sobrinho => ({
-        label: sobrinho.nome,
-        value: sobrinho.id
-      }))
-  );
+  readonly tio1Selecionado = signal(0);
+  readonly tio2Selecionado = signal(0);
 
   readonly tioForm = this.fb.nonNullable.group({
     pessoaId: [0, [Validators.required, Validators.min(1)]],
@@ -141,6 +101,100 @@ export class EventoGestaoComponent implements OnInit {
     duplaId: [0, [Validators.required, Validators.min(1)]]
   });
 
+  readonly opcoesPessoasTioCarona = computed<OpcaoNumerica[]>(() => {
+    const pessoasJaAdicionadas = new Set(
+      this.tiosCarona()
+        .filter(tio => tio.status === 'ATIVO')
+        .map(tio => tio.pessoaId)
+    );
+
+    return this.pessoas()
+      .filter(pessoa => pessoa.tipo === 'TIO_CARONA')
+      .filter(pessoa => !pessoasJaAdicionadas.has(pessoa.id))
+      .map(pessoa => ({
+        label: pessoa.nome,
+        value: pessoa.id
+      }));
+  });
+
+  readonly idsTiosEmDuplasAtivas = computed<Set<number>>(() => {
+    const ids = new Set<number>();
+
+    this.duplas()
+      .filter(dupla => dupla.status === 'ATIVA')
+      .forEach(dupla => {
+        ids.add(dupla.tio1Id);
+        ids.add(dupla.tio2Id);
+      });
+
+    return ids;
+  });
+
+  readonly opcoesTiosEvento = computed<OpcaoNumerica[]>(() =>
+    this.tiosCarona()
+      .filter(tio => tio.status === 'ATIVO')
+      .map(tio => ({
+        label: tio.pessoaNome,
+        value: tio.id
+      }))
+  );
+
+  readonly opcoesTiosDisponiveisParaDupla = computed<OpcaoNumerica[]>(() => {
+    const idsJaUsados = this.idsTiosEmDuplasAtivas();
+
+    return this.opcoesTiosEvento()
+      .filter(opcao => !idsJaUsados.has(opcao.value));
+  });
+
+  readonly opcoesTio1Dupla = computed<OpcaoNumerica[]>(() => {
+    const tio2Id = this.tio2Selecionado();
+
+    return this.opcoesTiosDisponiveisParaDupla()
+      .filter(opcao => opcao.value !== tio2Id);
+  });
+
+  readonly opcoesTio2Dupla = computed<OpcaoNumerica[]>(() => {
+    const tio1Id = this.tio1Selecionado();
+
+    return this.opcoesTiosDisponiveisParaDupla()
+      .filter(opcao => opcao.value !== tio1Id);
+  });
+
+  readonly podeFormarNovaDupla = computed(() =>
+    this.opcoesTiosDisponiveisParaDupla().length >= 2
+  );
+
+  readonly opcoesDuplas = computed<OpcaoNumerica[]>(() =>
+    this.duplas()
+      .filter(dupla => dupla.status === 'ATIVA')
+      .map(dupla => ({
+        label: `${dupla.tio1Nome} e ${dupla.tio2Nome}`,
+        value: dupla.id
+      }))
+  );
+
+  readonly idsSobrinhosComVinculoAtivo = computed<Set<number>>(() => {
+    const ids = new Set<number>();
+
+    this.vinculos()
+      .filter(vinculo => vinculo.status === 'ATIVO')
+      .forEach(vinculo => ids.add(vinculo.sobrinhoId));
+
+    return ids;
+  });
+
+  readonly opcoesSobrinhos = computed<OpcaoNumerica[]>(() => {
+    const idsJaVinculados = this.idsSobrinhosComVinculoAtivo();
+
+    return this.sobrinhos()
+      .filter(sobrinho => sobrinho.status === 'INSCRITO' || sobrinho.status === 'PRESENTE')
+      .filter(sobrinho => !idsJaVinculados.has(sobrinho.id))
+      .map(sobrinho => ({
+        label: sobrinho.nome,
+        value: sobrinho.id
+      }));
+  });
+
   ngOnInit(): void {
     this.carregarTudo();
   }
@@ -160,6 +214,26 @@ export class EventoGestaoComponent implements OnInit {
 
   alterarAba(aba: AbaGestao): void {
     this.abaAtiva.set(aba);
+  }
+
+  aoAlterarTio1(tioId: number | null): void {
+    const id = Number(tioId ?? 0);
+    this.tio1Selecionado.set(id);
+
+    if (id > 0 && id === this.tio2Selecionado()) {
+      this.tio2Selecionado.set(0);
+      this.duplaForm.controls.tio2Id.setValue(0);
+    }
+  }
+
+  aoAlterarTio2(tioId: number | null): void {
+    const id = Number(tioId ?? 0);
+    this.tio2Selecionado.set(id);
+
+    if (id > 0 && id === this.tio1Selecionado()) {
+      this.tio1Selecionado.set(0);
+      this.duplaForm.controls.tio1Id.setValue(0);
+    }
   }
 
   adicionarTioCarona(): void {
@@ -198,6 +272,11 @@ export class EventoGestaoComponent implements OnInit {
   }
 
   criarDupla(): void {
+    if (!this.podeFormarNovaDupla()) {
+      this.toastWarn('Não há tios carona disponíveis para formar uma nova dupla. Adicione novos tios ao evento ou revise as duplas já formadas.');
+      return;
+    }
+
     if (this.duplaForm.invalid) {
       this.duplaForm.markAllAsTouched();
       this.toastWarn('Selecione os dois tios carona para formar a dupla.');
@@ -222,11 +301,19 @@ export class EventoGestaoComponent implements OnInit {
         this.toastSuccess('Dupla criada com sucesso.');
         this.salvandoDupla.set(false);
         this.duplaForm.reset({ tio1Id: 0, tio2Id: 0, apelido: '' });
+        this.tio1Selecionado.set(0);
+        this.tio2Selecionado.set(0);
         this.carregarDuplas();
         this.carregarVinculos();
       },
       error: erro => {
-        console.error('Erro ao criar dupla', erro);
+        console.error('Erro ao criar dupla', {
+          status: erro.status,
+          url: erro.url,
+          error: erro.error,
+          message: erro.message
+        });
+
         this.toastError('Não foi possível criar a dupla. Confira se os tios já não estão em outra dupla ativa.');
         this.salvandoDupla.set(false);
       }
@@ -278,6 +365,16 @@ export class EventoGestaoComponent implements OnInit {
   }
 
   vincularSobrinho(): void {
+    if (this.opcoesSobrinhos().length === 0) {
+      this.toastWarn('Não há sobrinhos disponíveis para vínculo. Cadastre novos sobrinhos ou revise os vínculos existentes.');
+      return;
+    }
+
+    if (this.opcoesDuplas().length === 0) {
+      this.toastWarn('Não há duplas disponíveis para vínculo. Forme pelo menos uma dupla ativa antes de vincular sobrinhos.');
+      return;
+    }
+
     if (this.vinculoForm.invalid) {
       this.vinculoForm.markAllAsTouched();
       this.toastWarn('Selecione o sobrinho e a dupla.');

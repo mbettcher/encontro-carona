@@ -113,6 +113,7 @@
         <form [formGroup]="tioForm" (ngSubmit)="adicionarTioCarona()" class="d-grid gap-3">
           <div>
             <label for="pessoaId" class="form-label">Pessoa *</label>
+
             <p-select inputId="pessoaId" [options]="opcoesPessoasTioCarona()" optionLabel="label" optionValue="value"
               formControlName="pessoaId" placeholder="Selecione o tio carona" class="w-100" />
 
@@ -133,11 +134,13 @@
 
           <div>
             <label for="observacoesTio" class="form-label">Observações</label>
+
             <textarea id="observacoesTio" pTextarea rows="4" class="w-100" formControlName="observacoes"
               placeholder="Observações sobre a participação no evento"></textarea>
           </div>
 
-          <p-button type="submit" label="Adicionar ao evento" icon="fa-solid fa-plus" [loading]="salvandoTio()" />
+          <p-button type="submit" label="Adicionar ao evento" icon="fa-solid fa-plus" [loading]="salvandoTio()"
+            [disabled]="opcoesPessoasTioCarona().length === 0" />
         </form>
       </p-card>
     </div>
@@ -207,25 +210,51 @@
         </ng-template>
 
         <form [formGroup]="duplaForm" (ngSubmit)="criarDupla()" class="d-grid gap-3">
+          @if (!podeFormarNovaDupla()) {
+          <div class="alert alert-warning py-2 px-3 mb-0 small">
+            <i class="fa-solid fa-circle-info me-2"></i>
+            Não há tios carona disponíveis para formar uma nova dupla. Adicione novos tios carona ao evento ou revise as
+            duplas já formadas.
+          </div>
+          }
+
           <div>
             <label for="tio1Id" class="form-label">Tio carona 1 *</label>
-            <p-select inputId="tio1Id" [options]="opcoesTiosEvento()" optionLabel="label" optionValue="value"
-              formControlName="tio1Id" placeholder="Selecione" class="w-100" />
+
+            <p-select inputId="tio1Id" [options]="opcoesTio1Dupla()" optionLabel="label" optionValue="value"
+              formControlName="tio1Id" placeholder="Selecione" class="w-100" [disabled]="!podeFormarNovaDupla()"
+              (onChange)="aoAlterarTio1($event.value)" />
+
+            @if (duplaForm.controls.tio1Id.touched && duplaForm.controls.tio1Id.invalid) {
+            <div class="form-text text-danger">
+              Selecione o primeiro tio carona.
+            </div>
+            }
           </div>
 
           <div>
             <label for="tio2Id" class="form-label">Tio carona 2 *</label>
-            <p-select inputId="tio2Id" [options]="opcoesTiosEvento()" optionLabel="label" optionValue="value"
-              formControlName="tio2Id" placeholder="Selecione" class="w-100" />
+
+            <p-select inputId="tio2Id" [options]="opcoesTio2Dupla()" optionLabel="label" optionValue="value"
+              formControlName="tio2Id" placeholder="Selecione" class="w-100" [disabled]="!podeFormarNovaDupla()"
+              (onChange)="aoAlterarTio2($event.value)" />
+
+            @if (duplaForm.controls.tio2Id.touched && duplaForm.controls.tio2Id.invalid) {
+            <div class="form-text text-danger">
+              Selecione o segundo tio carona.
+            </div>
+            }
           </div>
 
           <div>
             <label for="apelido" class="form-label">Apelido da dupla</label>
+
             <input id="apelido" pInputText type="text" class="w-100" formControlName="apelido"
               placeholder="Ex.: Dupla Azul" />
           </div>
 
-          <p-button type="submit" label="Criar dupla" icon="fa-solid fa-people-arrows" [loading]="salvandoDupla()" />
+          <p-button type="submit" label="Criar dupla" icon="fa-solid fa-people-arrows" [loading]="salvandoDupla()"
+            [disabled]="!podeFormarNovaDupla()" />
         </form>
       </p-card>
     </div>
@@ -302,6 +331,7 @@
         <form [formGroup]="sobrinhoForm" (ngSubmit)="criarSobrinho()" class="d-grid gap-3">
           <div>
             <label for="nomeSobrinho" class="form-label">Nome *</label>
+
             <input id="nomeSobrinho" pInputText type="text" class="w-100" formControlName="nome"
               placeholder="Nome completo" />
 
@@ -314,41 +344,48 @@
 
           <div>
             <label for="telefoneSobrinho" class="form-label">Telefone</label>
+
             <input id="telefoneSobrinho" pInputText type="text" class="w-100" formControlName="telefone"
               placeholder="(00) 00000-0000" />
           </div>
 
           <div>
             <label for="responsavelNome" class="form-label">Responsável</label>
+
             <input id="responsavelNome" pInputText type="text" class="w-100" formControlName="responsavelNome"
               placeholder="Nome do responsável" />
           </div>
 
           <div>
             <label for="responsavelTelefone" class="form-label">Telefone do responsável</label>
+
             <input id="responsavelTelefone" pInputText type="text" class="w-100" formControlName="responsavelTelefone"
               placeholder="(00) 00000-0000" />
           </div>
 
           <div>
             <label for="dataNascimentoSobrinho" class="form-label">Data de nascimento</label>
+
             <input id="dataNascimentoSobrinho" pInputText type="date" class="w-100" formControlName="dataNascimento" />
           </div>
 
           <div>
             <label for="enderecoSobrinho" class="form-label">Endereço</label>
+
             <input id="enderecoSobrinho" pInputText type="text" class="w-100" formControlName="endereco"
               placeholder="Endereço do sobrinho" />
           </div>
 
           <div>
             <label for="restricaoAlimentar" class="form-label">Restrição alimentar</label>
+
             <textarea id="restricaoAlimentar" pTextarea rows="3" class="w-100" formControlName="restricaoAlimentar"
               placeholder="Ex.: alergias, restrições alimentares"></textarea>
           </div>
 
           <div>
             <label for="observacaoMedica" class="form-label">Observação médica</label>
+
             <textarea id="observacaoMedica" pTextarea rows="3" class="w-100" formControlName="observacaoMedica"
               placeholder="Informação relevante para a equipe"></textarea>
           </div>
@@ -446,17 +483,37 @@
         <form [formGroup]="vinculoForm" (ngSubmit)="vincularSobrinho()" class="d-grid gap-3">
           <div>
             <label for="sobrinhoId" class="form-label">Sobrinho *</label>
+
             <p-select inputId="sobrinhoId" [options]="opcoesSobrinhos()" optionLabel="label" optionValue="value"
-              formControlName="sobrinhoId" placeholder="Selecione o sobrinho" class="w-100" />
+              formControlName="sobrinhoId" placeholder="Selecione o sobrinho" class="w-100 vinculo-select"
+              panelclass="vinculo-select-panel" [disabled]="opcoesSobrinhos().length === 0" />
+
+            @if (opcoesSobrinhos().length === 0) {
+            <div class="alert alert-warning py-2 px-3 mb-0 mt-2 small">
+              <i class="fa-solid fa-circle-info me-2"></i>
+              Não há sobrinhos disponíveis para vínculo. Todos os sobrinhos ativos já estão vinculados ou não há
+              sobrinhos cadastrados.
+            </div>
+            }
           </div>
 
           <div>
             <label for="duplaId" class="form-label">Dupla *</label>
+
             <p-select inputId="duplaId" [options]="opcoesDuplas()" optionLabel="label" optionValue="value"
-              formControlName="duplaId" placeholder="Selecione a dupla" class="w-100" />
+              formControlName="duplaId" placeholder="Selecione a dupla" class="w-100 vinculo-select"
+              panelclass="vinculo-select-panel" [disabled]="opcoesDuplas().length === 0" />
+
+            @if (opcoesDuplas().length === 0) {
+            <div class="alert alert-warning py-2 px-3 mb-0 mt-2 small">
+              <i class="fa-solid fa-circle-info me-2"></i>
+              Não há duplas disponíveis. Forme pelo menos uma dupla ativa antes de vincular sobrinhos.
+            </div>
+            }
           </div>
 
-          <p-button type="submit" label="Vincular" icon="fa-solid fa-link" [loading]="salvandoVinculo()" />
+          <p-button type="submit" label="Vincular" icon="fa-solid fa-link" [loading]="salvandoVinculo()"
+            [disabled]="opcoesSobrinhos().length === 0 || opcoesDuplas().length === 0" />
         </form>
       </p-card>
     </div>
