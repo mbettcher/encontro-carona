@@ -99,3 +99,43 @@ body {
     background: #fff !important;
   }
 }
+
+@media print {
+  body.cracha-print-mode {
+    background: #fff !important;
+    margin: 0 !important;
+  }
+
+  body.cracha-print-mode header,
+  body.cracha-print-mode nav,
+  body.cracha-print-mode .navbar,
+  body.cracha-print-mode .app-header,
+  body.cracha-print-mode .app-navbar,
+  body.cracha-print-mode .layout-header,
+  body.cracha-print-mode .main-header,
+  body.cracha-print-mode .topbar,
+  body.cracha-print-mode .p-toast,
+  body.cracha-print-mode .print-toolbar {
+    display: none !important;
+  }
+
+  body.cracha-print-mode .cracha-print-page {
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100% !important;
+    min-height: auto !important;
+    background: #fff !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  body.cracha-print-mode .cracha-print-page .print-sheet {
+    width: 210mm !important;
+    max-width: 210mm !important;
+    min-height: 297mm !important;
+    margin: 0 auto !important;
+    padding: 10mm !important;
+    box-shadow: none !important;
+    background: #fff !important;
+  }
+}

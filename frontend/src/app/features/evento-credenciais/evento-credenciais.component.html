@@ -142,8 +142,8 @@
                     <p-button label="QR Tios" icon="fa-solid fa-car-side" severity="info" size="small"
                         [disabled]="credenciaisTios().length === 0" (onClick)="imprimirQrCodes('TIO_CARONA')" />
 
-                    <p-button label="Crachás" icon="fa-solid fa-print" severity="help" size="small"
-                        [disabled]="credenciaisAtivas().length === 0" />
+                    <p-button label="Crachás" icon="fa-solid fa-id-card" severity="help" size="small"
+                        [disabled]="credenciaisAtivas().length === 0" (onClick)="imprimirCrachas()" />
                 </div>
             </div>
         </ng-template>
@@ -221,10 +221,11 @@
                                     [disabled]="credencial.status !== 'ATIVA'"
                                     (onClick)="imprimirQrCodeIndividual(credencial)" />
 
-                                <p-button icon="fa-solid fa-print" size="small" severity="help"
+                                <p-button icon="fa-solid fa-print" size="small" severity="secondary"
                                     styleClass="credencial-icon-button" pTooltip="Imprimir crachá individual"
                                     tooltipPosition="top" ariaLabel="Imprimir crachá individual"
-                                    [disabled]="credencial.status !== 'ATIVA'" />
+                                    [disabled]="credencial.status !== 'ATIVA'"
+                                    (onClick)="imprimirCrachaIndividual(credencial)" />
 
                                 <p-button icon="fa-solid fa-pause" size="small" severity="warn"
                                     styleClass="credencial-icon-button" pTooltip="Inativar credencial"

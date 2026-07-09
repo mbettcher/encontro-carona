@@ -1,0 +1,256 @@
+.cracha-print-page {
+    min-height: 100vh;
+    background: var(--bs-tertiary-bg);
+
+    .print-toolbar {
+        background: var(--bs-body-bg);
+        border-bottom: 1px solid var(--bs-border-color);
+    }
+
+    .empty-state {
+        i {
+            font-size: 2.5rem;
+        }
+    }
+
+    .print-sheet {
+        max-width: 210mm;
+        margin: 0 auto;
+        padding: 10mm;
+        background: #fff;
+        min-height: 297mm;
+    }
+
+    .cracha-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10mm;
+        justify-items: center;
+        align-items: start;
+    }
+
+    .cracha-card {
+        width: 88mm;
+        min-height: 128mm;
+        border-radius: 5mm;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        background: #ffffff;
+        color: #0f172a;
+        border: 1px solid #dbe4f0;
+        box-shadow: 0 0.2rem 0.8rem rgba(15, 23, 42, 0.08);
+
+        &.sobrinho {
+            .cracha-header {
+                background: linear-gradient(135deg, #7c3aed 0%, #9333ea 45%, #0ea5e9 100%);
+            }
+
+            .cracha-tipo {
+                color: #7c3aed;
+                border-color: rgba(124, 58, 237, 0.25);
+                background: rgba(124, 58, 237, 0.08);
+            }
+        }
+
+        &.tio {
+            .cracha-header {
+                background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 45%, #0891b2 100%);
+            }
+
+            .cracha-tipo {
+                color: #1d4ed8;
+                border-color: rgba(29, 78, 216, 0.25);
+                background: rgba(29, 78, 216, 0.08);
+            }
+        }
+    }
+
+    .cracha-header {
+        color: #fff;
+        padding: 6mm 6mm 5mm;
+    }
+
+    .cracha-identidade {
+        display: flex;
+        align-items: center;
+        gap: 3mm;
+    }
+
+    .cracha-logo {
+        flex: 0 0 auto;
+    }
+
+    .cracha-logo-placeholder {
+        width: 12mm;
+        height: 12mm;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.18);
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        i {
+            font-size: 0.9rem;
+            color: #fff;
+        }
+    }
+
+    .cracha-logo img {
+        width: 12mm;
+        height: 12mm;
+        object-fit: contain;
+        border-radius: 999px;
+        background: #fff;
+        padding: 1mm;
+    }
+
+    .cracha-paroquia {
+        font-size: 9pt;
+        font-weight: 800;
+        line-height: 1.2;
+        text-transform: uppercase;
+    }
+
+    .cracha-evento {
+        margin-top: 4mm;
+        font-size: 10pt;
+        font-weight: 700;
+        line-height: 1.2;
+        text-align: center;
+        text-transform: uppercase;
+        letter-spacing: 0.02em;
+    }
+
+    .cracha-body {
+        padding: 8mm 6mm 5mm;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        flex: 1 1 auto;
+    }
+
+    .cracha-tipo {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2.5mm 5mm;
+        border-radius: 999px;
+        border: 1px solid;
+        font-size: 9pt;
+        font-weight: 800;
+        text-transform: uppercase;
+        margin-bottom: 8mm;
+    }
+
+    .cracha-nome {
+        font-size: 20pt;
+        font-weight: 900;
+        line-height: 1.05;
+        text-transform: uppercase;
+        text-align: center;
+        word-break: break-word;
+        text-wrap: balance;
+        color: #0f172a;
+    }
+
+    .cracha-footer {
+        margin-top: auto;
+        padding: 4mm 6mm 7mm;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .cracha-qrcode-box {
+        width: 36mm;
+        height: 36mm;
+        border-radius: 4mm;
+        background: #fff;
+        border: 1px solid #dbe4f0;
+        padding: 2mm;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+
+        img {
+            width: 30mm;
+            height: 30mm;
+            display: block;
+        }
+    }
+
+    .cracha-codigo {
+        margin-top: 3mm;
+        text-align: center;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+        font-size: 8pt;
+        line-height: 1.2;
+        word-break: break-all;
+        color: #475569;
+    }
+}
+
+@media (max-width: 768px) {
+    .cracha-print-page {
+        .print-sheet {
+            padding: 1rem;
+            min-height: auto;
+        }
+
+        .cracha-grid {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+
+        .cracha-card {
+            width: 100%;
+            max-width: 340px;
+            min-height: 460px;
+        }
+    }
+}
+
+@media print {
+    @page {
+        size: A4 portrait;
+        margin: 0;
+    }
+
+    :host {
+        display: block;
+    }
+
+    .print-toolbar {
+        display: none !important;
+    }
+
+    .cracha-print-page {
+        background: #fff !important;
+        min-height: auto !important;
+    }
+
+    .cracha-print-page .print-sheet {
+        width: 210mm;
+        max-width: 210mm;
+        min-height: 297mm;
+        margin: 0 auto;
+        padding: 10mm;
+        box-shadow: none;
+        background: #fff !important;
+    }
+
+    .cracha-print-page .cracha-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8mm;
+    }
+
+    .cracha-print-page .cracha-card {
+        width: 88mm;
+        min-height: 128mm;
+        box-shadow: none;
+    }
+}

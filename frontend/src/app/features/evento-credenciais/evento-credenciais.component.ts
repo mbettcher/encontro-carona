@@ -239,6 +239,31 @@ export class EventoCredenciaisComponent implements OnInit {
         );
     }
 
+    imprimirCrachas(tipo?: TipoCredencial): void {
+        const queryParams = tipo ? { tipo } : {};
+
+        this.router.navigate(
+            ['/eventos', this.eventoId, 'credenciais', 'impressao-crachas'],
+            { queryParams }
+        );
+    }
+
+    imprimirCrachaIndividual(credencial: CredencialEvento): void {
+        if (credencial.status !== 'ATIVA') {
+            this.toastError('Somente credenciais ativas podem ser impressas.');
+            return;
+        }
+
+        this.router.navigate(
+            ['/eventos', this.eventoId, 'credenciais', 'impressao-crachas'],
+            {
+                queryParams: {
+                    credencialId: credencial.id
+                }
+            }
+        );
+    }
+
     podeInativar(credencial: CredencialEvento): boolean {
         return credencial.status === 'ATIVA';
     }
