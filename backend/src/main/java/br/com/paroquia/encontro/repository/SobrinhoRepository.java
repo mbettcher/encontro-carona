@@ -4,7 +4,10 @@ import br.com.paroquia.encontro.domain.entity.Sobrinho;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface SobrinhoRepository extends JpaRepository<Sobrinho, Long> {
     List<Sobrinho> findByEventoIdOrderByNome(Long eventoId);
+
+    Optional<Sobrinho> findByIdAndEventoId(Long id, Long eventoId);
 }

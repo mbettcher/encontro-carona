@@ -3,6 +3,8 @@ package br.com.paroquia.encontro.controllers;
 import br.com.paroquia.encontro.dto.request.SobrinhoRequest;
 import br.com.paroquia.encontro.dto.response.SobrinhoResponse;
 import br.com.paroquia.encontro.services.SobrinhoService;
+import br.com.paroquia.encontro.dto.request.SobrinhoPresencaRequest;
+
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -27,5 +29,14 @@ public class SobrinhoController {
     @ResponseStatus(HttpStatus.CREATED)
     public SobrinhoResponse criar(@PathVariable Long eventoId, @RequestBody @Valid SobrinhoRequest request) {
         return service.criar(eventoId, request);
+    }
+
+    @PatchMapping("/{sobrinhoId}/presenca")
+    public SobrinhoResponse registrarPresenca(
+            @PathVariable Long eventoId,
+            @PathVariable Long sobrinhoId,
+            @RequestBody @Valid SobrinhoPresencaRequest request
+    ) {
+        return service.registrarPresenca(eventoId, sobrinhoId, request.operacao());
     }
 }

@@ -4,8 +4,10 @@ import br.com.paroquia.encontro.common.ResourceNotFoundException;
 import br.com.paroquia.encontro.domain.entity.Sobrinho;
 import br.com.paroquia.encontro.dto.request.SobrinhoRequest;
 import br.com.paroquia.encontro.dto.response.SobrinhoResponse;
+import br.com.paroquia.encontro.domain.enums.OperacaoPresencaSobrinho;
 import br.com.paroquia.encontro.repository.EventoRepository;
 import br.com.paroquia.encontro.repository.SobrinhoRepository;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,5 +32,19 @@ public class SobrinhoService {
     public SobrinhoResponse criar(Long eventoId, SobrinhoRequest request) {
         var evento = eventoRepository.findById(eventoId).orElseThrow(() -> new ResourceNotFoundException("Evento não encontrado."));
         return SobrinhoResponse.from(repository.save(new Sobrinho(evento, request.nome(), request.telefone(), request.responsavelNome(), request.responsavelTelefone(), request.endereco(), request.dataNascimento(), request.restricaoAlimentar(), request.observacaoMedica())));
+    }
+
+    @Transactional
+    public SobrinhoResponse registrarPresenca(Long eventoId, Long sobrinhoId, OperacaoPresencaSobrinho operacao) {
+        var sobrinho = repository.findByIdAndEventoId(sobrinhoId, eventoId)
+                .orElseThrow(() -> new ResourceNotFoundException("Sobrinho não encontrado neste evento."));
+
+        switch (operacao) {
+            case PRESENTE -> sobrinho.marcarPresente();
+            case AUSENTE -> sobrinho.marcarAusente();
+            case DESISTENTE -> sobrinho.marcarDesistente();
+        }
+
+        return SobrinhoResponse.from(sobrinho);
     }
 }
