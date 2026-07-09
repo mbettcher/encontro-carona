@@ -25,17 +25,20 @@ public class TioCaronaEventoService {
     private final TioCaronaEventoOperacaoRepository operacaoRepository;
     private final EventoRepository eventoRepository;
     private final PessoaRepository pessoaRepository;
+    private final CredencialOperacionalService credencialOperacionalService;
 
     public TioCaronaEventoService(
             TioCaronaEventoRepository repository,
             TioCaronaEventoOperacaoRepository operacaoRepository,
             EventoRepository eventoRepository,
-            PessoaRepository pessoaRepository
+            PessoaRepository pessoaRepository,
+            CredencialOperacionalService credencialOperacionalService
     ) {
         this.repository = repository;
         this.operacaoRepository = operacaoRepository;
         this.eventoRepository = eventoRepository;
         this.pessoaRepository = pessoaRepository;
+        this.credencialOperacionalService = credencialOperacionalService;
     }
 
     @Transactional(readOnly = true)
@@ -81,14 +84,24 @@ public class TioCaronaEventoService {
 
     @Transactional
     public TioCaronaEventoResponse registrarCheckinPorCodigo(Long eventoId, String codigoIdentificacao) {
-        var tioCarona = buscarPorCodigo(eventoId, codigoIdentificacao);
-        return registrarOperacao(tioCarona, TipoOperacaoTioCarona.CHECKIN, OrigemOperacaoTioCarona.CREDENCIAL, codigoIdentificacao);
+        var tioCarona = resolverTioPorCodigoOuCredencial(eventoId, codigoIdentificacao);
+        return registrarOperacao(
+                tioCarona,
+                TipoOperacaoTioCarona.CHECKIN,
+                OrigemOperacaoTioCarona.CREDENCIAL,
+                codigoIdentificacao
+        );
     }
 
     @Transactional
     public TioCaronaEventoResponse registrarCheckoutPorCodigo(Long eventoId, String codigoIdentificacao) {
-        var tioCarona = buscarPorCodigo(eventoId, codigoIdentificacao);
-        return registrarOperacao(tioCarona, TipoOperacaoTioCarona.CHECKOUT, OrigemOperacaoTioCarona.CREDENCIAL, codigoIdentificacao);
+        var tioCarona = resolverTioPorCodigoOuCredencial(eventoId, codigoIdentificacao);
+        return registrarOperacao(
+                tioCarona,
+                TipoOperacaoTioCarona.CHECKOUT,
+                OrigemOperacaoTioCarona.CREDENCIAL,
+                codigoIdentificacao
+        );
     }
 
     @Transactional
@@ -165,19 +178,27 @@ public class TioCaronaEventoService {
         }
     }
 
-    private TioCaronaEvento buscarPorCodigo(Long eventoId, String codigoIdentificacao) {
-        var codigoNormalizado = codigoIdentificacao == null ? "" : codigoIdentificacao.trim();
-
-        if (codigoNormalizado.isBlank()) {
-            throw new BusinessException("Código de identificação é obrigatório.");
-        }
-
-        return repository.findByEventoIdAndCodigoIdentificacao(eventoId, codigoNormalizado)
-                .orElseThrow(() -> new ResourceNotFoundException("Credencial de tio carona não encontrada para este evento."));
-    }
-
     private TioCaronaEvento buscarPorIdEvento(Long eventoId, Long tioCaronaEventoId) {
         return repository.findByIdAndEventoId(tioCaronaEventoId, eventoId)
                 .orElseThrow(() -> new ResourceNotFoundException("Tio carona não encontrado neste evento."));
+    }
+
+    private TioCaronaEvento resolverTioPorCodigoOuCredencial(Long eventoId, String codigoIdentificacao) {
+        var codigo = normalizarCodigoIdentificacao(codigoIdentificacao);
+
+        if (credencialOperacionalService.existeCredencialComCodigo(codigo)) {
+            return credencialOperacionalService.resolverTioCaronaPorCredencial(eventoId, codigo);
+        }
+
+        return repository.findByEventoIdAndCodigoIdentificacao(eventoId, codigo)
+                .orElseThrow(() -> new ResourceNotFoundException("Tio carona não encontrado para o código informado."));
+    }
+
+    private String normalizarCodigoIdentificacao(String codigoIdentificacao) {
+        if (codigoIdentificacao == null || codigoIdentificacao.isBlank()) {
+            throw new BusinessException("Código de identificação é obrigatório.");
+        }
+
+        return codigoIdentificacao.trim();
     }
 }

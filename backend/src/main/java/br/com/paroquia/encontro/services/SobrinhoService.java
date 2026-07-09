@@ -23,15 +23,18 @@ public class SobrinhoService {
     private final SobrinhoRepository repository;
     private final EventoRepository eventoRepository;
     private final SobrinhoPresencaRepository sobrinhoPresencaRepository;
+    private final CredencialOperacionalService credencialOperacionalService;
 
     public SobrinhoService(
             SobrinhoRepository repository,
             EventoRepository eventoRepository,
-            SobrinhoPresencaRepository sobrinhoPresencaRepository
+            SobrinhoPresencaRepository sobrinhoPresencaRepository,
+            CredencialOperacionalService credencialOperacionalService
     ) {
         this.repository = repository;
         this.eventoRepository = eventoRepository;
         this.sobrinhoPresencaRepository = sobrinhoPresencaRepository;
+        this.credencialOperacionalService = credencialOperacionalService;
     }
 
     @Transactional(readOnly = true)
@@ -89,6 +92,21 @@ public class SobrinhoService {
         sobrinho.atualizarStatusPresenca(novoStatus);
 
         return SobrinhoResponse.from(sobrinho, presenca);
+    }
+
+    @Transactional
+    public SobrinhoResponse registrarPresencaPorCredencial(
+            Long eventoId,
+            String codigoIdentificacao,
+            OperacaoPresencaSobrinho operacao,
+            String observacao
+    ) {
+        var sobrinho = credencialOperacionalService.resolverSobrinhoPorCredencial(
+                eventoId,
+                codigoIdentificacao
+        );
+
+        return registrarPresenca(eventoId, sobrinho.getId(), operacao, observacao);
     }
 
     private Sobrinho buscarPorIdEvento(Long eventoId, Long sobrinhoId) {

@@ -50,7 +50,7 @@ public class TioCaronaEventoController {
         return service.registrarCheckoutPorCodigo(eventoId, request.codigoIdentificacao());
     }
 
-    @PostMapping("/{tioCaronaEventoId}/operacao/check-in")
+    @PostMapping("/{tioCaronaEventoId}/operacao/manual/check-in")
     public TioCaronaEventoResponse registrarCheckinManual(
             @PathVariable Long eventoId,
             @PathVariable Long tioCaronaEventoId
@@ -58,7 +58,7 @@ public class TioCaronaEventoController {
         return service.registrarCheckinManual(eventoId, tioCaronaEventoId);
     }
 
-    @PostMapping("/{tioCaronaEventoId}/operacao/checkout")
+    @PostMapping("/{tioCaronaEventoId}/operacao/manual/checkout")
     public TioCaronaEventoResponse registrarCheckoutManual(
             @PathVariable Long eventoId,
             @PathVariable Long tioCaronaEventoId
