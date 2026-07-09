@@ -82,11 +82,11 @@
                 </div>
 
                 <div class="d-flex flex-column flex-sm-row gap-2">
-                    <p-button label="Gerar tios carona" icon="fa-solid fa-car-side" severity="info"
-                        size="small" [loading]="gerando()" (onClick)="gerarTiosCarona()" />
+                    <p-button label="Gerar tios carona" icon="fa-solid fa-car-side" severity="info" size="small"
+                        [loading]="gerando()" (onClick)="gerarTiosCarona()" />
 
-                    <p-button label="Gerar sobrinhos" icon="fa-solid fa-child-reaching" severity="success"
-                        size="small" [loading]="gerando()" (onClick)="gerarSobrinhos()" />
+                    <p-button label="Gerar sobrinhos" icon="fa-solid fa-child-reaching" severity="success" size="small"
+                        [loading]="gerando()" (onClick)="gerarSobrinhos()" />
                 </div>
             </div>
         </ng-template>
@@ -133,11 +133,17 @@
                 </div>
 
                 <div class="d-flex flex-column flex-sm-row gap-2">
-                    <p-button label="Imprimir QR Codes" icon="fa-solid fa-qrcode" severity="secondary"
-                        variant="outlined" size="small" [disabled]="credenciaisAtivas().length === 0" />
+                    <p-button label="QR Codes" icon="fa-solid fa-qrcode" severity="secondary" size="small"
+                        [disabled]="credenciaisAtivas().length === 0" (onClick)="imprimirQrCodes()" />
 
-                    <p-button label="Imprimir crachás" icon="fa-solid fa-print" severity="secondary" variant="outlined"
-                        size="small" [disabled]="credenciaisAtivas().length === 0" />
+                    <p-button label="QR Sobrinhos" icon="fa-solid fa-child-reaching" severity="success" size="small"
+                        [disabled]="credenciaisSobrinhos().length === 0" (onClick)="imprimirQrCodes('SOBRINHO')" />
+
+                    <p-button label="QR Tios" icon="fa-solid fa-car-side" severity="info" size="small"
+                        [disabled]="credenciaisTios().length === 0" (onClick)="imprimirQrCodes('TIO_CARONA')" />
+
+                    <p-button label="Crachás" icon="fa-solid fa-print" severity="help" size="small"
+                        [disabled]="credenciaisAtivas().length === 0" />
                 </div>
             </div>
         </ng-template>
@@ -212,7 +218,8 @@
                                 <p-button icon="fa-solid fa-qrcode" size="small" severity="secondary"
                                     styleClass="credencial-icon-button" pTooltip="Imprimir QR Code individual"
                                     tooltipPosition="top" ariaLabel="Imprimir QR Code individual"
-                                    [disabled]="credencial.status !== 'ATIVA'" />
+                                    [disabled]="credencial.status !== 'ATIVA'"
+                                    (onClick)="imprimirQrCodeIndividual(credencial)" />
 
                                 <p-button icon="fa-solid fa-print" size="small" severity="help"
                                     styleClass="credencial-icon-button" pTooltip="Imprimir crachá individual"

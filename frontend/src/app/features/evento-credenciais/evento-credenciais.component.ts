@@ -1,7 +1,7 @@
 import { DatePipe } from '@angular/common';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 
 import { MessageService } from 'primeng/api';
@@ -42,6 +42,7 @@ export class EventoCredenciaisComponent implements OnInit {
     private readonly route = inject(ActivatedRoute);
     private readonly service = inject(EventoCredenciaisService);
     private readonly messageService = inject(MessageService);
+    private readonly router = inject(Router);
 
     readonly eventoId = Number(this.route.snapshot.paramMap.get('eventoId'));
 
@@ -211,6 +212,31 @@ export class EventoCredenciaisComponent implements OnInit {
                     this.toastError(this.mensagemErro(erro, 'Não foi possível cancelar a credencial.'));
                 }
             });
+    }
+
+    imprimirQrCodes(tipo?: TipoCredencial): void {
+        const queryParams = tipo ? { tipo } : {};
+
+        this.router.navigate(
+            ['/eventos', this.eventoId, 'credenciais', 'impressao-qrcode'],
+            { queryParams }
+        );
+    }
+
+    imprimirQrCodeIndividual(credencial: CredencialEvento): void {
+        if (credencial.status !== 'ATIVA') {
+            this.toastError('Somente credenciais ativas podem ser impressas.');
+            return;
+        }
+
+        this.router.navigate(
+            ['/eventos', this.eventoId, 'credenciais', 'impressao-qrcode'],
+            {
+                queryParams: {
+                    credencialId: credencial.id
+                }
+            }
+        );
     }
 
     podeInativar(credencial: CredencialEvento): boolean {
