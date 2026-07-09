@@ -9,6 +9,8 @@ import java.util.Optional;
 public interface TioCaronaEventoRepository extends JpaRepository<TioCaronaEvento, Long> {
     List<TioCaronaEvento> findByEventoIdOrderByPessoaNome(Long eventoId);
 
+    List<TioCaronaEvento> findByEventoIdOrderByPessoaNomeAsc(Long eventoId);
+
     boolean existsByEventoIdAndPessoaId(Long eventoId, Long pessoaId);
 
     Optional<TioCaronaEvento> findByEventoIdAndCodigoIdentificacao(Long eventoId, String codigoIdentificacao);

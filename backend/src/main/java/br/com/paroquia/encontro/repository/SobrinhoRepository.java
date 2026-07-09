@@ -9,5 +9,7 @@ import java.util.Optional;
 public interface SobrinhoRepository extends JpaRepository<Sobrinho, Long> {
     List<Sobrinho> findByEventoIdOrderByNome(Long eventoId);
 
+    List<Sobrinho> findByEventoIdOrderByNomeAsc(Long eventoId);
+
     Optional<Sobrinho> findByIdAndEventoId(Long id, Long eventoId);
 }

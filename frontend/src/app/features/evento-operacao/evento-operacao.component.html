@@ -759,28 +759,28 @@
               </span>
 
               <p-button icon="fa-solid fa-clock-rotate-left" size="small" severity="help"
-                styleClass="caderno-icon-button ms-1" pTooltip="Ver histórico" tooltipPosition="top"
+                styleClass="caderno-icon-button" pTooltip="Ver histórico" tooltipPosition="top"
                 ariaLabel="Ver histórico" (onClick)="abrirHistoricoCaderno(caderno)" />
             </div>
             } @else {
             <div class="caderno-actions">
               <p-button icon="fa-solid fa-clipboard-check" size="small" severity="warn"
-                styleClass="caderno-icon-button me-1" pTooltip="Conferir caderno" tooltipPosition="top"
+                styleClass="caderno-icon-button" pTooltip="Conferir caderno" tooltipPosition="top"
                 ariaLabel="Conferir caderno" [loading]="processandoCadernoId() === caderno.id"
                 [disabled]="!podeConferirCaderno(caderno)" (onClick)="conferirCaderno(caderno)" />
 
-              <p-button icon="fa-solid fa-box" size="small" severity="info" styleClass="caderno-icon-button me-2"
+              <p-button icon="fa-solid fa-box" size="small" severity="info" styleClass="caderno-icon-button"
                 pTooltip="Anexar ao kit" tooltipPosition="top" ariaLabel="Anexar ao kit"
                 [loading]="processandoCadernoId() === caderno.id" [disabled]="!podeAnexarCadernoAoKit(caderno)"
                 (onClick)="anexarCadernoAoKit(caderno)" />
 
-              <p-button icon="fa-solid fa-gift" size="small" severity="success" styleClass="caderno-icon-button me-1"
+              <p-button icon="fa-solid fa-gift" size="small" severity="success" styleClass="caderno-icon-button"
                 pTooltip="Entregar ao sobrinho" tooltipPosition="top" ariaLabel="Entregar ao sobrinho"
                 [loading]="processandoCadernoId() === caderno.id" [disabled]="!podeEntregarCadernoAoSobrinho(caderno)"
                 (onClick)="entregarCadernoAoSobrinho(caderno)" />
 
               <p-button icon="fa-solid fa-clock-rotate-left" size="small" severity="help"
-                styleClass="caderno-icon-button me-1" pTooltip="Ver histórico" tooltipPosition="top"
+                styleClass="caderno-icon-button" pTooltip="Ver histórico" tooltipPosition="top"
                 ariaLabel="Ver histórico" (onClick)="abrirHistoricoCaderno(caderno)" />
 
               <p-button icon="fa-solid fa-ellipsis" size="small" severity="danger" styleClass="caderno-icon-button"
