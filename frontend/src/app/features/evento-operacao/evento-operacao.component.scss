@@ -102,12 +102,51 @@
       border-radius: 0 0.5rem 0.5rem 0;
     }
   }
+
+  .operation-table-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .table-search {
+    width: 100%;
+    max-width: 24rem;
+
+    .p-input-icon-left {
+      position: relative;
+      display: block;
+
+      i {
+        position: absolute;
+        top: 50%;
+        left: 0.75rem;
+        transform: translateY(-50%);
+        color: var(--bs-secondary-color);
+        z-index: 1;
+      }
+
+      input {
+        padding-left: 2.25rem;
+      }
+    }
+  }
 }
 
 @media (max-width: 768px) {
   .evento-operacao-page {
     .min-width-table {
       min-width: 38rem;
+    }
+
+    .operation-table-toolbar {
+      align-items: stretch;
+      flex-direction: column;
+    }
+
+    .table-search {
+      max-width: 100%;
     }
   }
 }

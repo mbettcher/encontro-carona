@@ -58,6 +58,9 @@ export class EventoOperacaoComponent implements OnInit {
   readonly processandoCodigo = signal(false);
   readonly processandoManual = signal<number | null>(null);
   readonly processandoPresencaSobrinho = signal<number | null>(null);
+  readonly filtroTiosOperacao = signal('');
+  readonly filtroPresencaSobrinhos = signal('');
+  readonly filtroSobrinhosEvento = signal('');
 
   readonly codigoForm = this.fb.nonNullable.group({
     codigoIdentificacao: ['', [Validators.required, Validators.maxLength(80)]],
@@ -133,6 +136,55 @@ export class EventoOperacaoComponent implements OnInit {
     this.vinculosAtivos().length >= 1
   );
 
+  readonly tiosOperacaoFiltrados = computed(() => {
+    const filtro = this.normalizarFiltro(this.filtroTiosOperacao());
+
+    if (!filtro) {
+      return this.tiosAtivos();
+    }
+
+    return this.tiosAtivos().filter(tio =>
+      this.contemFiltro(tio.pessoaNome, filtro) ||
+      this.contemFiltro(tio.codigoIdentificacao, filtro) ||
+      this.contemFiltro(tio.statusOperacional, filtro) ||
+      this.contemFiltro(this.labelStatusOperacionalTio(tio), filtro)
+    );
+  });
+
+  readonly presencaSobrinhosFiltrados = computed(() => {
+    const filtro = this.normalizarFiltro(this.filtroPresencaSobrinhos());
+
+    if (!filtro) {
+      return this.sobrinhos();
+    }
+
+    return this.sobrinhos().filter(sobrinho =>
+      this.contemFiltro(sobrinho.nome, filtro) ||
+      this.contemFiltro(sobrinho.responsavelNome, filtro) ||
+      this.contemFiltro(sobrinho.responsavelTelefone, filtro) ||
+      this.contemFiltro(sobrinho.telefone, filtro) ||
+      this.contemFiltro(this.statusPresencaSobrinho(sobrinho), filtro) ||
+      this.contemFiltro(this.labelSobrinhoStatus(this.statusPresencaSobrinho(sobrinho)), filtro)
+    );
+  });
+
+  readonly sobrinhosEventoFiltrados = computed(() => {
+    const filtro = this.normalizarFiltro(this.filtroSobrinhosEvento());
+
+    if (!filtro) {
+      return this.sobrinhos();
+    }
+
+    return this.sobrinhos().filter(sobrinho =>
+      this.contemFiltro(sobrinho.nome, filtro) ||
+      this.contemFiltro(sobrinho.responsavelNome, filtro) ||
+      this.contemFiltro(sobrinho.responsavelTelefone, filtro) ||
+      this.contemFiltro(sobrinho.telefone, filtro) ||
+      this.contemFiltro(this.statusPresencaSobrinho(sobrinho), filtro) ||
+      this.contemFiltro(this.labelSobrinhoStatus(this.statusPresencaSobrinho(sobrinho)), filtro)
+    );
+  });
+
   ngOnInit(): void {
     this.carregarDados();
   }
@@ -147,6 +199,18 @@ export class EventoOperacaoComponent implements OnInit {
     this.carregarVinculos();
 
     window.setTimeout(() => this.carregando.set(false), 600);
+  }
+
+  alterarFiltroTiosOperacao(valor: string): void {
+    this.filtroTiosOperacao.set(valor);
+  }
+
+  alterarFiltroPresencaSobrinhos(valor: string): void {
+    this.filtroPresencaSobrinhos.set(valor);
+  }
+
+  alterarFiltroSobrinhosEvento(valor: string): void {
+    this.filtroSobrinhosEvento.set(valor);
   }
 
   registrarOperacaoPorCodigo(): void {
@@ -410,6 +474,22 @@ export class EventoOperacaoComponent implements OnInit {
     return fallback;
   }
 
+  private normalizarFiltro(valor: string): string {
+    return valor
+      .trim()
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '');
+  }
+
+  private contemFiltro(valor: string | undefined | null, filtro: string): boolean {
+    if (!valor) {
+      return false;
+    }
+
+    return this.normalizarFiltro(String(valor)).includes(filtro);
+  }
+
   private toastSuccess(detail: string): void {
     this.messageService.add({
       severity: 'success',
@@ -446,14 +526,22 @@ export class EventoOperacaoComponent implements OnInit {
   }
 
   podeMarcarPresente(sobrinho: Sobrinho): boolean {
-    return this.statusPresencaSobrinho(sobrinho) !== 'PRESENTE';
+    const status = this.statusPresencaSobrinho(sobrinho);
+
+    return status !== 'PRESENTE' && status !== 'DESISTENTE';
   }
 
   podeMarcarAusente(sobrinho: Sobrinho): boolean {
-    return this.statusPresencaSobrinho(sobrinho) !== 'AUSENTE';
+    const status = this.statusPresencaSobrinho(sobrinho);
+
+    return status !== 'AUSENTE' && status !== 'DESISTENTE';
   }
 
   podeMarcarDesistente(sobrinho: Sobrinho): boolean {
     return this.statusPresencaSobrinho(sobrinho) !== 'DESISTENTE';
+  }
+
+  sobrinhoDesistente(sobrinho: Sobrinho): boolean {
+    return this.statusPresencaSobrinho(sobrinho) === 'DESISTENTE';
   }
 }

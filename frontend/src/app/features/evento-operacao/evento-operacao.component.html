@@ -25,10 +25,10 @@
     </div>
 
     <div class="d-flex flex-column flex-sm-row gap-2">
-      <p-button label="Voltar para eventos" icon="fa-solid fa-arrow-left" severity="secondary" variant="outlined"
+      <p-button label="Voltar para eventos" icon="fa-solid fa-arrow-left" severity="secondary"
         [routerLink]="['/eventos']" />
 
-      <p-button label="Gestão do evento" icon="fa-solid fa-users-gear" severity="info" variant="outlined"
+      <p-button label="Gestão do evento" icon="fa-solid fa-users-gear" severity="info"
         [routerLink]="['/eventos', eventoId, 'gestao']" />
     </div>
   </div>
@@ -325,8 +325,28 @@
     </div>
   </div>
 
+  <div class="operation-table-toolbar mb-3">
+    <div>
+      <div class="fw-semibold small">Lista de tios carona</div>
+      <div class="text-body-secondary small">
+        {{ tiosOperacaoFiltrados().length }} de {{ tiosAtivos().length }} tio(s)
+      </div>
+    </div>
+
+    <div class="table-search">
+      <span class="p-input-icon-left w-100">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input pInputText type="text" class="w-100" placeholder="Pesquisar tio, código ou status..."
+          [value]="filtroTiosOperacao()" (input)="alterarFiltroTiosOperacao($any($event.target).value)" />
+      </span>
+    </div>
+  </div>
+
   <div class="table-responsive-wrapper">
-    <p-table [value]="tiosAtivos()" class="p-datatable-sm min-width-table">
+
+    <p-table [value]="tiosOperacaoFiltrados()" styleClass="p-datatable-sm min-width-table" [paginator]="true"
+      [rows]="10" [rowsPerPageOptions]="[10, 20, 50]" [showCurrentPageReport]="true"
+      currentPageReportTemplate="Exibindo {first} a {last} de {totalRecords} registros">
       <ng-template pTemplate="header">
         <tr>
           <th>Tio carona</th>
@@ -445,8 +465,28 @@
     </div>
   </div>
 
+  <div class="operation-table-toolbar mb-3">
+    <div>
+      <div class="fw-semibold small">Lista de presença</div>
+      <div class="text-body-secondary small">
+        {{ presencaSobrinhosFiltrados().length }} de {{ sobrinhos().length }} sobrinho(s)
+      </div>
+    </div>
+
+    <div class="table-search">
+      <span class="p-input-icon-left w-100">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input pInputText type="text" class="w-100" placeholder="Pesquisar sobrinho, responsável ou status..."
+          [value]="filtroPresencaSobrinhos()" (input)="alterarFiltroPresencaSobrinhos($any($event.target).value)" />
+      </span>
+    </div>
+  </div>
+
   <div class="table-responsive-wrapper">
-    <p-table [value]="sobrinhos()" styleClass="p-datatable-sm min-width-table">
+
+    <p-table [value]="presencaSobrinhosFiltrados()" styleClass="p-datatable-sm min-width-table" [paginator]="true"
+      [rows]="10" [rowsPerPageOptions]="[10, 20, 50]" [showCurrentPageReport]="true"
+      currentPageReportTemplate="Exibindo {first} a {last} de {totalRecords} registros">
       <ng-template pTemplate="header">
         <tr>
           <th>Sobrinho</th>
@@ -485,22 +525,32 @@
           </td>
 
           <td class="text-end">
+            @if (sobrinhoDesistente(sobrinho)) {
+            <div class="d-flex justify-content-end">
+              <span class="badge text-bg-danger">
+                <i class="fa-solid fa-user-xmark me-1"></i>
+                Desistente
+              </span>
+            </div>
+            } @else {
             <div class="d-flex flex-column flex-xl-row justify-content-end gap-2">
               <p-button label="Presente" icon="fa-solid fa-user-check" size="small" severity="success"
-                [loading]="processandoPresencaSobrinho() === sobrinho.id"
+                variant="outlined" [loading]="processandoPresencaSobrinho() === sobrinho.id"
                 [disabled]="!podeMarcarPresente(sobrinho)"
                 (onClick)="registrarPresencaSobrinho(sobrinho, 'PRESENTE')" />
 
-              <p-button label="Ausente" icon="fa-solid fa-user-clock" size="small" severity="warn"
+              <p-button label="Ausente" icon="fa-solid fa-user-clock" size="small" severity="warn" variant="outlined"
                 [loading]="processandoPresencaSobrinho() === sobrinho.id" [disabled]="!podeMarcarAusente(sobrinho)"
                 (onClick)="registrarPresencaSobrinho(sobrinho, 'AUSENTE')" />
 
               <p-button label="Desistente" icon="fa-solid fa-user-xmark" size="small" severity="danger"
-                [loading]="processandoPresencaSobrinho() === sobrinho.id"
+                variant="outlined" [loading]="processandoPresencaSobrinho() === sobrinho.id"
                 [disabled]="!podeMarcarDesistente(sobrinho)"
                 (onClick)="registrarPresencaSobrinho(sobrinho, 'DESISTENTE')" />
             </div>
+            }
           </td>
+
         </tr>
       </ng-template>
     </p-table>
@@ -527,8 +577,29 @@
     </p>
   </div>
   } @else {
+
+  <div class="operation-table-toolbar mb-3">
+    <div>
+      <div class="fw-semibold small">Lista geral de sobrinhos</div>
+      <div class="text-body-secondary small">
+        {{ sobrinhosEventoFiltrados().length }} de {{ sobrinhos().length }} sobrinho(s)
+      </div>
+    </div>
+
+    <div class="table-search">
+      <span class="p-input-icon-left w-100">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input pInputText type="text" class="w-100" placeholder="Pesquisar sobrinho, responsável ou status..."
+          [value]="filtroSobrinhosEvento()" (input)="alterarFiltroSobrinhosEvento($any($event.target).value)" />
+      </span>
+    </div>
+  </div>
+
   <div class="table-responsive-wrapper">
-    <p-table [value]="sobrinhos()" class="p-datatable-sm min-width-table">
+
+    <p-table [value]="sobrinhosEventoFiltrados()" styleClass="p-datatable-sm min-width-table" [paginator]="true"
+      [rows]="10" [rowsPerPageOptions]="[10, 20, 50]" [showCurrentPageReport]="true"
+      currentPageReportTemplate="Exibindo {first} a {last} de {totalRecords} registros">
       <ng-template pTemplate="header">
         <tr>
           <th>Nome</th>
