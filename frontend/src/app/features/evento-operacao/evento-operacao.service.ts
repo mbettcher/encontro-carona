@@ -1,26 +1,74 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Observable } from 'rxjs';
-import { API_BASE_URL } from '../../core/api.config';
-import { DuplaTioCarona, Evento, Sobrinho, TioCaronaEvento } from '../../shared/models';
+import { Observable, forkJoin, map, of, switchMap } from 'rxjs';
+import { environment } from 'src/environments/environment';
 
-@Injectable({ providedIn: 'root' })
+import {
+  DuplaTioCarona,
+  Evento,
+  Sobrinho,
+  SobrinhoDupla,
+  TioCaronaEvento
+} from '../../shared/models';
+
+@Injectable({
+  providedIn: 'root'
+})
 export class EventoOperacaoService {
   private readonly http = inject(HttpClient);
+  private readonly apiUrl = `${environment.apiUrl}`;
+
+  buscarEvento(eventoId: number): Observable<Evento> {
+    return this.listarEventos().pipe(
+      map(eventos => {
+        const evento = eventos.find(item => item.id === eventoId);
+
+        if (!evento) {
+          throw new Error(`Evento ${eventoId} não encontrado.`);
+        }
+
+        return evento;
+      })
+    );
+  }
 
   listarEventos(): Observable<Evento[]> {
-    return this.http.get<Evento[]>(`${API_BASE_URL}/eventos`);
+    return this.http.get<Evento[]>(`${this.apiUrl}/eventos`);
   }
 
   listarTiosCarona(eventoId: number): Observable<TioCaronaEvento[]> {
-    return this.http.get<TioCaronaEvento[]>(`${API_BASE_URL}/eventos/${eventoId}/tios-carona`);
+    return this.http.get<TioCaronaEvento[]>(`${this.apiUrl}/eventos/${eventoId}/tios-carona`);
   }
 
   listarDuplas(eventoId: number): Observable<DuplaTioCarona[]> {
-    return this.http.get<DuplaTioCarona[]>(`${API_BASE_URL}/eventos/${eventoId}/duplas`);
+    return this.http.get<DuplaTioCarona[]>(`${this.apiUrl}/eventos/${eventoId}/duplas`);
   }
 
   listarSobrinhos(eventoId: number): Observable<Sobrinho[]> {
-    return this.http.get<Sobrinho[]>(`${API_BASE_URL}/eventos/${eventoId}/sobrinhos`);
+    return this.http.get<Sobrinho[]>(`${this.apiUrl}/eventos/${eventoId}/sobrinhos`);
+  }
+
+  listarSobrinhosDaDupla(eventoId: number, duplaId: number): Observable<SobrinhoDupla[]> {
+    return this.http.get<SobrinhoDupla[]>(
+      `${this.apiUrl}/eventos/${eventoId}/vinculos/duplas/${duplaId}/sobrinhos`
+    );
+  }
+
+  listarVinculos(eventoId: number): Observable<SobrinhoDupla[]> {
+    return this.listarDuplas(eventoId).pipe(
+      switchMap(duplas => {
+        if (duplas.length === 0) {
+          return of([]);
+        }
+
+        const requisicoes = duplas.map(dupla =>
+          this.listarSobrinhosDaDupla(eventoId, dupla.id)
+        );
+
+        return forkJoin(requisicoes).pipe(
+          map(resultados => resultados.flat())
+        );
+      })
+    );
   }
 }
