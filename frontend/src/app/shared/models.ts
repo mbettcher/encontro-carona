@@ -142,9 +142,19 @@ export interface DuplaTioCaronaRequest {
   apelido?: string;
 }
 
+export type OperacaoPresencaSobrinho = 
+  'PRESENTE' 
+  | 'AUSENTE' 
+  | 'DESISTENTE';
+
+export type OrigemPresencaSobrinho = 
+  'MANUAL' 
+  | 'CREDENCIAL' 
+  | 'SISTEMA';
+
 export interface Sobrinho {
   id: number;
-  eventoId: number;
+  eventoId?: number;
   nome: string;
   telefone?: string;
   responsavelNome?: string;
@@ -154,6 +164,9 @@ export interface Sobrinho {
   restricaoAlimentar?: string;
   observacaoMedica?: string;
   status: SobrinhoStatus;
+
+  statusAtualPresenca?: SobrinhoStatus;
+  ultimaPresencaEm?: string;
 }
 
 export interface SobrinhoRequest {

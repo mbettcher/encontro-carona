@@ -8,7 +8,8 @@ import {
   Evento,
   Sobrinho,
   SobrinhoDupla,
-  TioCaronaEvento
+  TioCaronaEvento,
+  OperacaoPresencaSobrinho,
 } from '../../shared/models';
 
 @Injectable({
@@ -87,4 +88,14 @@ export class EventoOperacaoService {
   registrarCheckoutManual(eventoId: number, tioCaronaEventoId: number): Observable<TioCaronaEvento> {
     return this.http.post<TioCaronaEvento>(`${this.apiUrl}/eventos/${eventoId}/tios-carona/${tioCaronaEventoId}/operacao/checkout`, {});
   }
+
+  registrarPresencaSobrinho(eventoId: number, sobrinhoId: number, operacao: OperacaoPresencaSobrinho, observacao?: string): Observable<Sobrinho> {
+  return this.http.patch<Sobrinho>(
+    `${this.apiUrl}/eventos/${eventoId}/sobrinhos/${sobrinhoId}/presenca`,
+    {
+      operacao,
+      observacao: observacao?.trim() || undefined
+    }
+  );
+}
 }

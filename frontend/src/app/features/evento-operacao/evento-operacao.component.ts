@@ -17,7 +17,8 @@ import {
   Evento,
   Sobrinho,
   SobrinhoDupla,
-  TioCaronaEvento
+  TioCaronaEvento,
+  OperacaoPresencaSobrinho
 } from '../../shared/models';
 import { EventoOperacaoService } from './evento-operacao.service';
 
@@ -56,6 +57,7 @@ export class EventoOperacaoComponent implements OnInit {
   readonly carregando = signal(false);
   readonly processandoCodigo = signal(false);
   readonly processandoManual = signal<number | null>(null);
+  readonly processandoPresencaSobrinho = signal<number | null>(null);
 
   readonly codigoForm = this.fb.nonNullable.group({
     codigoIdentificacao: ['', [Validators.required, Validators.maxLength(80)]],
@@ -85,19 +87,19 @@ export class EventoOperacaoComponent implements OnInit {
   );
 
   readonly sobrinhosInscritos = computed(() =>
-    this.sobrinhos().filter(sobrinho => sobrinho.status === 'INSCRITO')
+    this.sobrinhos().filter(sobrinho => this.statusPresencaSobrinho(sobrinho) === 'INSCRITO')
   );
 
   readonly sobrinhosPresentes = computed(() =>
-    this.sobrinhos().filter(sobrinho => sobrinho.status === 'PRESENTE')
+    this.sobrinhos().filter(sobrinho => this.statusPresencaSobrinho(sobrinho) === 'PRESENTE')
   );
 
   readonly sobrinhosAusentes = computed(() =>
-    this.sobrinhos().filter(sobrinho => sobrinho.status === 'AUSENTE')
+    this.sobrinhos().filter(sobrinho => this.statusPresencaSobrinho(sobrinho) === 'AUSENTE')
   );
 
   readonly sobrinhosDesistentes = computed(() =>
-    this.sobrinhos().filter(sobrinho => sobrinho.status === 'DESISTENTE')
+    this.sobrinhos().filter(sobrinho => this.statusPresencaSobrinho(sobrinho) === 'DESISTENTE')
   );
 
   readonly vinculosAtivos = computed(() =>
@@ -224,6 +226,14 @@ export class EventoOperacaoComponent implements OnInit {
     });
   }
 
+  private atualizarSobrinhoNaLista(sobrinhoAtualizado: Sobrinho): void {
+    this.sobrinhos.update(sobrinhos =>
+      sobrinhos.map(sobrinho =>
+        sobrinho.id === sobrinhoAtualizado.id ? sobrinhoAtualizado : sobrinho
+      )
+    );
+  }
+
   private atualizarTioCaronaNaLista(tioAtualizado: TioCaronaEvento): void {
     this.tiosCarona.update(tios =>
       tios.map(tio =>
@@ -235,6 +245,30 @@ export class EventoOperacaoComponent implements OnInit {
   aoPressionarEnterCodigo(event: Event): void {
     event.preventDefault();
     this.registrarOperacaoPorCodigo();
+  }
+
+  registrarPresencaSobrinho(
+    sobrinho: Sobrinho,
+    operacao: OperacaoPresencaSobrinho
+  ): void {
+    this.processandoPresencaSobrinho.set(sobrinho.id);
+
+    this.service.registrarPresencaSobrinho(this.eventoId, sobrinho.id, operacao).subscribe({
+      next: sobrinhoAtualizado => {
+        this.atualizarSobrinhoNaLista(sobrinhoAtualizado);
+
+        this.toastSuccess(
+          `${sobrinhoAtualizado.nome} marcado como ${this.labelSobrinhoStatus(this.statusPresencaSobrinho(sobrinhoAtualizado)).toLowerCase()}.`
+        );
+      },
+      error: erro => {
+        console.error('Erro ao registrar presença do sobrinho', erro);
+        this.toastError(this.mensagemErro(erro, 'Não foi possível registrar a presença do sobrinho.'));
+      },
+      complete: () => {
+        this.processandoPresencaSobrinho.set(null);
+      }
+    });
   }
 
   labelOperacao(): string {
@@ -401,5 +435,25 @@ export class EventoOperacaoComponent implements OnInit {
       detail,
       life: 6000
     });
+  }
+
+  statusPresencaSobrinho(sobrinho: Sobrinho): string {
+    return sobrinho.statusAtualPresenca || sobrinho.status;
+  }
+
+  ultimaPresencaSobrinho(sobrinho: Sobrinho): string | undefined {
+    return sobrinho.ultimaPresencaEm;
+  }
+
+  podeMarcarPresente(sobrinho: Sobrinho): boolean {
+    return this.statusPresencaSobrinho(sobrinho) !== 'PRESENTE';
+  }
+
+  podeMarcarAusente(sobrinho: Sobrinho): boolean {
+    return this.statusPresencaSobrinho(sobrinho) !== 'AUSENTE';
+  }
+
+  podeMarcarDesistente(sobrinho: Sobrinho): boolean {
+    return this.statusPresencaSobrinho(sobrinho) !== 'DESISTENTE';
   }
 }
