@@ -1,0 +1,247 @@
+<div class="container-fluid py-4 evento-credenciais-page">
+    <div class="d-flex flex-column flex-xl-row justify-content-between gap-3 mb-4">
+        <div>
+            <h1 class="h3 mb-1">Credenciais do Evento</h1>
+            <p class="text-body-secondary mb-0">
+                Gere, consulte e gerencie os códigos usados em QR Code, crachás e adesivos.
+            </p>
+        </div>
+
+        <div class="d-flex flex-column flex-sm-row gap-2">
+            <p-button label="Voltar para operação" icon="fa-solid fa-arrow-left" severity="secondary" variant="outlined"
+                [routerLink]="['/eventos', eventoId, 'operacao']" />
+
+            <p-button label="Gerar/atualizar" icon="fa-solid fa-wand-magic-sparkles" severity="info"
+                [loading]="gerando()" (onClick)="gerarTodas()" />
+        </div>
+    </div>
+
+    <div class="alert alert-warning py-2 px-3 mb-4 small">
+        <i class="fa-solid fa-circle-info me-2"></i>
+        As credenciais ativas poderão ser impressas como crachá, QR Code avulso ou adesivo para colar atrás do crachá.
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-md-6 col-xl-3">
+            <p-card class="summary-card">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="text-body-secondary small">Total</div>
+                        <div class="fs-3 fw-bold">{{ credenciais().length }}</div>
+                    </div>
+                    <i class="fa-solid fa-id-card"></i>
+                </div>
+            </p-card>
+        </div>
+
+        <div class="col-12 col-md-6 col-xl-3">
+            <p-card class="summary-card">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="text-body-secondary small">Ativas</div>
+                        <div class="fs-3 fw-bold">{{ credenciaisAtivas().length }}</div>
+                    </div>
+                    <i class="fa-solid fa-circle-check"></i>
+                </div>
+            </p-card>
+        </div>
+
+        <div class="col-12 col-md-6 col-xl-3">
+            <p-card class="summary-card">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="text-body-secondary small">Tios carona</div>
+                        <div class="fs-3 fw-bold">{{ credenciaisTios().length }}</div>
+                    </div>
+                    <i class="fa-solid fa-car-side"></i>
+                </div>
+            </p-card>
+        </div>
+
+        <div class="col-12 col-md-6 col-xl-3">
+            <p-card class="summary-card">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="text-body-secondary small">Sobrinhos</div>
+                        <div class="fs-3 fw-bold">{{ credenciaisSobrinhos().length }}</div>
+                    </div>
+                    <i class="fa-solid fa-child-reaching"></i>
+                </div>
+            </p-card>
+        </div>
+    </div>
+
+    <p-card class="shadow-sm border-0 mb-4">
+        <ng-template pTemplate="header">
+            <div class="px-4 pt-4 d-flex flex-column flex-xl-row justify-content-between gap-3">
+                <div>
+                    <h2 class="h5 mb-1">Gerar credenciais</h2>
+                    <p class="text-body-secondary small mb-0">
+                        Gere todas as credenciais ou apenas para um grupo específico.
+                    </p>
+                </div>
+
+                <div class="d-flex flex-column flex-sm-row gap-2">
+                    <p-button label="Gerar tios carona" icon="fa-solid fa-car-side" severity="info"
+                        size="small" [loading]="gerando()" (onClick)="gerarTiosCarona()" />
+
+                    <p-button label="Gerar sobrinhos" icon="fa-solid fa-child-reaching" severity="success"
+                        size="small" [loading]="gerando()" (onClick)="gerarSobrinhos()" />
+                </div>
+            </div>
+        </ng-template>
+
+        <div class="row g-3">
+            <div class="col-12 col-lg-4">
+                <label for="filtroCredencialTexto" class="form-label">Pesquisa</label>
+
+                <span class="p-input-icon-left w-100">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+
+                    <input id="filtroCredencialTexto" pInputText type="text" class="w-100"
+                        placeholder="Pesquisar por nome, código, tipo ou status..." [ngModel]="filtroTexto()"
+                        (ngModelChange)="alterarFiltroTexto($event)" />
+                </span>
+            </div>
+
+            <div class="col-12 col-lg-4">
+                <label for="filtroCredencialTipo" class="form-label">Tipo</label>
+
+                <p-select inputId="filtroCredencialTipo" [options]="opcoesTipo" optionLabel="label" optionValue="value"
+                    styleClass="w-100" [ngModel]="filtroTipo()" (ngModelChange)="alterarFiltroTipo($event)"
+                    appendTo="body" />
+            </div>
+
+            <div class="col-12 col-lg-4">
+                <label for="filtroCredencialStatus" class="form-label">Status</label>
+
+                <p-select inputId="filtroCredencialStatus" [options]="opcoesStatus" optionLabel="label"
+                    optionValue="value" styleClass="w-100" [ngModel]="filtroStatus()"
+                    (ngModelChange)="alterarFiltroStatus($event)" appendTo="body" />
+            </div>
+        </div>
+    </p-card>
+
+    <p-card class="shadow-sm border-0">
+        <ng-template pTemplate="header">
+            <div class="px-4 pt-4 d-flex flex-column flex-lg-row justify-content-between gap-3">
+                <div>
+                    <h2 class="h5 mb-1">Lista de credenciais</h2>
+                    <p class="text-body-secondary small mb-0">
+                        {{ credenciaisFiltradas().length }} de {{ credenciais().length }} credencial(is)
+                    </p>
+                </div>
+
+                <div class="d-flex flex-column flex-sm-row gap-2">
+                    <p-button label="Imprimir QR Codes" icon="fa-solid fa-qrcode" severity="secondary"
+                        variant="outlined" size="small" [disabled]="credenciaisAtivas().length === 0" />
+
+                    <p-button label="Imprimir crachás" icon="fa-solid fa-print" severity="secondary" variant="outlined"
+                        size="small" [disabled]="credenciaisAtivas().length === 0" />
+                </div>
+            </div>
+        </ng-template>
+
+        @if (credenciais().length === 0) {
+        <div class="empty-state text-center py-5">
+            <i class="fa-solid fa-id-card text-body-secondary mb-3"></i>
+            <h3 class="h6 mb-1">Nenhuma credencial gerada</h3>
+            <p class="text-body-secondary small mb-3">
+                Clique em <strong>Gerar/atualizar</strong> para criar as credenciais do evento.
+            </p>
+
+            <p-button label="Gerar credenciais" icon="fa-solid fa-wand-magic-sparkles" severity="info"
+                [loading]="gerando()" (onClick)="gerarTodas()" />
+        </div>
+        } @else {
+        <div class="table-responsive-wrapper">
+            <p-table [value]="credenciaisFiltradas()" styleClass="p-datatable-sm min-width-table" [paginator]="true"
+                [rows]="10" [rowsPerPageOptions]="[10, 20, 50]" [showCurrentPageReport]="true"
+                currentPageReportTemplate="Exibindo {first} a {last} de {totalRecords} registros"
+                paginatorDropdownAppendTo="body" [loading]="carregando()">
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th>Participante</th>
+                        <th>Tipo</th>
+                        <th>Código</th>
+                        <th>Status</th>
+                        <th>Criada em</th>
+                        <th class="text-end">Ações</th>
+                    </tr>
+                </ng-template>
+
+                <ng-template pTemplate="body" let-credencial>
+                    <tr>
+                        <td>
+                            <div class="fw-semibold">{{ nomePrincipal(credencial) }}</div>
+
+                            @if (credencial.responsavelNome) {
+                            <div class="small text-body-secondary">
+                                Resp.: {{ credencial.responsavelNome }}
+                            </div>
+                            }
+
+                            @if (credencial.duplaCodigo || credencial.duplaApelido) {
+                            <div class="small text-body-secondary">
+                                {{ credencial.duplaApelido || credencial.duplaCodigo }}
+                            </div>
+                            }
+                        </td>
+
+                        <td>
+                            <p-tag [value]="labelTipo(credencial.tipo)" [severity]="severityTipo(credencial.tipo)" />
+                        </td>
+
+                        <td>
+                            <span class="font-monospace small">{{ credencial.codigo }}</span>
+                        </td>
+
+                        <td>
+                            <p-tag [value]="labelStatus(credencial.status)"
+                                [severity]="severityStatus(credencial.status)" />
+                        </td>
+
+                        <td>
+                            <span class="small">
+                                {{ credencial.criadoEm | date:'dd/MM/yyyy HH:mm' }}
+                            </span>
+                        </td>
+
+                        <td class="text-end">
+                            <div class="credencial-actions">
+                                <p-button icon="fa-solid fa-qrcode" size="small" severity="secondary"
+                                    styleClass="credencial-icon-button" pTooltip="Imprimir QR Code individual"
+                                    tooltipPosition="top" ariaLabel="Imprimir QR Code individual"
+                                    [disabled]="credencial.status !== 'ATIVA'" />
+
+                                <p-button icon="fa-solid fa-print" size="small" severity="help"
+                                    styleClass="credencial-icon-button" pTooltip="Imprimir crachá individual"
+                                    tooltipPosition="top" ariaLabel="Imprimir crachá individual"
+                                    [disabled]="credencial.status !== 'ATIVA'" />
+
+                                <p-button icon="fa-solid fa-pause" size="small" severity="warn"
+                                    styleClass="credencial-icon-button" pTooltip="Inativar credencial"
+                                    tooltipPosition="top" ariaLabel="Inativar credencial"
+                                    [loading]="processandoCredencialId() === credencial.id"
+                                    [disabled]="!podeInativar(credencial)" (onClick)="inativar(credencial)" />
+
+                                <p-button icon="fa-solid fa-play" size="small" severity="success"
+                                    styleClass="credencial-icon-button" pTooltip="Reativar credencial"
+                                    tooltipPosition="top" ariaLabel="Reativar credencial"
+                                    [loading]="processandoCredencialId() === credencial.id"
+                                    [disabled]="!podeReativar(credencial)" (onClick)="reativar(credencial)" />
+
+                                <p-button icon="fa-solid fa-ban" size="small" severity="danger"
+                                    styleClass="credencial-icon-button" pTooltip="Cancelar credencial"
+                                    tooltipPosition="top" ariaLabel="Cancelar credencial"
+                                    [loading]="processandoCredencialId() === credencial.id"
+                                    [disabled]="!podeCancelar(credencial)" (onClick)="cancelar(credencial)" />
+                            </div>
+                        </td>
+                    </tr>
+                </ng-template>
+            </p-table>
+        </div>
+        }
+    </p-card>
+</div>

@@ -245,3 +245,43 @@ export interface CadernoChoroHistorico {
   observacao?: string;
   ocorridoEm: string;
 }
+
+export type TipoCredencial = 
+  'TIO_CARONA' 
+  | 'SOBRINHO';
+
+export type StatusCredencial = 
+  'ATIVA' 
+  | 'INATIVA' 
+  | 'CANCELADA';
+
+export interface CredencialEvento {
+  id: number;
+  eventoId: number;
+  eventoNome: string;
+  tipo: TipoCredencial;
+  codigo: string;
+  status: StatusCredencial;
+
+  tioCaronaEventoId?: number;
+  pessoaId?: number;
+  pessoaNome?: string;
+
+  sobrinhoId?: number;
+  sobrinhoNome?: string;
+  responsavelNome?: string;
+
+  duplaId?: number;
+  duplaCodigo?: string;
+  duplaApelido?: string;
+
+  criadoEm: string;
+  atualizadoEm?: string;
+}
+
+export interface CredencialGeracaoResponse {
+  eventoId: number;
+  criadas: number;
+  existentes: number;
+  total: number;
+}

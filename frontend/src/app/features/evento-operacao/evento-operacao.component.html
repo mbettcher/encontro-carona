@@ -30,6 +30,9 @@
 
       <p-button label="Gestão do evento" icon="fa-solid fa-users-gear" severity="info"
         [routerLink]="['/eventos', eventoId, 'gestao']" />
+
+      <p-button label="Credenciais" icon="fa-solid fa-id-card" severity="help"
+        [routerLink]="['/eventos', eventoId, 'credenciais']" />
     </div>
   </div>
 
@@ -764,10 +767,10 @@
             </div>
             } @else {
             <div class="caderno-actions">
-              <p-button icon="fa-solid fa-clipboard-check" size="small" severity="warn"
-                styleClass="caderno-icon-button" pTooltip="Conferir caderno" tooltipPosition="top"
-                ariaLabel="Conferir caderno" [loading]="processandoCadernoId() === caderno.id"
-                [disabled]="!podeConferirCaderno(caderno)" (onClick)="conferirCaderno(caderno)" />
+              <p-button icon="fa-solid fa-clipboard-check" size="small" severity="warn" styleClass="caderno-icon-button"
+                pTooltip="Conferir caderno" tooltipPosition="top" ariaLabel="Conferir caderno"
+                [loading]="processandoCadernoId() === caderno.id" [disabled]="!podeConferirCaderno(caderno)"
+                (onClick)="conferirCaderno(caderno)" />
 
               <p-button icon="fa-solid fa-box" size="small" severity="info" styleClass="caderno-icon-button"
                 pTooltip="Anexar ao kit" tooltipPosition="top" ariaLabel="Anexar ao kit"
@@ -1031,8 +1034,8 @@
       [disabled]="!cadernoSelecionado() || !podeMarcarCadernoPerdido(cadernoSelecionado()!)"
       (onClick)="marcarCadernoPerdido(cadernoSelecionado()!)" />
 
-    <p-button icon="fa-solid fa-arrows-rotate" severity="warn" styleClass="w-100"
-      pTooltip="Marcar como substituído" tooltipPosition="top" ariaLabel="Marcar como substituído"
+    <p-button icon="fa-solid fa-arrows-rotate" severity="warn" styleClass="w-100" pTooltip="Marcar como substituído"
+      tooltipPosition="top" ariaLabel="Marcar como substituído"
       [disabled]="!cadernoSelecionado() || !podeMarcarCadernoSubstituido(cadernoSelecionado()!)"
       (onClick)="marcarCadernoSubstituido(cadernoSelecionado()!)" />
 

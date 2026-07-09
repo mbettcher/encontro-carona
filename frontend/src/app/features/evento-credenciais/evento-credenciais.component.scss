@@ -1,0 +1,108 @@
+.evento-credenciais-page {
+    .summary-card {
+        border: 0;
+        box-shadow: 0 0.125rem 0.75rem rgba(15, 23, 42, 0.06);
+
+        i {
+            font-size: 2rem;
+            color: var(--bs-primary);
+            opacity: 0.85;
+        }
+    }
+
+    .empty-state {
+        i {
+            font-size: 2.5rem;
+        }
+    }
+
+    .table-responsive-wrapper {
+        width: 100%;
+        overflow-x: auto;
+        border-radius: 0.75rem;
+    }
+
+    .min-width-table {
+        min-width: 72rem;
+    }
+
+    .credencial-actions {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 0.35rem;
+        flex-wrap: nowrap;
+    }
+
+    .form-label {
+        font-weight: 600;
+    }
+
+    .p-input-icon-left {
+        position: relative;
+        display: block;
+
+        i {
+            position: absolute;
+            top: 50%;
+            left: 0.75rem;
+            transform: translateY(-50%);
+            color: var(--bs-secondary-color);
+            z-index: 1;
+        }
+
+        input {
+            padding-left: 2.25rem;
+        }
+    }
+
+    :host ::ng-deep {
+        .p-card {
+            border-radius: 1rem;
+        }
+
+        .p-card-body {
+            padding-top: 1rem;
+        }
+
+        .p-datatable-thead>tr>th {
+            white-space: nowrap;
+            font-size: 0.875rem;
+        }
+
+        .p-datatable-tbody>tr>td {
+            vertical-align: middle;
+        }
+
+        .p-button {
+            border-radius: 0.5rem;
+        }
+
+        .p-inputtext,
+        .p-select {
+            width: 100%;
+        }
+
+        .credencial-icon-button {
+            width: 2.25rem;
+            height: 2.25rem;
+            padding: 0;
+        }
+
+        .credencial-icon-button .p-button-icon {
+            margin: 0;
+        }
+    }
+}
+
+@media (max-width: 768px) {
+    .evento-credenciais-page {
+        .min-width-table {
+            min-width: 60rem;
+        }
+
+        .credencial-actions {
+            flex-wrap: wrap;
+        }
+    }
+}
