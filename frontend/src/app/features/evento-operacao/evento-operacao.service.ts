@@ -71,4 +71,20 @@ export class EventoOperacaoService {
       })
     );
   }
+
+  registrarCheckinPorCodigo(eventoId: number, codigoIdentificacao: string): Observable<TioCaronaEvento> {
+    return this.http.post<TioCaronaEvento>(`${this.apiUrl}/eventos/${eventoId}/tios-carona/operacao/check-in`, { codigoIdentificacao });
+  }
+
+  registrarCheckoutPorCodigo(eventoId: number, codigoIdentificacao: string): Observable<TioCaronaEvento> {
+    return this.http.post<TioCaronaEvento>(`${this.apiUrl}/eventos/${eventoId}/tios-carona/operacao/checkout`, { codigoIdentificacao } );
+  }
+
+  registrarCheckinManual(eventoId: number, tioCaronaEventoId: number): Observable<TioCaronaEvento> {
+    return this.http.post<TioCaronaEvento>(`${this.apiUrl}/eventos/${eventoId}/tios-carona/${tioCaronaEventoId}/operacao/check-in`, {});
+  }
+
+  registrarCheckoutManual(eventoId: number, tioCaronaEventoId: number): Observable<TioCaronaEvento> {
+    return this.http.post<TioCaronaEvento>(`${this.apiUrl}/eventos/${eventoId}/tios-carona/${tioCaronaEventoId}/operacao/checkout`, {});
+  }
 }

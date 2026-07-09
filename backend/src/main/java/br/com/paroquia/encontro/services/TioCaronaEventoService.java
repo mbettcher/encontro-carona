@@ -3,10 +3,16 @@ package br.com.paroquia.encontro.services;
 import br.com.paroquia.encontro.common.BusinessException;
 import br.com.paroquia.encontro.common.ResourceNotFoundException;
 import br.com.paroquia.encontro.domain.entity.TioCaronaEvento;
+import br.com.paroquia.encontro.domain.entity.TioCaronaEventoOperacao;
+import br.com.paroquia.encontro.domain.enums.OrigemOperacaoTioCarona;
+import br.com.paroquia.encontro.domain.enums.TipoOperacaoTioCarona;
+import br.com.paroquia.encontro.domain.enums.TioCaronaStatus;
 import br.com.paroquia.encontro.dto.request.TioCaronaEventoRequest;
+import br.com.paroquia.encontro.dto.response.TioCaronaEventoOperacaoResponse;
 import br.com.paroquia.encontro.dto.response.TioCaronaEventoResponse;
 import br.com.paroquia.encontro.repository.EventoRepository;
 import br.com.paroquia.encontro.repository.PessoaRepository;
+import br.com.paroquia.encontro.repository.TioCaronaEventoOperacaoRepository;
 import br.com.paroquia.encontro.repository.TioCaronaEventoRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,15 +22,18 @@ import java.util.List;
 @Service
 public class TioCaronaEventoService {
     private final TioCaronaEventoRepository repository;
+    private final TioCaronaEventoOperacaoRepository operacaoRepository;
     private final EventoRepository eventoRepository;
     private final PessoaRepository pessoaRepository;
 
     public TioCaronaEventoService(
             TioCaronaEventoRepository repository,
+            TioCaronaEventoOperacaoRepository operacaoRepository,
             EventoRepository eventoRepository,
             PessoaRepository pessoaRepository
     ) {
         this.repository = repository;
+        this.operacaoRepository = operacaoRepository;
         this.eventoRepository = eventoRepository;
         this.pessoaRepository = pessoaRepository;
     }
@@ -33,7 +42,22 @@ public class TioCaronaEventoService {
     public List<TioCaronaEventoResponse> listar(Long eventoId) {
         return repository.findByEventoIdOrderByPessoaNome(eventoId)
                 .stream()
-                .map(TioCaronaEventoResponse::from)
+                .map(tio -> TioCaronaEventoResponse.from(
+                        tio,
+                        operacaoRepository
+                                .findFirstByTioCaronaEventoIdOrderByOcorridoEmDesc(tio.getId())
+                                .orElse(null)
+                ))
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<TioCaronaEventoOperacaoResponse> listarOperacoes(Long eventoId, Long tioCaronaEventoId) {
+        buscarPorIdEvento(eventoId, tioCaronaEventoId);
+
+        return operacaoRepository.findByTioCaronaEventoIdOrderByOcorridoEmDesc(tioCaronaEventoId)
+                .stream()
+                .map(TioCaronaEventoOperacaoResponse::from)
                 .toList();
     }
 
@@ -58,33 +82,87 @@ public class TioCaronaEventoService {
     @Transactional
     public TioCaronaEventoResponse registrarCheckinPorCodigo(Long eventoId, String codigoIdentificacao) {
         var tioCarona = buscarPorCodigo(eventoId, codigoIdentificacao);
-        tioCarona.registrarCheckin();
-
-        return TioCaronaEventoResponse.from(tioCarona);
+        return registrarOperacao(tioCarona, TipoOperacaoTioCarona.CHECKIN, OrigemOperacaoTioCarona.CREDENCIAL, codigoIdentificacao);
     }
 
     @Transactional
     public TioCaronaEventoResponse registrarCheckoutPorCodigo(Long eventoId, String codigoIdentificacao) {
         var tioCarona = buscarPorCodigo(eventoId, codigoIdentificacao);
-        tioCarona.registrarCheckout();
-
-        return TioCaronaEventoResponse.from(tioCarona);
+        return registrarOperacao(tioCarona, TipoOperacaoTioCarona.CHECKOUT, OrigemOperacaoTioCarona.CREDENCIAL, codigoIdentificacao);
     }
 
     @Transactional
     public TioCaronaEventoResponse registrarCheckinManual(Long eventoId, Long tioCaronaEventoId) {
         var tioCarona = buscarPorIdEvento(eventoId, tioCaronaEventoId);
-        tioCarona.registrarCheckin();
-
-        return TioCaronaEventoResponse.from(tioCarona);
+        return registrarOperacao(tioCarona, TipoOperacaoTioCarona.CHECKIN, OrigemOperacaoTioCarona.MANUAL, null);
     }
 
     @Transactional
     public TioCaronaEventoResponse registrarCheckoutManual(Long eventoId, Long tioCaronaEventoId) {
         var tioCarona = buscarPorIdEvento(eventoId, tioCaronaEventoId);
-        tioCarona.registrarCheckout();
+        return registrarOperacao(tioCarona, TipoOperacaoTioCarona.CHECKOUT, OrigemOperacaoTioCarona.MANUAL, null);
+    }
 
-        return TioCaronaEventoResponse.from(tioCarona);
+    private TioCaronaEventoResponse registrarOperacao(
+            TioCaronaEvento tioCarona,
+            TipoOperacaoTioCarona tipo,
+            OrigemOperacaoTioCarona origem,
+            String codigoIdentificacao
+    ) {
+        validarAtivo(tioCarona);
+
+        var ultimaOperacao = operacaoRepository
+                .findFirstByTioCaronaEventoIdOrderByOcorridoEmDesc(tioCarona.getId())
+                .orElse(null);
+
+        validarSequencia(tipo, ultimaOperacao);
+
+        var operacao = operacaoRepository.save(new TioCaronaEventoOperacao(
+                tioCarona.getEvento(),
+                tioCarona,
+                tipo,
+                origem,
+                codigoIdentificacao == null ? null : codigoIdentificacao.trim()
+        ));
+
+        /*
+         * Mantemos atualização dos campos antigos como resumo/compatibilidade.
+         * O histórico passa a ser a fonte principal da operação.
+         */
+        if (tipo == TipoOperacaoTioCarona.CHECKIN) {
+            tioCarona.registrarCheckinResumo(operacao.getOcorridoEm());
+        } else {
+            tioCarona.registrarCheckoutResumo(operacao.getOcorridoEm());
+        }
+
+        return TioCaronaEventoResponse.from(tioCarona, operacao);
+    }
+
+    private void validarSequencia(
+            TipoOperacaoTioCarona tipo,
+            TioCaronaEventoOperacao ultimaOperacao
+    ) {
+        if (ultimaOperacao == null) {
+            if (tipo == TipoOperacaoTioCarona.CHECKOUT) {
+                throw new BusinessException("Não é possível realizar checkout sem check-in.");
+            }
+
+            return;
+        }
+
+        if (ultimaOperacao.getTipo() == TipoOperacaoTioCarona.CHECKIN && tipo == TipoOperacaoTioCarona.CHECKIN) {
+            throw new BusinessException("Já existe check-in em aberto para este tio carona.");
+        }
+
+        if (ultimaOperacao.getTipo() == TipoOperacaoTioCarona.CHECKOUT && tipo == TipoOperacaoTioCarona.CHECKOUT) {
+            throw new BusinessException("Já existe checkout como última operação deste tio carona.");
+        }
+    }
+
+    private void validarAtivo(TioCaronaEvento tioCarona) {
+        if (tioCarona.getStatus() != TioCaronaStatus.ATIVO) {
+            throw new BusinessException("Tio carona inativo não pode realizar operação.");
+        }
     }
 
     private TioCaronaEvento buscarPorCodigo(Long eventoId, String codigoIdentificacao) {

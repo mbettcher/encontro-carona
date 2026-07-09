@@ -67,15 +67,17 @@ export class EventoOperacaoComponent implements OnInit {
   );
 
   readonly tiosAguardandoCheckin = computed(() =>
-    this.tiosAtivos().filter(tio => !tio.checkinRealizado)
+    this.tiosAtivos().filter(tio =>
+      !tio.statusOperacional || tio.statusOperacional === 'AGUARDANDO_CHECKIN'
+    )
   );
 
   readonly tiosComCheckin = computed(() =>
-    this.tiosAtivos().filter(tio => tio.checkinRealizado && !tio.checkoutRealizado)
+    this.tiosAtivos().filter(tio => tio.statusOperacional === 'COM_CHECKIN')
   );
 
   readonly tiosComCheckout = computed(() =>
-    this.tiosAtivos().filter(tio => tio.checkoutRealizado)
+    this.tiosAtivos().filter(tio => tio.statusOperacional === 'COM_CHECKOUT')
   );
 
   readonly duplasAtivas = computed(() =>
@@ -148,46 +150,86 @@ export class EventoOperacaoComponent implements OnInit {
   registrarOperacaoPorCodigo(): void {
     if (this.codigoForm.invalid) {
       this.codigoForm.markAllAsTouched();
-
       this.toastWarn('Informe o código da credencial para registrar a operação.');
       return;
     }
 
     const valor = this.codigoForm.getRawValue();
+    const codigo = valor.codigoIdentificacao.trim();
 
     this.processandoCodigo.set(true);
 
-    window.setTimeout(() => {
-      this.processandoCodigo.set(false);
+    const requisicao =
+      valor.tipoOperacao === 'CHECKIN'
+        ? this.service.registrarCheckinPorCodigo(this.eventoId, codigo)
+        : this.service.registrarCheckoutPorCodigo(this.eventoId, codigo);
 
-      this.toastWarn(
-        valor.tipoOperacao === 'CHECKIN'
-          ? 'Leitura realizada, mas o endpoint de check-in ainda será implementado no backend.'
-          : 'Leitura realizada, mas o endpoint de checkout ainda será implementado no backend.'
-      );
+    requisicao.subscribe({
+      next: tioAtualizado => {
+        this.atualizarTioCaronaNaLista(tioAtualizado);
 
-      this.codigoForm.patchValue({
-        codigoIdentificacao: ''
-      });
-    }, 400);
+        this.codigoForm.patchValue({
+          codigoIdentificacao: ''
+        });
+
+        this.toastSuccess(
+          valor.tipoOperacao === 'CHECKIN'
+            ? `Check-in registrado para ${tioAtualizado.pessoaNome}.`
+            : `Checkout registrado para ${tioAtualizado.pessoaNome}.`
+        );
+      },
+      error: erro => {
+        console.error('Erro ao registrar operação por código', erro);
+        this.toastError(this.mensagemErro(erro, 'Não foi possível registrar a operação por código.'));
+      },
+      complete: () => {
+        this.processandoCodigo.set(false);
+      }
+    });
   }
 
   registrarCheckinManual(tio: TioCaronaEvento): void {
     this.processandoManual.set(tio.id);
 
-    window.setTimeout(() => {
-      this.processandoManual.set(null);
-      this.toastWarn(`Check-in manual de ${tio.pessoaNome} ainda depende do endpoint no backend.`);
-    }, 400);
+    this.service.registrarCheckinManual(this.eventoId, tio.id).subscribe({
+      next: tioAtualizado => {
+        this.atualizarTioCaronaNaLista(tioAtualizado);
+        this.toastSuccess(`Check-in manual registrado para ${tioAtualizado.pessoaNome}.`);
+      },
+      error: erro => {
+        console.error('Erro ao registrar check-in manual', erro);
+        this.toastError(this.mensagemErro(erro, 'Não foi possível registrar o check-in manual.'));
+      },
+      complete: () => {
+        this.processandoManual.set(null);
+      }
+    });
   }
 
   registrarCheckoutManual(tio: TioCaronaEvento): void {
     this.processandoManual.set(tio.id);
 
-    window.setTimeout(() => {
-      this.processandoManual.set(null);
-      this.toastWarn(`Checkout manual de ${tio.pessoaNome} ainda depende do endpoint no backend.`);
-    }, 400);
+    this.service.registrarCheckoutManual(this.eventoId, tio.id).subscribe({
+      next: tioAtualizado => {
+        this.atualizarTioCaronaNaLista(tioAtualizado);
+        this.toastSuccess(`Checkout manual registrado para ${tioAtualizado.pessoaNome}.`);
+      },
+      error: erro => {
+        console.error('Erro ao registrar checkout manual', erro);
+        this.toastError(this.mensagemErro(erro, 'Não foi possível registrar o checkout manual.'));
+      },
+      complete: () => {
+        this.processandoManual.set(null);
+      }
+    });
+  }
+
+  private atualizarTioCaronaNaLista(tioAtualizado: TioCaronaEvento): void {
+    this.tiosCarona.update(tios =>
+      tios.map(tio =>
+        tio.id === tioAtualizado.id ? tioAtualizado : tio
+      )
+    );
   }
 
   aoPressionarEnterCodigo(event: Event): void {
@@ -234,39 +276,40 @@ export class EventoOperacaoComponent implements OnInit {
   }
 
   labelStatusOperacionalTio(tio: TioCaronaEvento): string {
-    if (tio.checkoutRealizado) {
-      return 'Checkout realizado';
+    switch (tio.statusOperacional) {
+      case 'COM_CHECKIN':
+        return 'Check-in em aberto';
+      case 'COM_CHECKOUT':
+        return 'Fora no momento';
+      case 'AGUARDANDO_CHECKIN':
+      default:
+        return 'Aguardando check-in';
     }
-
-    if (tio.checkinRealizado) {
-      return 'Check-in realizado';
-    }
-
-    return 'Aguardando check-in';
   }
 
   severityStatusOperacionalTio(tio: TioCaronaEvento): 'info' | 'success' | 'warn' | 'secondary' {
-    if (tio.checkoutRealizado) {
-      return 'secondary';
+    switch (tio.statusOperacional) {
+      case 'COM_CHECKIN':
+        return 'success';
+      case 'COM_CHECKOUT':
+        return 'secondary';
+      case 'AGUARDANDO_CHECKIN':
+      default:
+        return 'warn';
     }
-
-    if (tio.checkinRealizado) {
-      return 'success';
-    }
-
-    return 'warn';
-  }
-
-  codigoIdentificacaoTio(tio: TioCaronaEvento): string {
-    return tio.codigoIdentificacao || `TC-${String(tio.id).padStart(6, '0')}`;
   }
 
   podeCheckinManual(tio: TioCaronaEvento): boolean {
-    return !tio.checkinRealizado;
+    return tio.statusOperacional !== 'COM_CHECKIN';
   }
 
   podeCheckoutManual(tio: TioCaronaEvento): boolean {
-    return !!tio.checkinRealizado && !tio.checkoutRealizado;
+    return tio.statusOperacional === 'COM_CHECKIN';
+  }
+
+
+  codigoIdentificacaoTio(tio: TioCaronaEvento): string {
+    return tio.codigoIdentificacao || `TC-${String(tio.id).padStart(6, '0')}`;
   }
 
   private carregarEvento(): void {
@@ -316,6 +359,29 @@ export class EventoOperacaoComponent implements OnInit {
         console.error('Erro ao carregar vínculos', erro);
         this.toastError('Não foi possível carregar os vínculos.');
       }
+    });
+  }
+
+  private mensagemErro(erro: unknown, fallback: string): string {
+    if (
+      typeof erro === 'object' &&
+      erro !== null &&
+      'error' in erro
+    ) {
+      const corpo = (erro as { error?: { message?: string; detail?: string; title?: string } }).error;
+
+      return corpo?.message || corpo?.detail || corpo?.title || fallback;
+    }
+
+    return fallback;
+  }
+
+  private toastSuccess(detail: string): void {
+    this.messageService.add({
+      severity: 'success',
+      summary: 'Sucesso',
+      detail,
+      life: 4000
     });
   }
 

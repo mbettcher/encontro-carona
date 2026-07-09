@@ -89,6 +89,15 @@ export interface PessoaRequest {
   observacoes?: string;
 }
 
+export type TipoOperacaoTioCarona =
+  'CHECKIN'
+  | 'CHECKOUT';
+
+export type StatusOperacionalTioCarona =
+  | 'AGUARDANDO_CHECKIN'
+  | 'COM_CHECKIN'
+  | 'COM_CHECKOUT';
+
 export interface TioCaronaEvento {
   id: number;
   eventoId: number;
@@ -104,6 +113,10 @@ export interface TioCaronaEvento {
 
   checkoutRealizado?: boolean;
   checkoutEm?: string;
+
+  statusOperacional?: StatusOperacionalTioCarona;
+  ultimaOperacao?: TipoOperacaoTioCarona;
+  ultimaOperacaoEm?: string;
 }
 
 export interface TioCaronaEventoRequest {

@@ -2,6 +2,7 @@ package br.com.paroquia.encontro.controllers;
 
 import br.com.paroquia.encontro.dto.request.TioCaronaEventoRequest;
 import br.com.paroquia.encontro.dto.request.TioCaronaOperacaoCodigoRequest;
+import br.com.paroquia.encontro.dto.response.TioCaronaEventoOperacaoResponse;
 import br.com.paroquia.encontro.dto.response.TioCaronaEventoResponse;
 import br.com.paroquia.encontro.services.TioCaronaEventoService;
 import jakarta.validation.Valid;
@@ -63,5 +64,13 @@ public class TioCaronaEventoController {
             @PathVariable Long tioCaronaEventoId
     ) {
         return service.registrarCheckoutManual(eventoId, tioCaronaEventoId);
+    }
+
+    @GetMapping("/{tioCaronaEventoId}/operacoes")
+    public List<TioCaronaEventoOperacaoResponse> listarOperacoes(
+            @PathVariable Long eventoId,
+            @PathVariable Long tioCaronaEventoId
+    ) {
+        return service.listarOperacoes(eventoId, tioCaronaEventoId);
     }
 }

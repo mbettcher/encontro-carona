@@ -87,34 +87,16 @@ public class TioCaronaEvento {
         }
     }
 
-    public void registrarCheckin() {
-        validarAtivo();
-
-        if (this.checkinRealizado) {
-            throw new BusinessException("Check-in já realizado para este tio carona.");
-        }
-
-        if (this.checkoutRealizado) {
-            throw new BusinessException("Não é possível realizar check-in após checkout.");
-        }
-
+    public void registrarCheckinResumo(OffsetDateTime ocorridoEm) {
         this.checkinRealizado = true;
-        this.checkinEm = OffsetDateTime.now();
+        this.checkinEm = ocorridoEm;
+        this.checkoutRealizado = false;
+        this.checkoutEm = null;
     }
 
-    public void registrarCheckout() {
-        validarAtivo();
-
-        if (!this.checkinRealizado) {
-            throw new BusinessException("Não é possível realizar checkout sem check-in.");
-        }
-
-        if (this.checkoutRealizado) {
-            throw new BusinessException("Checkout já realizado para este tio carona.");
-        }
-
+    public void registrarCheckoutResumo(OffsetDateTime ocorridoEm) {
         this.checkoutRealizado = true;
-        this.checkoutEm = OffsetDateTime.now();
+        this.checkoutEm = ocorridoEm;
     }
 
     private void validarAtivo() {
