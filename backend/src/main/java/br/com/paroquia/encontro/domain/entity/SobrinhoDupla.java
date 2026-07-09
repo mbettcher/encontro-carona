@@ -11,18 +11,23 @@ public class SobrinhoDupla {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "evento_id", nullable = false)
     private Evento evento;
+
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "sobrinho_id", nullable = false)
     private Sobrinho sobrinho;
+
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "dupla_id", nullable = false)
     private DuplaTioCarona dupla;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 30)
     private VinculoStatus status = VinculoStatus.ATIVO;
+
     @Column(nullable = false)
     private OffsetDateTime criadoEm = OffsetDateTime.now();
 

@@ -9,5 +9,10 @@ import java.util.List;
 public interface SobrinhoDuplaRepository extends JpaRepository<SobrinhoDupla, Long> {
     List<SobrinhoDupla> findByEventoIdAndDuplaIdAndStatusOrderBySobrinhoNome(Long eventoId, Long duplaId, VinculoStatus status);
 
+    List<SobrinhoDupla> findByEventoIdAndStatusOrderByDuplaCodigoAscSobrinhoNomeAsc(
+            Long eventoId,
+            VinculoStatus status
+    );
+
     boolean existsByEventoIdAndSobrinhoIdAndStatus(Long eventoId, Long sobrinhoId, VinculoStatus status);
 }
