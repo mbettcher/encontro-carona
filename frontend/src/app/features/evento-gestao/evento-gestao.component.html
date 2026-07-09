@@ -398,12 +398,14 @@
           </div>
 
           <div>
-            <label for="responsavelTelefone" class="form-label">Telefone do responsável <span class="text-danger">*</span></label>
+            <label for="responsavelTelefone" class="form-label">Telefone do responsável <span
+                class="text-danger">*</span></label>
 
             <input id="responsavelTelefone" pInputText type="text" class="w-100" formControlName="responsavelTelefone"
               placeholder="(00) 00000-0000" />
-            @if (sobrinhoForm.controls.responsavelNome.touched &&
-            sobrinhoForm.controls.responsavelNome.hasError('required')) {
+
+            @if (sobrinhoForm.controls.responsavelTelefone.touched &&
+            sobrinhoForm.controls.responsavelTelefone.hasError('required')) {
             <div class="form-text text-danger">
               Informe o telefone do responsável.
             </div>
@@ -411,11 +413,12 @@
           </div>
 
           <div>
-            <label for="dataNascimentoSobrinho" class="form-label">Data de nascimento <span class="text-danger">*</span></label>
+            <label for="dataNascimentoSobrinho" class="form-label">Data de nascimento <span
+                class="text-danger">*</span></label>
 
             <input id="dataNascimentoSobrinho" pInputText type="date" class="w-100" formControlName="dataNascimento" />
-            @if (sobrinhoForm.controls.responsavelNome.touched &&
-            sobrinhoForm.controls.responsavelNome.hasError('required')) {
+            @if (sobrinhoForm.controls.dataNascimento.touched &&
+            sobrinhoForm.controls.dataNascimento.hasError('required')) {
             <div class="form-text text-danger">
               Informe data de nascimento do sobrinho.
             </div>
@@ -427,8 +430,8 @@
 
             <input id="enderecoSobrinho" pInputText type="text" class="w-100" formControlName="endereco"
               placeholder="Endereço do sobrinho" />
-            @if (sobrinhoForm.controls.responsavelNome.touched &&
-            sobrinhoForm.controls.responsavelNome.hasError('required')) {
+            @if (sobrinhoForm.controls.endereco.touched &&
+            sobrinhoForm.controls.endereco.hasError('required')) {
             <div class="form-text text-danger">
               Informe o endereço do sobrinho.
             </div>

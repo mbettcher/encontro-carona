@@ -409,7 +409,7 @@ export class EventoGestaoComponent implements OnInit {
   criarSobrinho(): void {
     if (this.sobrinhoForm.invalid) {
       this.sobrinhoForm.markAllAsTouched();
-      this.toastWarn('Informe ao menos o nome do sobrinho.');
+      this.toastWarn(this.mensagemValidacaoSobrinho());
       return;
     }
 
@@ -444,7 +444,7 @@ export class EventoGestaoComponent implements OnInit {
       },
       error: erro => {
         console.error('Erro ao cadastrar sobrinho', erro);
-        this.toastError('Não foi possível cadastrar o sobrinho.');
+        this.toastError(this.mensagemErro(erro, 'Não foi possível cadastrar o sobrinho.'));
         this.salvandoSobrinho.set(false);
       }
     });
@@ -630,6 +630,67 @@ export class EventoGestaoComponent implements OnInit {
   private normalizarTextoOpcional(valor: string): string | undefined {
     const texto = valor?.trim();
     return texto ? texto : undefined;
+  }
+
+  private mensagemErro(erro: unknown, fallback: string): string {
+    if (
+      typeof erro === 'object' &&
+      erro !== null &&
+      'error' in erro
+    ) {
+      const corpo = (erro as {
+        error?: {
+          message?: string;
+          detail?: string;
+          title?: string;
+          details?: string[];
+        };
+      }).error;
+
+      if (corpo?.details?.length) {
+        return corpo.details.join(' ');
+      }
+
+      return corpo?.message || corpo?.detail || corpo?.title || fallback;
+    }
+
+    return fallback;
+  }
+
+  private mensagemValidacaoSobrinho(): string {
+    const campos: string[] = [];
+
+    if (this.sobrinhoForm.controls.nome.hasError('required')) {
+      campos.push('nome do sobrinho');
+    }
+
+    if (this.sobrinhoForm.controls.responsavelNome.hasError('required')) {
+      campos.push('nome do responsável');
+    }
+
+    if (this.sobrinhoForm.controls.responsavelTelefone.hasError('required')) {
+      campos.push('telefone do responsável');
+    }
+
+    if (this.sobrinhoForm.controls.dataNascimento.hasError('required')) {
+      campos.push('data de nascimento');
+    }
+
+    if (this.sobrinhoForm.controls.endereco.hasError('required')) {
+      campos.push('endereço');
+    }
+
+    if (campos.length === 0) {
+      return 'Revise os dados do sobrinho antes de cadastrar.';
+    }
+
+    if (campos.length === 1) {
+      return `Informe ${campos[0]}.`;
+    }
+
+    const ultimo = campos.pop();
+
+    return `Informe ${campos.join(', ')} e ${ultimo}.`;
   }
 
   private normalizarFiltro(valor: string): string {

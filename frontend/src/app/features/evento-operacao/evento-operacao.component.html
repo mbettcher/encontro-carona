@@ -618,12 +618,12 @@
     </div>
   </div>
 
-  <div class="row g-3 mb-3">
+  <div class="row g-3 mb-3 align-items-end">
     <div class="col-12 col-xl-4">
       <label for="duplaCaderno" class="form-label">Dupla</label>
 
       <p-select inputId="duplaCaderno" [options]="opcoesDuplasCaderno()" optionLabel="label" optionValue="value"
-        placeholder="Todas as duplas" class="w-100" panelclass="vinculo-select-panel" [filter]="true"
+        placeholder="Todas as duplas" styleClass="w-100" panelStyleClass="vinculo-select-panel" [filter]="true"
         filterBy="label,descricao" [showClear]="true" [ngModel]="duplaCadernoSelecionada()"
         (ngModelChange)="alterarDuplaCadernoSelecionada($event)" appendTo="body">
         <ng-template pTemplate="selectedItem" let-opcao>
@@ -643,24 +643,29 @@
       </p-select>
     </div>
 
-    <div class="col-12 col-xl-4 d-flex align-items-end">
-      <div class="d-flex flex-column flex-sm-row gap-2 w-100">
-        <p-button label="Entregar à dupla" icon="fa-solid fa-hand-holding-heart" severity="info" size="small"
-          class="w-100" [loading]="processandoCadernos()"
-          [disabled]="!duplaCadernoSelecionada() || !duplaSelecionadaTemCadernosPendentes()"
-          (onClick)="entregarCadernosADupla()" />
+    <div class="col-12 col-xl-4">
+      <div class="row g-2">
+        <div class="col-12 col-sm-6">
+          <p-button label="Entregar à dupla" icon="fa-solid fa-hand-holding-heart" severity="info" size="small"
+            styleClass="w-100" [loading]="processandoCadernos()"
+            [disabled]="!duplaCadernoSelecionada() || !duplaSelecionadaTemCadernosPendentes()"
+            (onClick)="entregarCadernosADupla()" />
+        </div>
 
-        <p-button label="Receber da dupla" icon="fa-solid fa-people-carry-box" severity="warn" size="small"
-          class="w-100" [loading]="processandoCadernos()"
-          [disabled]="!duplaCadernoSelecionada() || !duplaSelecionadaTemCadernosComADupla()"
-          (onClick)="receberCadernosDaDupla()" />
+        <div class="col-12 col-sm-6">
+          <p-button label="Receber da dupla" icon="fa-solid fa-people-carry-box" severity="warn" size="small"
+            styleClass="w-100" [loading]="processandoCadernos()"
+            [disabled]="!duplaCadernoSelecionada() || !duplaSelecionadaTemCadernosComADupla()"
+            (onClick)="receberCadernosDaDupla()" />
+        </div>
       </div>
     </div>
 
-    <div class="col-12 col-xl-4 d-flex align-items-end">
+    <div class="col-12 col-xl-4">
       <div class="table-search w-100">
         <span class="p-input-icon-left w-100">
           <i class="fa-solid fa-magnifying-glass"></i>
+
           <input pInputText type="text" class="w-100" placeholder="Pesquisar caderno, sobrinho, dupla ou status..."
             [value]="filtroCadernos()" (input)="alterarFiltroCadernos($any($event.target).value)" />
         </span>
@@ -674,12 +679,10 @@
 
     <h3 class="h6 mb-1">Nenhum caderno gerado</h3>
 
-    <p class="text-body-secondary small mb-3">
-      Gere os cadernos a partir dos vínculos ativos entre sobrinhos e duplas.
+    <p class="text-body-secondary small mb-0">
+      Clique em <strong>Gerar/atualizar cadernos</strong> para criar os cadernos a partir dos vínculos ativos entre
+      sobrinhos e duplas.
     </p>
-
-    <p-button label="Gerar cadernos do choro" icon="fa-solid fa-wand-magic-sparkles" severity="info"
-      [loading]="processandoCadernos()" (onClick)="gerarCadernos()" />
   </div>
   } @else {
   <div class="operation-table-toolbar mb-3">
@@ -750,6 +753,12 @@
           </td>
 
           <td class="text-end">
+            @if (caderno.status === 'ENTREGUE_AO_SOBRINHO') {
+            <span class="badge text-bg-success">
+              <i class="fa-solid fa-check me-1"></i>
+              Fluxo concluído
+            </span>
+            } @else {
             <div class="d-flex flex-column flex-xl-row justify-content-end gap-2">
               <p-button label="Conferir" icon="fa-solid fa-clipboard-check" size="small" severity="warn"
                 [loading]="processandoCadernoId() === caderno.id" [disabled]="!podeConferirCaderno(caderno)"
@@ -767,6 +776,7 @@
                 [loading]="processandoCadernoId() === caderno.id" [disabled]="!podeMarcarCadernoPerdido(caderno)"
                 (onClick)="marcarCadernoPerdido(caderno)" />
             </div>
+            }
           </td>
         </tr>
       </ng-template>
