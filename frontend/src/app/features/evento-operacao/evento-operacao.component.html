@@ -228,7 +228,7 @@
   </div>
 
   <div class="col-12 col-md-4 col-xl-2">
-    <p-card styleClass="operation-action-card h-100">
+    <p-card class="operation-action-card h-100">
       <div class="action-icon">
         <i class="fa-solid fa-clipboard-check"></i>
       </div>
@@ -344,9 +344,9 @@
 
   <div class="table-responsive-wrapper">
 
-    <p-table [value]="tiosOperacaoFiltrados()" styleClass="p-datatable-sm min-width-table" [paginator]="true"
+    <p-table [value]="tiosOperacaoFiltrados()" class="p-datatable-sm min-width-table" [paginator]="true"
       [rows]="10" [rowsPerPageOptions]="[10, 20, 50]" [showCurrentPageReport]="true"
-      currentPageReportTemplate="Exibindo {first} a {last} de {totalRecords} registros">
+      currentPageReportTemplate="Exibindo {first} a {last} de {totalRecords} registros" paginatorDropdownAppendTo="body">
       <ng-template pTemplate="header">
         <tr>
           <th>Tio carona</th>
@@ -406,7 +406,7 @@
   }
 </p-card>
 
-<p-card styleClass="shadow-sm border-0 mb-4">
+<p-card class="shadow-sm border-0 mb-4">
   <ng-template pTemplate="header">
     <div class="px-4 pt-4 d-flex flex-column flex-lg-row justify-content-between gap-3">
       <div>
@@ -484,8 +484,8 @@
 
   <div class="table-responsive-wrapper">
 
-    <p-table [value]="presencaSobrinhosFiltrados()" styleClass="p-datatable-sm min-width-table" [paginator]="true"
-      [rows]="10" [rowsPerPageOptions]="[10, 20, 50]" [showCurrentPageReport]="true"
+    <p-table [value]="presencaSobrinhosFiltrados()" class="p-datatable-sm min-width-table" [paginator]="true"
+      [rows]="10" [rowsPerPageOptions]="[10, 20, 50]" [showCurrentPageReport]="true" paginatorDropdownAppendTo="body"
       currentPageReportTemplate="Exibindo {first} a {last} de {totalRecords} registros">
       <ng-template pTemplate="header">
         <tr>
@@ -535,16 +535,16 @@
             } @else {
             <div class="d-flex flex-column flex-xl-row justify-content-end gap-2">
               <p-button label="Presente" icon="fa-solid fa-user-check" size="small" severity="success"
-                variant="outlined" [loading]="processandoPresencaSobrinho() === sobrinho.id"
+                [loading]="processandoPresencaSobrinho() === sobrinho.id"
                 [disabled]="!podeMarcarPresente(sobrinho)"
                 (onClick)="registrarPresencaSobrinho(sobrinho, 'PRESENTE')" />
 
-              <p-button label="Ausente" icon="fa-solid fa-user-clock" size="small" severity="warn" variant="outlined"
+              <p-button label="Ausente" icon="fa-solid fa-user-clock" size="small" severity="warn"
                 [loading]="processandoPresencaSobrinho() === sobrinho.id" [disabled]="!podeMarcarAusente(sobrinho)"
                 (onClick)="registrarPresencaSobrinho(sobrinho, 'AUSENTE')" />
 
               <p-button label="Desistente" icon="fa-solid fa-user-xmark" size="small" severity="danger"
-                variant="outlined" [loading]="processandoPresencaSobrinho() === sobrinho.id"
+                [loading]="processandoPresencaSobrinho() === sobrinho.id"
                 [disabled]="!podeMarcarDesistente(sobrinho)"
                 (onClick)="registrarPresencaSobrinho(sobrinho, 'DESISTENTE')" />
             </div>
@@ -597,8 +597,8 @@
 
   <div class="table-responsive-wrapper">
 
-    <p-table [value]="sobrinhosEventoFiltrados()" styleClass="p-datatable-sm min-width-table" [paginator]="true"
-      [rows]="10" [rowsPerPageOptions]="[10, 20, 50]" [showCurrentPageReport]="true"
+    <p-table [value]="sobrinhosEventoFiltrados()" class="p-datatable-sm min-width-table" [paginator]="true"
+      [rows]="10" [rowsPerPageOptions]="[10, 20, 50]" [showCurrentPageReport]="true" paginatorDropdownAppendTo="body"
       currentPageReportTemplate="Exibindo {first} a {last} de {totalRecords} registros">
       <ng-template pTemplate="header">
         <tr>
