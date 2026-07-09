@@ -134,4 +134,8 @@ public class Sobrinho {
     public void marcarDesistente() {
         this.status = SobrinhoStatus.DESISTENTE;
     }
+
+    public void atualizarStatusPresenca(SobrinhoStatus status) {
+        this.status = status;
+    }
 }

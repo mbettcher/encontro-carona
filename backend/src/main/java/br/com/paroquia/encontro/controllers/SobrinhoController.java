@@ -1,6 +1,7 @@
 package br.com.paroquia.encontro.controllers;
 
 import br.com.paroquia.encontro.dto.request.SobrinhoRequest;
+import br.com.paroquia.encontro.dto.response.SobrinhoPresencaResponse;
 import br.com.paroquia.encontro.dto.response.SobrinhoResponse;
 import br.com.paroquia.encontro.services.SobrinhoService;
 import br.com.paroquia.encontro.dto.request.SobrinhoPresencaRequest;
@@ -37,6 +38,20 @@ public class SobrinhoController {
             @PathVariable Long sobrinhoId,
             @RequestBody @Valid SobrinhoPresencaRequest request
     ) {
-        return service.registrarPresenca(eventoId, sobrinhoId, request.operacao());
+        return service.registrarPresenca(
+                eventoId,
+                sobrinhoId,
+                request.operacao(),
+                request.observacao()
+        );
     }
+
+    @GetMapping("/{sobrinhoId}/presencas")
+    public List<SobrinhoPresencaResponse> listarPresencas(
+            @PathVariable Long eventoId,
+            @PathVariable Long sobrinhoId
+    ) {
+        return service.listarPresencas(eventoId, sobrinhoId);
+    }
+
 }
