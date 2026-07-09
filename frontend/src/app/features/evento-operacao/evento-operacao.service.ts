@@ -11,7 +11,8 @@ import {
   TioCaronaEvento,
   OperacaoPresencaSobrinho,
   CadernoChoro,
-  CadernoChoroGeracaoResponse
+  CadernoChoroGeracaoResponse,
+  CadernoChoroHistorico,
 } from '../../shared/models';
 
 @Injectable({
@@ -79,11 +80,12 @@ export class EventoOperacaoService {
     return this.http.get<CadernoChoro[]>(`${this.apiUrl}/eventos/${eventoId}/cadernos`);
   }
 
+  listarHistoricoCaderno(eventoId: number, cadernoId: number): Observable<CadernoChoroHistorico[]> {
+    return this.http.get<CadernoChoroHistorico[]>(`${this.apiUrl}/eventos/${eventoId}/cadernos/${cadernoId}/historico`);
+  }
+
   gerarCadernos(eventoId: number): Observable<CadernoChoroGeracaoResponse> {
-    return this.http.post<CadernoChoroGeracaoResponse>(
-      `${this.apiUrl}/eventos/${eventoId}/cadernos/gerar`,
-      {}
-    );
+    return this.http.post<CadernoChoroGeracaoResponse>(`${this.apiUrl}/eventos/${eventoId}/cadernos/gerar`, {});
   }
 
   entregarCadernosADupla(

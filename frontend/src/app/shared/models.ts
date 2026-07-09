@@ -232,3 +232,16 @@ export interface CadernoChoroGeracaoResponse {
   existentes: number;
   total: number;
 }
+
+export interface CadernoChoroHistorico {
+  id: number;
+  eventoId: number;
+  cadernoId: number;
+  duplaId: number;
+  duplaCodigo: string;
+  sobrinhoId: number;
+  sobrinhoNome: string;
+  status: StatusCadernoChoro;
+  observacao?: string;
+  ocorridoEm: string;
+}

@@ -647,15 +647,13 @@
       <div class="row g-2">
         <div class="col-12 col-sm-6">
           <p-button label="Entregar à dupla" icon="fa-solid fa-hand-holding-heart" severity="info" size="small"
-            styleClass="w-100" [loading]="processandoCadernos()"
-            [disabled]="!duplaCadernoSelecionada() || !duplaSelecionadaTemCadernosPendentes()"
+            styleClass="w-100" [loading]="processandoCadernos()" [disabled]="!podeEntregarCadernosADuplaEmLote()"
             (onClick)="entregarCadernosADupla()" />
         </div>
 
         <div class="col-12 col-sm-6">
           <p-button label="Receber da dupla" icon="fa-solid fa-people-carry-box" severity="warn" size="small"
-            styleClass="w-100" [loading]="processandoCadernos()"
-            [disabled]="!duplaCadernoSelecionada() || !duplaSelecionadaTemCadernosComADupla()"
+            styleClass="w-100" [loading]="processandoCadernos()" [disabled]="!podeEntregarCadernosADuplaEmLote()"
             (onClick)="receberCadernosDaDupla()" />
         </div>
       </div>
@@ -754,30 +752,44 @@
 
           <td class="text-end">
             @if (caderno.status === 'ENTREGUE_AO_SOBRINHO') {
-            <span class="badge text-bg-success">
-              <i class="fa-solid fa-check me-1"></i>
-              Fluxo concluído
-            </span>
-            } @else {
-            <div class="d-flex flex-column flex-xl-row justify-content-end gap-2">
-              <p-button label="Conferir" icon="fa-solid fa-clipboard-check" size="small" severity="warn"
-                [loading]="processandoCadernoId() === caderno.id" [disabled]="!podeConferirCaderno(caderno)"
-                (onClick)="conferirCaderno(caderno)" />
+            <div class="caderno-actions">
+              <span class="badge text-bg-success align-self-center">
+                <i class="fa-solid fa-check me-1"></i>
+                Fluxo concluído
+              </span>
 
-              <p-button label="Anexar" icon="fa-solid fa-box" size="small" severity="info"
+              <p-button icon="fa-solid fa-clock-rotate-left" size="small" severity="help"
+                styleClass="caderno-icon-button ms-1" pTooltip="Ver histórico" tooltipPosition="top"
+                ariaLabel="Ver histórico" (onClick)="abrirHistoricoCaderno(caderno)" />
+            </div>
+            } @else {
+            <div class="caderno-actions">
+              <p-button icon="fa-solid fa-clipboard-check" size="small" severity="warn"
+                styleClass="caderno-icon-button me-1" pTooltip="Conferir caderno" tooltipPosition="top"
+                ariaLabel="Conferir caderno" [loading]="processandoCadernoId() === caderno.id"
+                [disabled]="!podeConferirCaderno(caderno)" (onClick)="conferirCaderno(caderno)" />
+
+              <p-button icon="fa-solid fa-box" size="small" severity="info" styleClass="caderno-icon-button me-2"
+                pTooltip="Anexar ao kit" tooltipPosition="top" ariaLabel="Anexar ao kit"
                 [loading]="processandoCadernoId() === caderno.id" [disabled]="!podeAnexarCadernoAoKit(caderno)"
                 (onClick)="anexarCadernoAoKit(caderno)" />
 
-              <p-button label="Entregar" icon="fa-solid fa-gift" size="small" severity="success"
+              <p-button icon="fa-solid fa-gift" size="small" severity="success" styleClass="caderno-icon-button me-1"
+                pTooltip="Entregar ao sobrinho" tooltipPosition="top" ariaLabel="Entregar ao sobrinho"
                 [loading]="processandoCadernoId() === caderno.id" [disabled]="!podeEntregarCadernoAoSobrinho(caderno)"
                 (onClick)="entregarCadernoAoSobrinho(caderno)" />
 
-              <p-button label="Perdido" icon="fa-solid fa-triangle-exclamation" size="small" severity="danger"
-                [loading]="processandoCadernoId() === caderno.id" [disabled]="!podeMarcarCadernoPerdido(caderno)"
-                (onClick)="marcarCadernoPerdido(caderno)" />
+              <p-button icon="fa-solid fa-clock-rotate-left" size="small" severity="help"
+                styleClass="caderno-icon-button me-1" pTooltip="Ver histórico" tooltipPosition="top"
+                ariaLabel="Ver histórico" (onClick)="abrirHistoricoCaderno(caderno)" />
+
+              <p-button icon="fa-solid fa-ellipsis" size="small" severity="danger" styleClass="caderno-icon-button"
+                pTooltip="Mais ações" tooltipPosition="top" ariaLabel="Mais ações"
+                (onClick)="abrirAcoesEspeciaisCaderno(caderno)" />
             </div>
             }
           </td>
+
         </tr>
       </ng-template>
     </p-table>
@@ -877,4 +889,159 @@
   </div>
   }
 </p-card>
+
+<p-dialog header="Histórico do Caderno do Choro" [visible]="historicoCadernoVisivel()"
+  (visibleChange)="historicoCadernoVisivel.set($event)" [modal]="true" [style]="{ width: 'min(95vw, 980px)' }"
+  [dismissableMask]="true" (onHide)="fecharHistoricoCaderno()">
+  @if (cadernoSelecionado()) {
+  <div class="mb-3">
+    <div class="fw-semibold">
+      {{ cadernoSelecionado()?.sobrinhoNome }}
+    </div>
+
+    <div class="small text-body-secondary">
+      {{ cadernoSelecionado()?.duplaApelido || cadernoSelecionado()?.duplaCodigo }}
+      —
+      {{ cadernoSelecionado()?.tio1Nome }} e {{ cadernoSelecionado()?.tio2Nome }}
+    </div>
+  </div>
+  }
+
+  @if (carregandoHistoricoCaderno()) {
+  <div class="text-center py-5">
+    <i class="fa-solid fa-spinner fa-spin text-body-secondary mb-3"></i>
+    <div class="small text-body-secondary">Carregando histórico...</div>
+  </div>
+  } @else if (historicoCaderno().length === 0) {
+  <div class="empty-state text-center py-5">
+    <i class="fa-solid fa-clock-rotate-left text-body-secondary mb-3"></i>
+    <h3 class="h6 mb-1">Nenhum histórico encontrado</h3>
+    <p class="text-body-secondary small mb-0">
+      Ainda não há movimentações registradas para este caderno.
+    </p>
+  </div>
+  } @else {
+  <div class="historico-caderno-scroll">
+
+    <p-timeline [value]="historicoCadernoTimeline()" layout="horizontal" align="top"
+      styleClass="historico-caderno-timeline">
+      <ng-template pTemplate="marker" let-item>
+        <span class="historico-marker">
+          <i [class]="iconeHistoricoCaderno(item.status)"></i>
+        </span>
+      </ng-template>
+
+      <ng-template pTemplate="content" let-item>
+        <div class="historico-item">
+          <p-tag [value]="labelStatusCaderno(item.status)" [severity]="severityStatusCaderno(item.status)" />
+
+          <div class="small fw-semibold mt-2">
+            {{ item.ocorridoEm | date:'dd/MM/yyyy HH:mm' }}
+          </div>
+
+          @if (item.observacao) {
+          <div class="small text-body-secondary mt-1">
+            {{ item.observacao }}
+          </div>
+          }
+        </div>
+      </ng-template>
+    </p-timeline>
+
+  </div>
+  }
+
+  <ng-template pTemplate="footer">
+    <p-button label="Fechar" icon="fa-solid fa-xmark" severity="secondary" variant="outlined"
+      (onClick)="fecharHistoricoCaderno()" />
+  </ng-template>
+</p-dialog>
+
+
+<p-dialog [header]="tituloOperacaoCaderno()" [visible]="operacaoCadernoVisivel()"
+  (visibleChange)="operacaoCadernoVisivel.set($event)" [modal]="true" [style]="{ width: 'min(95vw, 560px)' }"
+  [dismissableMask]="true" (onHide)="fecharOperacaoCaderno()">
+  @if (cadernoSelecionado()) {
+  <div class="alert alert-warning py-2 px-3 mb-3 small">
+    <i class="fa-solid fa-circle-info me-2"></i>
+    {{ descricaoOperacaoCaderno() }}
+  </div>
+
+  <div class="mb-3">
+    <div class="small text-body-secondary">Sobrinho</div>
+    <div class="fw-semibold">{{ cadernoSelecionado()?.sobrinhoNome }}</div>
+  </div>
+
+  <div class="mb-3">
+    <div class="small text-body-secondary">Dupla responsável</div>
+    <div class="fw-semibold">
+      {{ cadernoSelecionado()?.duplaApelido || cadernoSelecionado()?.duplaCodigo }}
+    </div>
+    <div class="small text-body-secondary">
+      {{ cadernoSelecionado()?.tio1Nome }} e {{ cadernoSelecionado()?.tio2Nome }}
+    </div>
+  </div>
+
+  <div>
+    <label for="observacaoOperacaoCaderno" class="form-label">
+      Observação
+    </label>
+
+    <textarea id="observacaoOperacaoCaderno" pTextarea rows="4" class="w-100" maxlength="500"
+      placeholder="Informe uma observação, se necessário." [ngModel]="observacaoOperacaoCaderno()"
+      (ngModelChange)="alterarObservacaoOperacaoCaderno($event)"></textarea>
+
+    <div class="form-text">
+      Use este campo para registrar detalhes importantes da movimentação.
+    </div>
+  </div>
+  }
+
+  <ng-template pTemplate="footer">
+    <div class="d-flex flex-column flex-sm-row justify-content-end gap-2">
+      <p-button label="Cancelar" icon="fa-solid fa-xmark" severity="secondary" variant="outlined"
+        (onClick)="fecharOperacaoCaderno()" />
+
+      <p-button [label]="labelBotaoConfirmarOperacaoCaderno()" icon="fa-solid fa-check"
+        [severity]="severityBotaoConfirmarOperacaoCaderno()"
+        [loading]="processandoCadernoId() === cadernoSelecionado()?.id" (onClick)="confirmarOperacaoCaderno()" />
+    </div>
+  </ng-template>
+</p-dialog>
+
+
+<!-- Modal mais ações - Caderno do choro -->
+<p-dialog header="Ações especiais do caderno" [visible]="acoesEspeciaisCadernoVisivel()"
+  (visibleChange)="acoesEspeciaisCadernoVisivel.set($event)" [modal]="true" [style]="{ width: 'min(95vw, 560px)' }"
+  [dismissableMask]="true" (onHide)="fecharAcoesEspeciaisCaderno()">
+  @if (cadernoSelecionado()) {
+  <div class="mb-3">
+    <div class="small text-body-secondary">Sobrinho</div>
+    <div class="fw-semibold">{{ cadernoSelecionado()?.sobrinhoNome }}</div>
+  </div>
+
+  <div class="alert alert-warning py-2 px-3 mb-3 small">
+    <i class="fa-solid fa-triangle-exclamation me-2"></i>
+    Use estas ações apenas para ocorrências excepcionais, como perda, substituição ou cancelamento.
+  </div>
+
+  <div class="acoes-especiais-caderno">
+    <p-button icon="fa-solid fa-triangle-exclamation" severity="danger" styleClass="w-100"
+      pTooltip="Marcar como perdido" tooltipPosition="top" ariaLabel="Marcar como perdido"
+      [disabled]="!cadernoSelecionado() || !podeMarcarCadernoPerdido(cadernoSelecionado()!)"
+      (onClick)="marcarCadernoPerdido(cadernoSelecionado()!)" />
+
+    <p-button icon="fa-solid fa-arrows-rotate" severity="warn" styleClass="w-100"
+      pTooltip="Marcar como substituído" tooltipPosition="top" ariaLabel="Marcar como substituído"
+      [disabled]="!cadernoSelecionado() || !podeMarcarCadernoSubstituido(cadernoSelecionado()!)"
+      (onClick)="marcarCadernoSubstituido(cadernoSelecionado()!)" />
+
+    <p-button icon="fa-solid fa-ban" severity="danger" styleClass="w-100" pTooltip="Cancelar caderno"
+      tooltipPosition="top" ariaLabel="Cancelar caderno"
+      [disabled]="!cadernoSelecionado() || !podeCancelarCaderno(cadernoSelecionado()!)"
+      (onClick)="cancelarCaderno(cadernoSelecionado()!)" />
+  </div>
+  }
+</p-dialog>
+
 </div>
