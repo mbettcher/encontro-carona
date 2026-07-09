@@ -36,6 +36,16 @@
             width: 100%;
         }
     }
+
+    .table-responsive-wrapper {
+        width: 100%;
+        overflow-x: auto;
+        border-radius: 0.75rem;
+    }
+
+    .min-width-table {
+        min-width: 42rem;
+    }
 }
 
 @media (max-width: 768px) {
@@ -44,6 +54,15 @@
             .p-datatable-wrapper {
                 border-radius: 0.75rem;
             }
+        }
+
+        .tab-button {
+            width: 100%;
+            text-align: left;
+        }
+
+        .table-search {
+            max-width: 100%;
         }
     }
 }

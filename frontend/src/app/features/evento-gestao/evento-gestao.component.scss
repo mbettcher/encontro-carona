@@ -102,6 +102,16 @@
             }
         }
     }
+
+    .table-responsive-wrapper {
+        width: 100%;
+        overflow-x: auto;
+        border-radius: 0.75rem;
+    }
+
+    .min-width-table {
+        min-width: 42rem;
+    }
 }
 
 :host ::ng-deep {

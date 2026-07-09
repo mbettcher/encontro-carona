@@ -180,31 +180,33 @@
         </div>
         } @else {
 
-        <p-table [value]="tiosCaronaFiltrados()" responsiveLayout="scroll" class="p-datatable-sm">
-          <ng-template pTemplate="header">
-            <tr>
-              <th>Nome</th>
-              <th>Status</th>
-              <th>Observações</th>
-            </tr>
-          </ng-template>
+        <div class="table-responsive-wrapper">
+          <p-table [value]="tiosCaronaFiltrados()" class="p-datatable-sm min-width-table">
+            <ng-template pTemplate="header">
+              <tr>
+                <th>Nome</th>
+                <th>Status</th>
+                <th>Observações</th>
+              </tr>
+            </ng-template>
 
-          <ng-template pTemplate="body" let-tio>
-            <tr>
-              <td class="fw-semibold">{{ tio.pessoaNome }}</td>
-              <td>
-                <p-tag [value]="labelStatusTio(tio.status)" [severity]="severityStatusTio(tio.status)" />
-              </td>
-              <td>
-                @if (tio.observacoes) {
-                <span class="small">{{ tio.observacoes }}</span>
-                } @else {
-                <span class="small text-body-secondary">Sem observações</span>
-                }
-              </td>
-            </tr>
-          </ng-template>
-        </p-table>
+            <ng-template pTemplate="body" let-tio>
+              <tr>
+                <td class="fw-semibold">{{ tio.pessoaNome }}</td>
+                <td>
+                  <p-tag [value]="labelStatusTio(tio.status)" [severity]="severityStatusTio(tio.status)" />
+                </td>
+                <td>
+                  @if (tio.observacoes) {
+                  <span class="small">{{ tio.observacoes }}</span>
+                  } @else {
+                  <span class="small text-body-secondary">Sem observações</span>
+                  }
+                </td>
+              </tr>
+            </ng-template>
+          </p-table>
+        </div>
 
         }
       </p-card>
@@ -310,36 +312,38 @@
         </div>
         } @else {
 
-        <p-table [value]="duplasFiltradas()" responsiveLayout="scroll" class="p-datatable-sm">
-          <ng-template pTemplate="header">
-            <tr>
-              <th>Código</th>
-              <th>Dupla</th>
-              <th>Apelido</th>
-              <th>Status</th>
-            </tr>
-          </ng-template>
+        <div class="table-responsive-wrapper">
+          <p-table [value]="duplasFiltradas()" class="p-datatable-sm min-width-table">
+            <ng-template pTemplate="header">
+              <tr>
+                <th>Código</th>
+                <th>Dupla</th>
+                <th>Apelido</th>
+                <th>Status</th>
+              </tr>
+            </ng-template>
 
-          <ng-template pTemplate="body" let-dupla>
-            <tr>
-              <td class="fw-semibold">{{ dupla.codigo }}</td>
-              <td>
-                <div>{{ dupla.tio1Nome }}</div>
-                <div class="small text-body-secondary">{{ dupla.tio2Nome }}</div>
-              </td>
-              <td>
-                @if (dupla.apelido) {
-                <span>{{ dupla.apelido }}</span>
-                } @else {
-                <span class="small text-body-secondary">Sem apelido</span>
-                }
-              </td>
-              <td>
-                <p-tag [value]="labelStatusDupla(dupla.status)" [severity]="severityStatusDupla(dupla.status)" />
-              </td>
-            </tr>
-          </ng-template>
-        </p-table>
+            <ng-template pTemplate="body" let-dupla>
+              <tr>
+                <td class="fw-semibold">{{ dupla.codigo }}</td>
+                <td>
+                  <div>{{ dupla.tio1Nome }}</div>
+                  <div class="small text-body-secondary">{{ dupla.tio2Nome }}</div>
+                </td>
+                <td>
+                  @if (dupla.apelido) {
+                  <span>{{ dupla.apelido }}</span>
+                  } @else {
+                  <span class="small text-body-secondary">Sem apelido</span>
+                  }
+                </td>
+                <td>
+                  <p-tag [value]="labelStatusDupla(dupla.status)" [severity]="severityStatusDupla(dupla.status)" />
+                </td>
+              </tr>
+            </ng-template>
+          </p-table>
+        </div>
         }
       </p-card>
     </div>
@@ -462,51 +466,53 @@
         </div>
         } @else {
 
-        <p-table [value]="sobrinhosFiltrados()" responsiveLayout="scroll" class="p-datatable-sm">
-          <ng-template pTemplate="header">
-            <tr>
-              <th>Nome</th>
-              <th>Responsável</th>
-              <th>Contato</th>
-              <th>Status</th>
-            </tr>
-          </ng-template>
+        <div class="table-responsive-wrapper">
+          <p-table [value]="sobrinhosFiltrados()" class="p-datatable-sm min-width-table">
+            <ng-template pTemplate="header">
+              <tr>
+                <th>Nome</th>
+                <th>Responsável</th>
+                <th>Contato</th>
+                <th>Status</th>
+              </tr>
+            </ng-template>
 
-          <ng-template pTemplate="body" let-sobrinho>
-            <tr>
-              <td class="fw-semibold">{{ sobrinho.nome }}</td>
-              <td>
-                @if (sobrinho.responsavelNome) {
-                <span>{{ sobrinho.responsavelNome }}</span>
-                } @else {
-                <span class="small text-body-secondary">Não informado</span>
-                }
-              </td>
-              <td>
-                @if (sobrinho.telefone) {
-                <div class="small">
-                  <i class="fa-solid fa-phone me-1"></i>
-                  {{ sobrinho.telefone }}
-                </div>
-                }
+            <ng-template pTemplate="body" let-sobrinho>
+              <tr>
+                <td class="fw-semibold">{{ sobrinho.nome }}</td>
+                <td>
+                  @if (sobrinho.responsavelNome) {
+                  <span>{{ sobrinho.responsavelNome }}</span>
+                  } @else {
+                  <span class="small text-body-secondary">Não informado</span>
+                  }
+                </td>
+                <td>
+                  @if (sobrinho.telefone) {
+                  <div class="small">
+                    <i class="fa-solid fa-phone me-1"></i>
+                    {{ sobrinho.telefone }}
+                  </div>
+                  }
 
-                @if (sobrinho.responsavelTelefone) {
-                <div class="small text-body-secondary">
-                  Resp.: {{ sobrinho.responsavelTelefone }}
-                </div>
-                }
+                  @if (sobrinho.responsavelTelefone) {
+                  <div class="small text-body-secondary">
+                    Resp.: {{ sobrinho.responsavelTelefone }}
+                  </div>
+                  }
 
-                @if (!sobrinho.telefone && !sobrinho.responsavelTelefone) {
-                <span class="small text-body-secondary">Não informado</span>
-                }
-              </td>
-              <td>
-                <p-tag [value]="labelStatusSobrinho(sobrinho.status)"
-                  [severity]="severityStatusSobrinho(sobrinho.status)" />
-              </td>
-            </tr>
-          </ng-template>
-        </p-table>
+                  @if (!sobrinho.telefone && !sobrinho.responsavelTelefone) {
+                  <span class="small text-body-secondary">Não informado</span>
+                  }
+                </td>
+                <td>
+                  <p-tag [value]="labelStatusSobrinho(sobrinho.status)"
+                    [severity]="severityStatusSobrinho(sobrinho.status)" />
+                </td>
+              </tr>
+            </ng-template>
+          </p-table>
+        </div>
         }
       </p-card>
     </div>
@@ -614,30 +620,32 @@
           </p>
         </div>
         } @else {
-        <p-table [value]="vinculosFiltrados()" responsiveLayout="scroll" class="p-datatable-sm">
-          <ng-template pTemplate="header">
-            <tr>
-              <th>Sobrinho</th>
-              <th>Dupla</th>
-              <th>Status</th>
-            </tr>
-          </ng-template>
+        <div class="table-responsive-wrapper">
+          <p-table [value]="vinculosFiltrados()" class="p-datatable-sm min-width-table">
+            <ng-template pTemplate="header">
+              <tr>
+                <th>Sobrinho</th>
+                <th>Dupla</th>
+                <th>Status</th>
+              </tr>
+            </ng-template>
 
-          <ng-template pTemplate="body" let-vinculo>
-            <tr>
-              <td class="fw-semibold">{{ vinculo.sobrinhoNome }}</td>
-              <td>
-                <span class="fw-semibold" [pTooltip]="tooltipDuplaVinculo(vinculo)" tooltipPosition="top">
-                  {{ labelDuplaVinculo(vinculo) }}
-                </span>
-              </td>
-              <td>
-                <p-tag [value]="labelStatusVinculo(vinculo.status)"
-                  [severity]="severityStatusVinculo(vinculo.status)" />
-              </td>
-            </tr>
-          </ng-template>
-        </p-table>
+            <ng-template pTemplate="body" let-vinculo>
+              <tr>
+                <td class="fw-semibold">{{ vinculo.sobrinhoNome }}</td>
+                <td>
+                  <span class="fw-semibold" [pTooltip]="tooltipDuplaVinculo(vinculo)" tooltipPosition="top">
+                    {{ labelDuplaVinculo(vinculo) }}
+                  </span>
+                </td>
+                <td>
+                  <p-tag [value]="labelStatusVinculo(vinculo.status)"
+                    [severity]="severityStatusVinculo(vinculo.status)" />
+                </td>
+              </tr>
+            </ng-template>
+          </p-table>
+        </div>
         }
       </p-card>
     </div>

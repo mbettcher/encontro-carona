@@ -124,69 +124,72 @@
           </p>
         </div>
         } @else {
-        <p-table [value]="pessoasFiltradas()" [loading]="carregando()" [paginator]="true" [rows]="10"
-          [rowsPerPageOptions]="[10, 20, 50]" responsiveLayout="scroll" styleClass="p-datatable-sm">
-          <ng-template pTemplate="header">
-            <tr>
-              <th>Nome</th>
-              <th>Tipo</th>
-              <th>Contato</th>
-              <th>Nascimento</th>
-              <th class="text-end">Ações</th>
-            </tr>
-          </ng-template>
 
-          <ng-template pTemplate="body" let-pessoa>
-            <tr>
-              <td>
-                <div class="fw-semibold">{{ pessoa.nome }}</div>
+        <div class="table-responsive-wrapper">
+          <p-table [value]="pessoasFiltradas()" [loading]="carregando()" [paginator]="true" [rows]="10"
+            [rowsPerPageOptions]="[10, 20, 50]" class="p-datatable-sm min-width-table">
+            <ng-template pTemplate="header">
+              <tr>
+                <th>Nome</th>
+                <th>Tipo</th>
+                <th>Contato</th>
+                <th>Nascimento</th>
+                <th class="text-end">Ações</th>
+              </tr>
+            </ng-template>
 
-                @if (pessoa.observacoes) {
-                <div class="small text-body-secondary text-truncate observacao-preview">
-                  {{ pessoa.observacoes }}
-                </div>
-                }
-              </td>
+            <ng-template pTemplate="body" let-pessoa>
+              <tr>
+                <td>
+                  <div class="fw-semibold">{{ pessoa.nome }}</div>
 
-              <td>
-                <p-tag [value]="labelTipo(pessoa.tipo)" [severity]="severityTipo(pessoa.tipo)" />
-              </td>
+                  @if (pessoa.observacoes) {
+                  <div class="small text-body-secondary text-truncate observacao-preview">
+                    {{ pessoa.observacoes }}
+                  </div>
+                  }
+                </td>
 
-              <td>
-                @if (pessoa.telefone) {
-                <div class="small">
-                  <i class="fa-solid fa-phone me-1"></i>
-                  {{ pessoa.telefone }}
-                </div>
-                }
+                <td>
+                  <p-tag [value]="labelTipo(pessoa.tipo)" [severity]="severityTipo(pessoa.tipo)" />
+                </td>
 
-                @if (pessoa.email) {
-                <div class="small text-body-secondary">
-                  <i class="fa-solid fa-envelope me-1"></i>
-                  {{ pessoa.email }}
-                </div>
-                }
+                <td>
+                  @if (pessoa.telefone) {
+                  <div class="small">
+                    <i class="fa-solid fa-phone me-1"></i>
+                    {{ pessoa.telefone }}
+                  </div>
+                  }
 
-                @if (!pessoa.telefone && !pessoa.email) {
-                <span class="small text-body-secondary">Não informado</span>
-                }
-              </td>
+                  @if (pessoa.email) {
+                  <div class="small text-body-secondary">
+                    <i class="fa-solid fa-envelope me-1"></i>
+                    {{ pessoa.email }}
+                  </div>
+                  }
 
-              <td>
-                @if (pessoa.dataNascimento) {
-                <span class="small">{{ pessoa.dataNascimento }}</span>
-                } @else {
-                <span class="small text-body-secondary">Não informado</span>
-                }
-              </td>
+                  @if (!pessoa.telefone && !pessoa.email) {
+                  <span class="small text-body-secondary">Não informado</span>
+                  }
+                </td>
 
-              <td class="text-end">
-                <p-button type="button" label="Editar" icon="fa-solid fa-pen-to-square" size="small"
-                  severity="warn" (onClick)="editar(pessoa)" />
-              </td>
-            </tr>
-          </ng-template>
-        </p-table>
+                <td>
+                  @if (pessoa.dataNascimento) {
+                  <span class="small">{{ pessoa.dataNascimento }}</span>
+                  } @else {
+                  <span class="small text-body-secondary">Não informado</span>
+                  }
+                </td>
+
+                <td class="text-end">
+                  <p-button type="button" label="Editar" icon="fa-solid fa-pen-to-square" size="small" severity="warn"
+                    (onClick)="editar(pessoa)" />
+                </td>
+              </tr>
+            </ng-template>
+          </p-table>
+        </div>
         }
       </p-card>
     </div>

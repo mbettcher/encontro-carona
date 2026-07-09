@@ -126,67 +126,70 @@
           </p>
         </div>
         } @else {
-        <p-table [value]="paroquias()" [loading]="carregando()" [paginator]="true" [rows]="10"
-          [rowsPerPageOptions]="[10, 20, 50]" responsiveLayout="scroll" styleClass="p-datatable-sm">
-          <ng-template pTemplate="header">
-            <tr>
-              <th>Paróquia</th>
-              <th>Endereço</th>
-              <th>Contato</th>
-              <th>Responsável</th>
-              <th class="text-end">Ações</th>
-            </tr>
-          </ng-template>
 
-          <ng-template pTemplate="body" let-paroquia>
-            <tr>
-              <td>
-                <div class="fw-semibold">{{ paroquia.nome }}</div>
+        <div class="table-responsive-wrapper">
+          <p-table [value]="paroquias()" [loading]="carregando()" [paginator]="true" [rows]="10"
+            [rowsPerPageOptions]="[10, 20, 50]" class="p-datatable-sm min-width-table">
+            <ng-template pTemplate="header">
+              <tr>
+                <th>Paróquia</th>
+                <th>Endereço</th>
+                <th>Contato</th>
+                <th>Responsável</th>
+                <th class="text-end">Ações</th>
+              </tr>
+            </ng-template>
 
-                @if (paroquia.uf) {
-                <p-tag [value]="paroquia.uf" severity="info" styleClass="mt-1" />
-                }
-              </td>
+            <ng-template pTemplate="body" let-paroquia>
+              <tr>
+                <td>
+                  <div class="fw-semibold">{{ paroquia.nome }}</div>
 
-              <td>
-                <span class="small">{{ enderecoFormatado(paroquia) }}</span>
-              </td>
+                  @if (paroquia.uf) {
+                  <p-tag [value]="paroquia.uf" severity="info" styleClass="mt-1" />
+                  }
+                </td>
 
-              <td>
-                @if (paroquia.telefone) {
-                <div class="small">
-                  <i class="fa-solid fa-phone me-1"></i>
-                  {{ paroquia.telefone }}
-                </div>
-                }
+                <td>
+                  <span class="small">{{ enderecoFormatado(paroquia) }}</span>
+                </td>
 
-                @if (paroquia.email) {
-                <div class="small text-body-secondary">
-                  <i class="fa-solid fa-envelope me-1"></i>
-                  {{ paroquia.email }}
-                </div>
-                }
+                <td>
+                  @if (paroquia.telefone) {
+                  <div class="small">
+                    <i class="fa-solid fa-phone me-1"></i>
+                    {{ paroquia.telefone }}
+                  </div>
+                  }
 
-                @if (!paroquia.telefone && !paroquia.email) {
-                <span class="small text-body-secondary">Não informado</span>
-                }
-              </td>
+                  @if (paroquia.email) {
+                  <div class="small text-body-secondary">
+                    <i class="fa-solid fa-envelope me-1"></i>
+                    {{ paroquia.email }}
+                  </div>
+                  }
 
-              <td>
-                @if (paroquia.responsavel) {
-                <span class="small">{{ paroquia.responsavel }}</span>
-                } @else {
-                <span class="small text-body-secondary">Não informado</span>
-                }
-              </td>
+                  @if (!paroquia.telefone && !paroquia.email) {
+                  <span class="small text-body-secondary">Não informado</span>
+                  }
+                </td>
 
-              <td class="text-end">
-                <p-button type="button" label="Editar" icon="fa-solid fa-pen-to-square" size="small"
-                  severity="warn" (onClick)="editar(paroquia)" />
-              </td>
-            </tr>
-          </ng-template>
-        </p-table>
+                <td>
+                  @if (paroquia.responsavel) {
+                  <span class="small">{{ paroquia.responsavel }}</span>
+                  } @else {
+                  <span class="small text-body-secondary">Não informado</span>
+                  }
+                </td>
+
+                <td class="text-end">
+                  <p-button type="button" label="Editar" icon="fa-solid fa-pen-to-square" size="small" severity="warn"
+                    (onClick)="editar(paroquia)" />
+                </td>
+              </tr>
+            </ng-template>
+          </p-table>
+        </div>
         }
       </p-card>
     </div>
