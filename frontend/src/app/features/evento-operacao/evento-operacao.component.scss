@@ -11,6 +11,7 @@
   }
 
   .operation-action-card {
+    height: 100%;
     border: 0;
     box-shadow: 0 0.125rem 0.75rem rgba(15, 23, 42, 0.06);
 
@@ -80,6 +81,25 @@
       height: 0.75rem;
       border-radius: 999px;
       overflow: hidden;
+    }
+
+    .p-inputtext,
+    .p-select {
+      width: 100%;
+    }
+  }
+
+  .form-label {
+    font-weight: 600;
+  }
+
+  .input-group {
+    .input-group-text {
+      border-radius: 0.5rem 0 0 0.5rem;
+    }
+
+    .form-control {
+      border-radius: 0 0.5rem 0.5rem 0;
     }
   }
 }

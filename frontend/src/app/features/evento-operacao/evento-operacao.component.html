@@ -25,10 +25,10 @@
     </div>
 
     <div class="d-flex flex-column flex-sm-row gap-2">
-      <p-button label="Voltar para eventos" icon="fa-solid fa-arrow-left" severity="secondary"
+      <p-button label="Voltar para eventos" icon="fa-solid fa-arrow-left" severity="secondary" variant="outlined"
         [routerLink]="['/eventos']" />
 
-      <p-button label="Gestão do evento" icon="fa-solid fa-users-gear" severity="info"
+      <p-button label="Gestão do evento" icon="fa-solid fa-users-gear" severity="info" variant="outlined"
         [routerLink]="['/eventos', eventoId, 'gestao']" />
     </div>
   </div>
@@ -170,22 +170,65 @@
 </div>
 
 <div class="row g-4 mb-4">
-  <div class="col-12 col-md-6 col-xl-3">
+  <div class="col-12 col-xl-6">
     <p-card styleClass="operation-action-card h-100">
-      <div class="action-icon">
-        <i class="fa-solid fa-car-on"></i>
+      <div class="d-flex align-items-start gap-3 mb-3">
+        <div class="action-icon mb-0">
+          <i class="fa-solid fa-qrcode"></i>
+        </div>
+
+        <div>
+          <h3 class="h6 mb-1">Check-in / Checkout por credencial</h3>
+          <p class="text-body-secondary small mb-0">
+            Use leitor de QR Code ou código de barras para agilizar a entrada e saída dos tios carona.
+          </p>
+        </div>
       </div>
 
-      <h3 class="h6 mb-1">Check-in dos tios</h3>
-      <p class="text-body-secondary small mb-3">
-        Futuramente registrará a chegada dos tios carona no evento.
-      </p>
+      <form [formGroup]="codigoForm" (ngSubmit)="registrarOperacaoPorCodigo()" class="d-grid gap-3">
+        <div>
+          <label for="tipoOperacao" class="form-label">Operação</label>
 
-      <p-button label="Em breve" severity="secondary" variant="outlined" size="small" [disabled]="true" />
+          <p-select inputId="tipoOperacao" formControlName="tipoOperacao" [options]="[
+                { label: 'Registrar check-in', value: 'CHECKIN' },
+                { label: 'Registrar checkout', value: 'CHECKOUT' }
+              ]" optionLabel="label" optionValue="value" styleClass="w-100" />
+        </div>
+
+        <div>
+          <label for="codigoIdentificacao" class="form-label">
+            QR Code ou código de barras
+          </label>
+
+          <div class="input-group">
+            <span class="input-group-text">
+              <i class="fa-solid fa-barcode"></i>
+            </span>
+
+            <input id="codigoIdentificacao" pInputText type="text" class="form-control"
+              formControlName="codigoIdentificacao" placeholder="Aponte o leitor ou digite o código" autocomplete="off"
+              (keydown.enter)="aoPressionarEnterCodigo($event)" />
+          </div>
+
+          @if (codigoForm.controls.codigoIdentificacao.touched && codigoForm.controls.codigoIdentificacao.invalid) {
+          <div class="form-text text-danger">
+            Informe o código da credencial.
+          </div>
+          }
+        </div>
+
+        <div class="alert alert-warning py-2 px-3 mb-0 small">
+          <i class="fa-solid fa-circle-info me-2"></i>
+          A leitura por credencial já está preparada na interface. A gravação real será conectada ao backend no próximo
+          bloco.
+        </div>
+
+        <p-button type="submit" label="Processar leitura" icon="fa-solid fa-barcode" [loading]="processandoCodigo()" />
+      </form>
     </p-card>
   </div>
 
-  <div class="col-12 col-md-6 col-xl-3">
+  <div class="col-12 col-md-4 col-xl-2">
     <p-card styleClass="operation-action-card h-100">
       <div class="action-icon">
         <i class="fa-solid fa-clipboard-check"></i>
@@ -193,14 +236,14 @@
 
       <h3 class="h6 mb-1">Presença dos sobrinhos</h3>
       <p class="text-body-secondary small mb-3">
-        Futuramente confirmará presença, ausência ou desistência dos sobrinhos.
+        Futuramente confirmará presença, ausência ou desistência.
       </p>
 
       <p-button label="Em breve" severity="secondary" variant="outlined" size="small" [disabled]="true" />
     </p-card>
   </div>
 
-  <div class="col-12 col-md-6 col-xl-3">
+  <div class="col-12 col-md-4 col-xl-2">
     <p-card styleClass="operation-action-card h-100">
       <div class="action-icon">
         <i class="fa-solid fa-book-bible"></i>
@@ -208,14 +251,14 @@
 
       <h3 class="h6 mb-1">Caderno do Choro</h3>
       <p class="text-body-secondary small mb-3">
-        Futuramente controlará a entrega do caderno por sobrinho.
+        Futuramente controlará a entrega por sobrinho.
       </p>
 
       <p-button label="Em breve" severity="secondary" variant="outlined" size="small" [disabled]="true" />
     </p-card>
   </div>
 
-  <div class="col-12 col-md-6 col-xl-3">
+  <div class="col-12 col-md-4 col-xl-2">
     <p-card styleClass="operation-action-card h-100">
       <div class="action-icon">
         <i class="fa-solid fa-map-location-dot"></i>
@@ -223,13 +266,126 @@
 
       <h3 class="h6 mb-1">Mapa dos tios</h3>
       <p class="text-body-secondary small mb-3">
-        Futuramente exibirá localização dos tios carona durante a janela do evento.
+        Futuramente exibirá localização durante o evento.
       </p>
 
       <p-button label="Futuro" severity="secondary" variant="outlined" size="small" [disabled]="true" />
     </p-card>
   </div>
 </div>
+
+<p-card styleClass="shadow-sm border-0 mb-4">
+  <ng-template pTemplate="header">
+    <div class="px-4 pt-4 d-flex flex-column flex-lg-row justify-content-between gap-3">
+      <div>
+        <h2 class="h5 mb-1">Check-in manual dos tios carona</h2>
+        <p class="text-body-secondary small mb-0">
+          Use esta opção quando a leitura do QR Code ou código de barras não estiver disponível.
+        </p>
+      </div>
+
+      <div class="d-flex flex-wrap gap-2">
+        <p-tag value="Aguardando" severity="warn" />
+
+        <span class="small text-body-secondary align-self-center">
+          {{ tiosAguardandoCheckin().length }} aguardando
+        </span>
+      </div>
+    </div>
+  </ng-template>
+
+  @if (tiosAtivos().length === 0) {
+  <div class="empty-state text-center py-5">
+    <i class="fa-solid fa-car-side text-body-secondary mb-3"></i>
+    <h3 class="h6 mb-1">Nenhum tio carona ativo</h3>
+    <p class="text-body-secondary small mb-0">
+      Adicione tios carona na Gestão do Evento para iniciar o check-in.
+    </p>
+  </div>
+  } @else {
+  <div class="row g-3 mb-3">
+    <div class="col-12 col-md-4">
+      <div class="status-mini-card">
+        <div class="small text-body-secondary">Aguardando check-in</div>
+        <strong>{{ tiosAguardandoCheckin().length }}</strong>
+      </div>
+    </div>
+
+    <div class="col-12 col-md-4">
+      <div class="status-mini-card">
+        <div class="small text-body-secondary">Com check-in</div>
+        <strong>{{ tiosComCheckin().length }}</strong>
+      </div>
+    </div>
+
+    <div class="col-12 col-md-4">
+      <div class="status-mini-card">
+        <div class="small text-body-secondary">Com checkout</div>
+        <strong>{{ tiosComCheckout().length }}</strong>
+      </div>
+    </div>
+  </div>
+
+  <div class="table-responsive-wrapper">
+    <p-table [value]="tiosAtivos()" styleClass="p-datatable-sm min-width-table">
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Tio carona</th>
+          <th>Código</th>
+          <th>Status operacional</th>
+          <th>Check-in</th>
+          <th>Checkout</th>
+          <th class="text-end">Ações</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-tio>
+        <tr>
+          <td class="fw-semibold">{{ tio.pessoaNome }}</td>
+
+          <td>
+            <span class="small font-monospace">
+              {{ codigoIdentificacaoTio(tio) }}
+            </span>
+          </td>
+
+          <td>
+            <p-tag [value]="labelStatusOperacionalTio(tio)" [severity]="severityStatusOperacionalTio(tio)" />
+          </td>
+
+          <td>
+            @if (tio.checkinEm) {
+            <span class="small">{{ tio.checkinEm | date:'dd/MM/yyyy HH:mm' }}</span>
+            } @else {
+            <span class="small text-body-secondary">Não registrado</span>
+            }
+          </td>
+
+          <td>
+            @if (tio.checkoutEm) {
+            <span class="small">{{ tio.checkoutEm | date:'dd/MM/yyyy HH:mm' }}</span>
+            } @else {
+            <span class="small text-body-secondary">Não registrado</span>
+            }
+          </td>
+
+          <td class="text-end">
+            <div class="d-flex flex-column flex-lg-row justify-content-end gap-2">
+              <p-button label="Check-in" icon="fa-solid fa-right-to-bracket" size="small" severity="success"
+                [loading]="processandoManual() === tio.id" [disabled]="!podeCheckinManual(tio)"
+                (onClick)="registrarCheckinManual(tio)" />
+
+              <p-button label="Checkout" icon="fa-solid fa-right-from-bracket" size="small" severity="warn"
+                 [loading]="processandoManual() === tio.id" [disabled]="!podeCheckoutManual(tio)"
+                (onClick)="registrarCheckoutManual(tio)" />
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+  }
+</p-card>
 
 <p-card styleClass="shadow-sm border-0">
   <ng-template pTemplate="header">

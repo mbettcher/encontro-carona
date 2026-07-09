@@ -96,6 +96,14 @@ export interface TioCaronaEvento {
   pessoaNome: string;
   status: TioCaronaStatus;
   observacoes?: string;
+
+  codigoIdentificacao?: string;
+
+  checkinRealizado?: boolean;
+  checkinEm?: string;
+
+  checkoutRealizado?: boolean;
+  checkoutEm?: string;
 }
 
 export interface TioCaronaEventoRequest {
