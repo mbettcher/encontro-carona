@@ -149,14 +149,28 @@
       <p-card class="shadow-sm border-0">
         <ng-template pTemplate="header">
           <div class="px-4 pt-4">
-            <h2 class="h5 mb-1">Tios carona do evento</h2>
-            <p class="text-body-secondary small mb-0">
-              {{ tiosCarona().length }} tio(s) vinculado(s)
-            </p>
+
+            <div class="d-flex flex-column flex-lg-row justify-content-between gap-3">
+              <div>
+                <h2 class="h5 mb-1">Tios carona do evento</h2>
+                <p class="text-body-secondary small mb-0">
+                  {{ tiosCaronaFiltrados().length }} de {{ tiosCarona().length }} tio(s)
+                </p>
+              </div>
+
+              <div class="table-search">
+                <span class="p-input-icon-left w-100">
+                  <i class="fa-solid fa-magnifying-glass"></i>
+                  <input pInputText type="text" class="w-100" placeholder="Pesquisar tio..." [value]="filtroTios()"
+                    (input)="alterarFiltroTios($any($event.target).value)" />
+                </span>
+              </div>
+            </div>
+
           </div>
         </ng-template>
 
-        @if (tiosCarona().length === 0) {
+        @if (tiosCaronaFiltrados().length === 0) {
         <div class="empty-state text-center py-5">
           <i class="fa-solid fa-car-side text-body-secondary mb-3"></i>
           <h3 class="h6 mb-1">Nenhum tio carona vinculado</h3>
@@ -165,7 +179,8 @@
           </p>
         </div>
         } @else {
-        <p-table [value]="tiosCarona()" responsiveLayout="scroll" class="p-datatable-sm">
+
+        <p-table [value]="tiosCaronaFiltrados()" responsiveLayout="scroll" class="p-datatable-sm">
           <ng-template pTemplate="header">
             <tr>
               <th>Nome</th>
@@ -190,6 +205,7 @@
             </tr>
           </ng-template>
         </p-table>
+
         }
       </p-card>
     </div>
@@ -263,14 +279,28 @@
       <p-card class="shadow-sm border-0">
         <ng-template pTemplate="header">
           <div class="px-4 pt-4">
-            <h2 class="h5 mb-1">Duplas formadas</h2>
-            <p class="text-body-secondary small mb-0">
-              {{ duplas().length }} dupla(s)
-            </p>
+
+            <div class="d-flex flex-column flex-lg-row justify-content-between gap-3">
+              <div>
+                <h2 class="h5 mb-1">Duplas formadas</h2>
+                <p class="text-body-secondary small mb-0">
+                  {{ duplasFiltradas().length }} de {{ duplas().length }} dupla(s)
+                </p>
+              </div>
+
+              <div class="table-search">
+                <span class="p-input-icon-left w-100">
+                  <i class="fa-solid fa-magnifying-glass"></i>
+                  <input pInputText type="text" class="w-100" placeholder="Pesquisar dupla..." [value]="filtroDuplas()"
+                    (input)="alterarFiltroDuplas($any($event.target).value)" />
+                </span>
+              </div>
+            </div>
+
           </div>
         </ng-template>
 
-        @if (duplas().length === 0) {
+        @if (duplasFiltradas().length === 0) {
         <div class="empty-state text-center py-5">
           <i class="fa-solid fa-people-arrows text-body-secondary mb-3"></i>
           <h3 class="h6 mb-1">Nenhuma dupla formada</h3>
@@ -279,7 +309,8 @@
           </p>
         </div>
         } @else {
-        <p-table [value]="duplas()" responsiveLayout="scroll" class="p-datatable-sm">
+
+        <p-table [value]="duplasFiltradas()" responsiveLayout="scroll" class="p-datatable-sm">
           <ng-template pTemplate="header">
             <tr>
               <th>Código</th>
@@ -400,14 +431,28 @@
       <p-card class="shadow-sm border-0">
         <ng-template pTemplate="header">
           <div class="px-4 pt-4">
-            <h2 class="h5 mb-1">Sobrinhos cadastrados</h2>
-            <p class="text-body-secondary small mb-0">
-              {{ sobrinhos().length }} sobrinho(s)
-            </p>
+
+            <div class="d-flex flex-column flex-lg-row justify-content-between gap-3">
+              <div>
+                <h2 class="h5 mb-1">Sobrinhos cadastrados</h2>
+                <p class="text-body-secondary small mb-0">
+                  {{ sobrinhosFiltrados().length }} de {{ sobrinhos().length }} sobrinho(s)
+                </p>
+              </div>
+
+              <div class="table-search">
+                <span class="p-input-icon-left w-100">
+                  <i class="fa-solid fa-magnifying-glass"></i>
+                  <input pInputText type="text" class="w-100" placeholder="Pesquisar sobrinho..."
+                    [value]="filtroSobrinhos()" (input)="alterarFiltroSobrinhos($any($event.target).value)" />
+                </span>
+              </div>
+            </div>
+
           </div>
         </ng-template>
 
-        @if (sobrinhos().length === 0) {
+        @if (sobrinhosFiltrados().length === 0) {
         <div class="empty-state text-center py-5">
           <i class="fa-solid fa-child-reaching text-body-secondary mb-3"></i>
           <h3 class="h6 mb-1">Nenhum sobrinho cadastrado</h3>
@@ -416,7 +461,8 @@
           </p>
         </div>
         } @else {
-        <p-table [value]="sobrinhos()" responsiveLayout="scroll" class="p-datatable-sm">
+
+        <p-table [value]="sobrinhosFiltrados()" responsiveLayout="scroll" class="p-datatable-sm">
           <ng-template pTemplate="header">
             <tr>
               <th>Nome</th>
@@ -538,14 +584,28 @@
       <p-card class="shadow-sm border-0">
         <ng-template pTemplate="header">
           <div class="px-4 pt-4">
-            <h2 class="h5 mb-1">Vínculos cadastrados</h2>
-            <p class="text-body-secondary small mb-0">
-              {{ vinculos().length }} vínculo(s)
-            </p>
+
+            <div class="d-flex flex-column flex-lg-row justify-content-between gap-3">
+              <div>
+                <h2 class="h5 mb-1">Vínculos cadastrados</h2>
+                <p class="text-body-secondary small mb-0">
+                  {{ vinculosFiltrados().length }} de {{ vinculos().length }} vínculo(s)
+                </p>
+              </div>
+
+              <div class="table-search">
+                <span class="p-input-icon-left w-100">
+                  <i class="fa-solid fa-magnifying-glass"></i>
+                  <input pInputText type="text" class="w-100" placeholder="Pesquisar vínculo..."
+                    [value]="filtroVinculos()" (input)="alterarFiltroVinculos($any($event.target).value)" />
+                </span>
+              </div>
+            </div>
+
           </div>
         </ng-template>
 
-        @if (vinculos().length === 0) {
+        @if (vinculosFiltrados().length === 0) {
         <div class="empty-state text-center py-5">
           <i class="fa-solid fa-link text-body-secondary mb-3"></i>
           <h3 class="h6 mb-1">Nenhum vínculo cadastrado</h3>
@@ -554,7 +614,7 @@
           </p>
         </div>
         } @else {
-        <p-table [value]="vinculos()" responsiveLayout="scroll" class="p-datatable-sm">
+        <p-table [value]="vinculosFiltrados()" responsiveLayout="scroll" class="p-datatable-sm">
           <ng-template pTemplate="header">
             <tr>
               <th>Sobrinho</th>

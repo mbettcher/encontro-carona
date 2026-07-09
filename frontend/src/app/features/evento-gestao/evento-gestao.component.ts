@@ -76,6 +76,10 @@ export class EventoGestaoComponent implements OnInit {
 
   readonly tio1Selecionado = signal(0);
   readonly tio2Selecionado = signal(0);
+  readonly filtroTios = signal('');
+  readonly filtroDuplas = signal('');
+  readonly filtroSobrinhos = signal('');
+  readonly filtroVinculos = signal('');
 
   readonly tioForm = this.fb.nonNullable.group({
     pessoaId: [0, [Validators.required, Validators.min(1)]],
@@ -199,6 +203,68 @@ export class EventoGestaoComponent implements OnInit {
       }));
   });
 
+  readonly tiosCaronaFiltrados = computed(() => {
+    const filtro = this.normalizarFiltro(this.filtroTios());
+
+    if (!filtro) {
+      return this.tiosCarona();
+    }
+
+    return this.tiosCarona().filter(tio =>
+      this.contemFiltro(tio.pessoaNome, filtro) ||
+      this.contemFiltro(tio.status, filtro) ||
+      this.contemFiltro(tio.observacoes, filtro)
+    );
+  });
+
+  readonly duplasFiltradas = computed(() => {
+    const filtro = this.normalizarFiltro(this.filtroDuplas());
+
+    if (!filtro) {
+      return this.duplas();
+    }
+
+    return this.duplas().filter(dupla =>
+      this.contemFiltro(dupla.codigo, filtro) ||
+      this.contemFiltro(dupla.apelido, filtro) ||
+      this.contemFiltro(dupla.tio1Nome, filtro) ||
+      this.contemFiltro(dupla.tio2Nome, filtro) ||
+      this.contemFiltro(dupla.status, filtro)
+    );
+  });
+
+  readonly sobrinhosFiltrados = computed(() => {
+    const filtro = this.normalizarFiltro(this.filtroSobrinhos());
+
+    if (!filtro) {
+      return this.sobrinhos();
+    }
+
+    return this.sobrinhos().filter(sobrinho =>
+      this.contemFiltro(sobrinho.nome, filtro) ||
+      this.contemFiltro(sobrinho.responsavelNome, filtro) ||
+      this.contemFiltro(sobrinho.telefone, filtro) ||
+      this.contemFiltro(sobrinho.responsavelTelefone, filtro) ||
+      this.contemFiltro(sobrinho.status, filtro)
+    );
+  });
+
+  readonly vinculosFiltrados = computed(() => {
+    const filtro = this.normalizarFiltro(this.filtroVinculos());
+
+    if (!filtro) {
+      return this.vinculos();
+    }
+
+    return this.vinculos().filter(vinculo =>
+      this.contemFiltro(vinculo.sobrinhoNome, filtro) ||
+      this.contemFiltro(vinculo.duplaCodigo, filtro) ||
+      this.contemFiltro(this.labelDuplaVinculo(vinculo), filtro) ||
+      this.contemFiltro(this.tooltipDuplaVinculo(vinculo), filtro) ||
+      this.contemFiltro(vinculo.status, filtro)
+    );
+  });
+
   ngOnInit(): void {
     this.carregarTudo();
   }
@@ -238,6 +304,22 @@ export class EventoGestaoComponent implements OnInit {
       this.tio1Selecionado.set(0);
       this.duplaForm.controls.tio1Id.setValue(0);
     }
+  }
+
+  alterarFiltroTios(valor: string): void {
+    this.filtroTios.set(valor);
+  }
+
+  alterarFiltroDuplas(valor: string): void {
+    this.filtroDuplas.set(valor);
+  }
+
+  alterarFiltroSobrinhos(valor: string): void {
+    this.filtroSobrinhos.set(valor);
+  }
+
+  alterarFiltroVinculos(valor: string): void {
+    this.filtroVinculos.set(valor);
   }
 
   adicionarTioCarona(): void {
@@ -548,6 +630,22 @@ export class EventoGestaoComponent implements OnInit {
   private normalizarTextoOpcional(valor: string): string | undefined {
     const texto = valor?.trim();
     return texto ? texto : undefined;
+  }
+
+  private normalizarFiltro(valor: string): string {
+    return valor
+      .trim()
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '');
+  }
+
+  private contemFiltro(valor: string | undefined | null, filtro: string): boolean {
+    if (!valor) {
+      return false;
+    }
+
+    return this.normalizarFiltro(String(valor)).includes(filtro);
   }
 
   duplaDoVinculo(vinculo: SobrinhoDupla): DuplaTioCarona | undefined {
