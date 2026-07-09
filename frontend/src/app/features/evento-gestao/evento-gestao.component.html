@@ -365,7 +365,7 @@
 
         <form [formGroup]="sobrinhoForm" (ngSubmit)="criarSobrinho()" class="d-grid gap-3">
           <div>
-            <label for="nomeSobrinho" class="form-label">Nome *</label>
+            <label for="nomeSobrinho" class="form-label">Nome <span class="text-danger">*</span></label>
 
             <input id="nomeSobrinho" pInputText type="text" class="w-100" formControlName="nome"
               placeholder="Nome completo" />
@@ -385,30 +385,54 @@
           </div>
 
           <div>
-            <label for="responsavelNome" class="form-label">Responsável</label>
+            <label for="responsavelNome" class="form-label">Responsável <span class="text-danger">*</span></label>
 
             <input id="responsavelNome" pInputText type="text" class="w-100" formControlName="responsavelNome"
               placeholder="Nome do responsável" />
+            @if (sobrinhoForm.controls.responsavelNome.touched &&
+            sobrinhoForm.controls.responsavelNome.hasError('required')) {
+            <div class="form-text text-danger">
+              Informe o nome do responsável.
+            </div>
+            }
           </div>
 
           <div>
-            <label for="responsavelTelefone" class="form-label">Telefone do responsável</label>
+            <label for="responsavelTelefone" class="form-label">Telefone do responsável <span class="text-danger">*</span></label>
 
             <input id="responsavelTelefone" pInputText type="text" class="w-100" formControlName="responsavelTelefone"
               placeholder="(00) 00000-0000" />
+            @if (sobrinhoForm.controls.responsavelNome.touched &&
+            sobrinhoForm.controls.responsavelNome.hasError('required')) {
+            <div class="form-text text-danger">
+              Informe o telefone do responsável.
+            </div>
+            }
           </div>
 
           <div>
-            <label for="dataNascimentoSobrinho" class="form-label">Data de nascimento</label>
+            <label for="dataNascimentoSobrinho" class="form-label">Data de nascimento <span class="text-danger">*</span></label>
 
             <input id="dataNascimentoSobrinho" pInputText type="date" class="w-100" formControlName="dataNascimento" />
+            @if (sobrinhoForm.controls.responsavelNome.touched &&
+            sobrinhoForm.controls.responsavelNome.hasError('required')) {
+            <div class="form-text text-danger">
+              Informe data de nascimento do sobrinho.
+            </div>
+            }
           </div>
 
           <div>
-            <label for="enderecoSobrinho" class="form-label">Endereço</label>
+            <label for="enderecoSobrinho" class="form-label">Endereço <span class="text-danger">*</span></label>
 
             <input id="enderecoSobrinho" pInputText type="text" class="w-100" formControlName="endereco"
               placeholder="Endereço do sobrinho" />
+            @if (sobrinhoForm.controls.responsavelNome.touched &&
+            sobrinhoForm.controls.responsavelNome.hasError('required')) {
+            <div class="form-text text-danger">
+              Informe o endereço do sobrinho.
+            </div>
+            }
           </div>
 
           <div>

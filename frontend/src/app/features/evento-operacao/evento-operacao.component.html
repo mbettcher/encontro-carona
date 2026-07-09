@@ -243,7 +243,7 @@
   </div>
 
   <div class="col-12 col-md-4 col-xl-2">
-    <p-card styleClass="operation-action-card h-100">
+    <p-card class="operation-action-card h-100">
       <div class="action-icon">
         <i class="fa-solid fa-book-bible"></i>
       </div>
@@ -557,7 +557,7 @@
   }
 </p-card>
 
-<p-card styleClass="shadow-sm border-0 mb-4">
+<p-card class="shadow-sm border-0 mb-4">
   <ng-template pTemplate="header">
     <div class="px-4 pt-4 d-flex flex-column flex-xl-row justify-content-between gap-3">
       <div>
@@ -568,8 +568,8 @@
       </div>
 
       <div class="d-flex flex-wrap gap-2">
-        <p-button label="Gerar cadernos" icon="fa-solid fa-wand-magic-sparkles" severity="info" variant="outlined"
-          size="small" [loading]="processandoCadernos()" (onClick)="gerarCadernos()" />
+        <p-button label="Gerar/atualizar cadernos" icon="fa-solid fa-wand-magic-sparkles" severity="info" size="small"
+          [loading]="processandoCadernos()" (onClick)="gerarCadernos()" />
       </div>
     </div>
   </ng-template>
@@ -623,7 +623,7 @@
       <label for="duplaCaderno" class="form-label">Dupla</label>
 
       <p-select inputId="duplaCaderno" [options]="opcoesDuplasCaderno()" optionLabel="label" optionValue="value"
-        placeholder="Todas as duplas" styleClass="w-100" panelStyleClass="vinculo-select-panel" [filter]="true"
+        placeholder="Todas as duplas" class="w-100" panelclass="vinculo-select-panel" [filter]="true"
         filterBy="label,descricao" [showClear]="true" [ngModel]="duplaCadernoSelecionada()"
         (ngModelChange)="alterarDuplaCadernoSelecionada($event)" appendTo="body">
         <ng-template pTemplate="selectedItem" let-opcao>
@@ -645,12 +645,14 @@
 
     <div class="col-12 col-xl-4 d-flex align-items-end">
       <div class="d-flex flex-column flex-sm-row gap-2 w-100">
-        <p-button label="Entregar à dupla" icon="fa-solid fa-hand-holding-heart" severity="info"
-          size="small" styleClass="w-100" [loading]="processandoCadernos()" [disabled]="!duplaCadernoSelecionada()"
+        <p-button label="Entregar à dupla" icon="fa-solid fa-hand-holding-heart" severity="info" size="small"
+          class="w-100" [loading]="processandoCadernos()"
+          [disabled]="!duplaCadernoSelecionada() || !duplaSelecionadaTemCadernosPendentes()"
           (onClick)="entregarCadernosADupla()" />
 
-        <p-button label="Receber da dupla" icon="fa-solid fa-people-carry-box" severity="warn"
-          size="small" styleClass="w-100" [loading]="processandoCadernos()" [disabled]="!duplaCadernoSelecionada()"
+        <p-button label="Receber da dupla" icon="fa-solid fa-people-carry-box" severity="warn" size="small"
+          class="w-100" [loading]="processandoCadernos()"
+          [disabled]="!duplaCadernoSelecionada() || !duplaSelecionadaTemCadernosComADupla()"
           (onClick)="receberCadernosDaDupla()" />
       </div>
     </div>
@@ -669,10 +671,15 @@
   @if (cadernos().length === 0) {
   <div class="empty-state text-center py-5">
     <i class="fa-solid fa-book-bible text-body-secondary mb-3"></i>
+
     <h3 class="h6 mb-1">Nenhum caderno gerado</h3>
-    <p class="text-body-secondary small mb-0">
+
+    <p class="text-body-secondary small mb-3">
       Gere os cadernos a partir dos vínculos ativos entre sobrinhos e duplas.
     </p>
+
+    <p-button label="Gerar cadernos do choro" icon="fa-solid fa-wand-magic-sparkles" severity="info"
+      [loading]="processandoCadernos()" (onClick)="gerarCadernos()" />
   </div>
   } @else {
   <div class="operation-table-toolbar mb-3">
@@ -685,7 +692,7 @@
   </div>
 
   <div class="table-responsive-wrapper">
-    <p-table [value]="cadernosFiltrados()" styleClass="p-datatable-sm min-width-table caderno-table" [paginator]="true"
+    <p-table [value]="cadernosFiltrados()" class="p-datatable-sm min-width-table caderno-table" [paginator]="true"
       [rows]="10" [rowsPerPageOptions]="[10, 20, 50]" [showCurrentPageReport]="true"
       currentPageReportTemplate="Exibindo {first} a {last} de {totalRecords} registros"
       paginatorDropdownAppendTo="body">
@@ -745,8 +752,8 @@
           <td class="text-end">
             <div class="d-flex flex-column flex-xl-row justify-content-end gap-2">
               <p-button label="Conferir" icon="fa-solid fa-clipboard-check" size="small" severity="warn"
-                [loading]="processandoCadernoId() === caderno.id"
-                [disabled]="!podeConferirCaderno(caderno)" (onClick)="conferirCaderno(caderno)" />
+                [loading]="processandoCadernoId() === caderno.id" [disabled]="!podeConferirCaderno(caderno)"
+                (onClick)="conferirCaderno(caderno)" />
 
               <p-button label="Anexar" icon="fa-solid fa-box" size="small" severity="info"
                 [loading]="processandoCadernoId() === caderno.id" [disabled]="!podeAnexarCadernoAoKit(caderno)"
@@ -757,8 +764,8 @@
                 (onClick)="entregarCadernoAoSobrinho(caderno)" />
 
               <p-button label="Perdido" icon="fa-solid fa-triangle-exclamation" size="small" severity="danger"
-                [loading]="processandoCadernoId() === caderno.id"
-                [disabled]="!podeMarcarCadernoPerdido(caderno)" (onClick)="marcarCadernoPerdido(caderno)" />
+                [loading]="processandoCadernoId() === caderno.id" [disabled]="!podeMarcarCadernoPerdido(caderno)"
+                (onClick)="marcarCadernoPerdido(caderno)" />
             </div>
           </td>
         </tr>

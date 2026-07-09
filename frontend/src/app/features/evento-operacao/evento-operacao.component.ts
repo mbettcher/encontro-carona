@@ -1,4 +1,5 @@
 import { DatePipe } from '@angular/common';
+import { finalize } from 'rxjs';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
@@ -298,19 +299,21 @@ export class EventoOperacaoComponent implements OnInit {
   gerarCadernos(): void {
     this.processandoCadernos.set(true);
 
-    this.service.gerarCadernos(this.eventoId).subscribe({
-      next: resultado => {
-        this.toastSuccess(
-          `Cadernos gerados. Criados: ${resultado.criados}. Já existentes: ${resultado.existentes}. Total: ${resultado.total}.`
-        );
-        this.carregarCadernos();
-      },
-      error: erro => {
-        console.error('Erro ao gerar cadernos', erro);
-        this.toastError(this.mensagemErro(erro, 'Não foi possível gerar os cadernos do choro.'));
-      },
-      complete: () => this.processandoCadernos.set(false)
-    });
+    this.service.gerarCadernos(this.eventoId)
+      .pipe(finalize(() => this.processandoCadernos.set(false)))
+      .subscribe({
+        next: resultado => {
+          this.toastSuccess(
+            `Cadernos gerados. Criados: ${resultado.criados}. Já existentes: ${resultado.existentes}. Total: ${resultado.total}.`
+          );
+
+          this.carregarCadernos();
+        },
+        error: erro => {
+          console.error('Erro ao gerar cadernos', erro);
+          this.toastError(this.mensagemErro(erro, 'Não foi possível gerar os cadernos do choro.'));
+        }
+      });
   }
 
   entregarCadernosADupla(): void {
@@ -321,19 +324,25 @@ export class EventoOperacaoComponent implements OnInit {
       return;
     }
 
+    if (!this.duplaSelecionadaTemCadernosPendentes()) {
+      this.toastWarn('Esta dupla não possui cadernos pendentes para entrega.');
+      return;
+    }
+
     this.processandoCadernos.set(true);
 
-    this.service.entregarCadernosADupla(this.eventoId, duplaId).subscribe({
-      next: cadernosAtualizados => {
-        this.atualizarCadernosNaLista(cadernosAtualizados);
-        this.toastSuccess(`${cadernosAtualizados.length} caderno(s) entregue(s) à dupla.`);
-      },
-      error: erro => {
-        console.error('Erro ao entregar cadernos à dupla', erro);
-        this.toastError(this.mensagemErro(erro, 'Não foi possível entregar os cadernos à dupla.'));
-      },
-      complete: () => this.processandoCadernos.set(false)
-    });
+    this.service.entregarCadernosADupla(this.eventoId, duplaId)
+      .pipe(finalize(() => this.processandoCadernos.set(false)))
+      .subscribe({
+        next: cadernosAtualizados => {
+          this.atualizarCadernosNaLista(cadernosAtualizados);
+          this.toastSuccess(`${cadernosAtualizados.length} caderno(s) entregue(s) à dupla.`);
+        },
+        error: erro => {
+          console.error('Erro ao entregar cadernos à dupla', erro);
+          this.toastError(this.mensagemErro(erro, 'Não foi possível entregar os cadernos à dupla.'));
+        }
+      });
   }
 
   receberCadernosDaDupla(): void {
@@ -344,19 +353,45 @@ export class EventoOperacaoComponent implements OnInit {
       return;
     }
 
+    if (!this.duplaSelecionadaTemCadernosComADupla()) {
+      this.toastWarn('Esta dupla não possui cadernos entregues à dupla para receber de volta.');
+      return;
+    }
+
     this.processandoCadernos.set(true);
 
-    this.service.receberCadernosDaDupla(this.eventoId, duplaId).subscribe({
-      next: cadernosAtualizados => {
-        this.atualizarCadernosNaLista(cadernosAtualizados);
-        this.toastSuccess(`${cadernosAtualizados.length} caderno(s) recebido(s) da dupla.`);
-      },
-      error: erro => {
-        console.error('Erro ao receber cadernos da dupla', erro);
-        this.toastError(this.mensagemErro(erro, 'Não foi possível receber os cadernos da dupla.'));
-      },
-      complete: () => this.processandoCadernos.set(false)
-    });
+    this.service.receberCadernosDaDupla(this.eventoId, duplaId)
+      .pipe(finalize(() => this.processandoCadernos.set(false)))
+      .subscribe({
+        next: cadernosAtualizados => {
+          this.atualizarCadernosNaLista(cadernosAtualizados);
+          this.toastSuccess(`${cadernosAtualizados.length} caderno(s) recebido(s) da dupla.`);
+        },
+        error: erro => {
+          console.error('Erro ao receber cadernos da dupla', erro);
+          this.toastError(this.mensagemErro(erro, 'Não foi possível receber os cadernos da dupla.'));
+        }
+      });
+  }
+
+  private cadernosDaDuplaSelecionada(): CadernoChoro[] {
+    const duplaId = this.duplaCadernoSelecionada();
+
+    if (!duplaId) {
+      return [];
+    }
+
+    return this.cadernos().filter(caderno => caderno.duplaId === duplaId);
+  }
+
+  duplaSelecionadaTemCadernosPendentes(): boolean {
+    return this.cadernosDaDuplaSelecionada()
+      .some(caderno => caderno.status === 'PENDENTE');
+  }
+
+  duplaSelecionadaTemCadernosComADupla(): boolean {
+    return this.cadernosDaDuplaSelecionada()
+      .some(caderno => caderno.status === 'ENTREGUE_A_DUPLA');
   }
 
   conferirCaderno(caderno: CadernoChoro): void {
@@ -405,17 +440,18 @@ export class EventoOperacaoComponent implements OnInit {
       }
     })();
 
-    requisicao.subscribe({
-      next: cadernoAtualizado => {
-        this.atualizarCadernoNaLista(cadernoAtualizado);
-        this.toastSuccess(`Caderno de ${cadernoAtualizado.sobrinhoNome}: ${this.labelStatusCaderno(cadernoAtualizado.status)}.`);
-      },
-      error: erro => {
-        console.error('Erro ao operar caderno', erro);
-        this.toastError(this.mensagemErro(erro, 'Não foi possível atualizar o caderno do choro.'));
-      },
-      complete: () => this.processandoCadernoId.set(null)
-    });
+    requisicao
+      .pipe(finalize(() => this.processandoCadernoId.set(null)))
+      .subscribe({
+        next: cadernoAtualizado => {
+          this.atualizarCadernoNaLista(cadernoAtualizado);
+          this.toastSuccess(`Caderno de ${cadernoAtualizado.sobrinhoNome}: ${this.labelStatusCaderno(cadernoAtualizado.status)}.`);
+        },
+        error: erro => {
+          console.error('Erro ao operar caderno', erro);
+          this.toastError(this.mensagemErro(erro, 'Não foi possível atualizar o caderno do choro.'));
+        }
+      });
   }
 
   registrarOperacaoPorCodigo(): void {
@@ -767,7 +803,18 @@ export class EventoOperacaoComponent implements OnInit {
       erro !== null &&
       'error' in erro
     ) {
-      const corpo = (erro as { error?: { message?: string; detail?: string; title?: string } }).error;
+      const corpo = (erro as {
+        error?: {
+          message?: string;
+          detail?: string;
+          title?: string;
+          details?: string[];
+        };
+      }).error;
+
+      if (corpo?.details?.length) {
+        return corpo.details.join(' ');
+      }
 
       return corpo?.message || corpo?.detail || corpo?.title || fallback;
     }

@@ -93,13 +93,13 @@ export class EventoGestaoComponent implements OnInit {
   });
 
   readonly sobrinhoForm = this.fb.nonNullable.group({
-    nome: ['', [Validators.required, Validators.maxLength(160)]],
+    nome: ['', [Validators.required, Validators.maxLength(150)]],
     telefone: ['', [Validators.maxLength(30)]],
-    responsavelNome: ['', [Validators.maxLength(160)]],
-    responsavelTelefone: ['', [Validators.maxLength(30)]],
-    endereco: ['', [Validators.maxLength(220)]],
-    dataNascimento: [''],
-    restricaoAlimentar: ['', [Validators.maxLength(300)]],
+    responsavelNome: ['', [Validators.required, Validators.maxLength(150)]],
+    responsavelTelefone: ['', [Validators.required, Validators.maxLength(30)]],
+    endereco: ['', [Validators.required, Validators.maxLength(180)]],
+    dataNascimento: ['', [Validators.required]],
+    restricaoAlimentar: ['', [Validators.maxLength(500)]],
     observacaoMedica: ['', [Validators.maxLength(500)]]
   });
 
