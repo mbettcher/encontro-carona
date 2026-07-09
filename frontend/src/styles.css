@@ -59,3 +59,43 @@ body {
 .form-label {
   font-weight: 600;
 }
+
+@media print {
+  body.qrcode-print-mode {
+    background: #fff !important;
+    margin: 0 !important;
+  }
+
+  body.qrcode-print-mode header,
+  body.qrcode-print-mode nav,
+  body.qrcode-print-mode .navbar,
+  body.qrcode-print-mode .app-header,
+  body.qrcode-print-mode .app-navbar,
+  body.qrcode-print-mode .layout-header,
+  body.qrcode-print-mode .main-header,
+  body.qrcode-print-mode .topbar,
+  body.qrcode-print-mode .p-toast,
+  body.qrcode-print-mode .print-toolbar {
+    display: none !important;
+  }
+
+  body.qrcode-print-mode .qrcode-print-page {
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100% !important;
+    min-height: auto !important;
+    background: #fff !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  body.qrcode-print-mode .qrcode-print-page .print-sheet {
+    width: 210mm !important;
+    max-width: 210mm !important;
+    min-height: 297mm !important;
+    margin: 0 auto !important;
+    padding: 10mm !important;
+    box-shadow: none !important;
+    background: #fff !important;
+  }
+}

@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 
@@ -35,7 +35,7 @@ interface CredencialQrCodePrint {
     templateUrl: './evento-qrcode-print.component.html',
     styleUrl: './evento-qrcode-print.component.scss'
 })
-export class EventoQrCodePrintComponent implements OnInit {
+export class EventoQrCodePrintComponent implements OnInit, OnDestroy {
     private readonly route = inject(ActivatedRoute);
     private readonly credenciaisService = inject(EventoCredenciaisService);
     private readonly qrCodeService = inject(EventoQrCodePrintService);
@@ -81,18 +81,39 @@ export class EventoQrCodePrintComponent implements OnInit {
         }
     });
 
+    private readonly aoFinalizarImpressao = (): void => {
+        this.imprimindo.set(false);
+    };
+
     ngOnInit(): void {
+        document.body.classList.add('qrcode-print-mode');
+        window.addEventListener('afterprint', this.aoFinalizarImpressao);
+
         this.lerParametros();
         this.carregar();
     }
 
+    ngOnDestroy(): void {
+        document.body.classList.remove('qrcode-print-mode');
+        window.removeEventListener('afterprint', this.aoFinalizarImpressao);
+    }
+
     imprimir(): void {
+        if (this.carregando() || this.itens().length === 0) {
+            this.toastError('Não há QR Codes disponíveis para impressão.');
+            return;
+        }
+
         this.imprimindo.set(true);
 
         window.setTimeout(() => {
+            window.focus();
             window.print();
-            this.imprimindo.set(false);
-        }, 150);
+
+            window.setTimeout(() => {
+                this.imprimindo.set(false);
+            }, 800);
+        }, 300);
     }
 
     private lerParametros(): void {

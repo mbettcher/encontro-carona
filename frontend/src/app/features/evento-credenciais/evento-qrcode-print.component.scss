@@ -128,9 +128,8 @@
         margin: 0;
     }
 
-    html,
-    body {
-        background: #fff !important;
+    :host {
+        display: block;
     }
 
     .print-toolbar {
@@ -139,14 +138,14 @@
 
     .qrcode-print-page {
         background: #fff !important;
-        min-height: auto;
+        min-height: auto !important;
     }
 
     .qrcode-print-page .print-sheet {
         width: 210mm;
         max-width: 210mm;
         min-height: 297mm;
-        margin: 0;
+        margin: 0 auto;
         padding: 10mm;
         box-shadow: none;
         background: #fff !important;
