@@ -10,6 +10,7 @@ import { SelectModule } from 'primeng/select';
 import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
 import { TextareaModule } from 'primeng/textarea';
+import { TooltipModule } from 'primeng/tooltip';
 
 import {
   DuplaStatus,
@@ -30,6 +31,7 @@ type AbaGestao = 'TIOS' | 'DUPLAS' | 'SOBRINHOS' | 'VINCULOS';
 interface OpcaoNumerica {
   label: string;
   value: number;
+  descricao?: string;
 }
 
 @Component({
@@ -44,7 +46,8 @@ interface OpcaoNumerica {
     SelectModule,
     TableModule,
     TagModule,
-    TextareaModule
+    TextareaModule,
+    TooltipModule
   ],
   templateUrl: './evento-gestao.component.html',
   styleUrl: './evento-gestao.component.scss'
@@ -168,7 +171,8 @@ export class EventoGestaoComponent implements OnInit {
     this.duplas()
       .filter(dupla => dupla.status === 'ATIVA')
       .map(dupla => ({
-        label: `${dupla.tio1Nome} e ${dupla.tio2Nome}`,
+        label: dupla.apelido || dupla.codigo,
+        descricao: `${dupla.tio1Nome} e ${dupla.tio2Nome}`,
         value: dupla.id
       }))
   );
@@ -544,5 +548,31 @@ export class EventoGestaoComponent implements OnInit {
   private normalizarTextoOpcional(valor: string): string | undefined {
     const texto = valor?.trim();
     return texto ? texto : undefined;
+  }
+
+  duplaDoVinculo(vinculo: SobrinhoDupla): DuplaTioCarona | undefined {
+    return this.duplas().find(dupla =>
+      dupla.id === vinculo.duplaId || dupla.codigo === vinculo.duplaCodigo
+    );
+  }
+
+  labelDuplaVinculo(vinculo: SobrinhoDupla): string {
+    const dupla = this.duplaDoVinculo(vinculo);
+
+    if (!dupla) {
+      return vinculo.duplaCodigo;
+    }
+
+    return dupla.apelido || dupla.codigo;
+  }
+
+  tooltipDuplaVinculo(vinculo: SobrinhoDupla): string {
+    const dupla = this.duplaDoVinculo(vinculo);
+
+    if (!dupla) {
+      return vinculo.duplaCodigo;
+    }
+
+    return `${dupla.tio1Nome} e ${dupla.tio2Nome}`;
   }
 }

@@ -501,8 +501,24 @@
             <label for="duplaId" class="form-label">Dupla *</label>
 
             <p-select inputId="duplaId" [options]="opcoesDuplas()" optionLabel="label" optionValue="value"
-              formControlName="duplaId" placeholder="Selecione a dupla" class="w-100 vinculo-select"
-              panelclass="vinculo-select-panel" [disabled]="opcoesDuplas().length === 0" />
+              formControlName="duplaId" placeholder="Selecione a dupla" styleClass="w-100 vinculo-select"
+              panelStyleClass="vinculo-select-panel" [filter]="true" filterBy="label,descricao"
+              [disabled]="opcoesDuplas().length === 0">
+              <ng-template pTemplate="selectedItem" let-opcao>
+                @if (opcao) {
+                <div class="select-dupla-selected">
+                  <div class="fw-semibold text-truncate">{{ opcao.label }}</div>
+                </div>
+                }
+              </ng-template>
+
+              <ng-template pTemplate="item" let-opcao>
+                <div class="select-dupla-option">
+                  <div class="fw-semibold text-truncate">{{ opcao.label }}</div>
+                  <div class="small text-body-secondary text-truncate">{{ opcao.descricao }}</div>
+                </div>
+              </ng-template>
+            </p-select>
 
             @if (opcoesDuplas().length === 0) {
             <div class="alert alert-warning py-2 px-3 mb-0 mt-2 small">
@@ -550,7 +566,11 @@
           <ng-template pTemplate="body" let-vinculo>
             <tr>
               <td class="fw-semibold">{{ vinculo.sobrinhoNome }}</td>
-              <td>{{ vinculo.duplaCodigo }}</td>
+              <td>
+                <span class="fw-semibold" [pTooltip]="tooltipDuplaVinculo(vinculo)" tooltipPosition="top">
+                  {{ labelDuplaVinculo(vinculo) }}
+                </span>
+              </td>
               <td>
                 <p-tag [value]="labelStatusVinculo(vinculo.status)"
                   [severity]="severityStatusVinculo(vinculo.status)" />
