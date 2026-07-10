@@ -208,6 +208,33 @@
       margin: 0;
     }
   }
+
+  .operacao-tab-content {
+    padding-top: 1rem;
+  }
+
+  :host ::ng-deep {
+    .operacao-tabs {
+      .p-tablist {
+        overflow-x: auto;
+        border-bottom: 1px solid var(--bs-border-color);
+      }
+
+      .p-tab {
+        white-space: nowrap;
+        font-weight: 600;
+      }
+
+      .p-tabpanels {
+        padding: 0;
+        background: transparent;
+      }
+
+      .p-tabpanel {
+        padding: 0;
+      }
+    }
+  }
 }
 
 @media (max-width: 768px) {

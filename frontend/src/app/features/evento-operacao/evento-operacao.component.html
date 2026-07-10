@@ -44,925 +44,968 @@
   </div>
   }
 
-  <div class="row g-3 mb-4">
-    <div class="col-12 col-md-6 col-xl-3">
-      <p-card class="operation-summary-card">
-        <div class="d-flex align-items-center justify-content-between">
-          <div>
-            <div class="text-body-secondary small">Tios carona ativos</div>
-            <div class="fs-3 fw-bold">{{ tiosAtivos().length }}</div>
-          </div>
-          <i class="fa-solid fa-car-side"></i>
-        </div>
-      </p-card>
-    </div>
+  <p-tabs [value]="abaOperacaoAtiva()" (valueChange)="alterarAbaOperacao($event)" styleClass="operacao-tabs">
+    <p-tablist>
+      <p-tab value="VISAO_GERAL">
+        <i class="fa-solid fa-chart-pie me-2"></i>
+        Visão geral
+      </p-tab>
 
-    <div class="col-12 col-md-6 col-xl-3">
-      <p-card class="operation-summary-card">
-        <div class="d-flex align-items-center justify-content-between">
-          <div>
-            <div class="text-body-secondary small">Duplas ativas</div>
-            <div class="fs-3 fw-bold">{{ duplasAtivas().length }}</div>
-          </div>
-          <i class="fa-solid fa-people-arrows"></i>
-        </div>
-      </p-card>
-    </div>
+      <p-tab value="LEITURAS_QR">
+        <i class="fa-solid fa-qrcode me-2"></i>
+        Leituras QR
+      </p-tab>
 
-    <div class="col-12 col-md-6 col-xl-3">
-      <p-card class="operation-summary-card">
-        <div class="d-flex align-items-center justify-content-between">
-          <div>
-            <div class="text-body-secondary small">Sobrinhos</div>
-            <div class="fs-3 fw-bold">{{ sobrinhos().length }}</div>
-          </div>
-          <i class="fa-solid fa-child-reaching"></i>
-        </div>
-      </p-card>
-    </div>
+      <p-tab value="TIOS_CARONA">
+        <i class="fa-solid fa-car-side me-2"></i>
+        Tios carona
+      </p-tab>
 
-    <div class="col-12 col-md-6 col-xl-3">
-      <p-card class="operation-summary-card">
-        <div class="d-flex align-items-center justify-content-between">
-          <div>
-            <div class="text-body-secondary small">Vínculos ativos</div>
-            <div class="fs-3 fw-bold">{{ vinculosAtivos().length }}</div>
+      <p-tab value="SOBRINHOS">
+        <i class="fa-solid fa-child-reaching me-2"></i>
+        Sobrinhos
+      </p-tab>
+
+      <p-tab value="CADERNO_CHORO">
+        <i class="fa-solid fa-book-bible me-2"></i>
+        Caderno do Choro
+      </p-tab>
+    </p-tablist>
+
+    <p-tabpanels>
+      <p-tabpanel value="VISAO_GERAL">
+        <div class="operacao-tab-content">
+          <div class="row g-3 mb-4">
+            <div class="col-12 col-md-6 col-xl-3">
+              <p-card class="operation-summary-card">
+                <div class="d-flex align-items-center justify-content-between">
+                  <div>
+                    <div class="text-body-secondary small">Tios carona ativos</div>
+                    <div class="fs-3 fw-bold">{{ tiosAtivos().length }}</div>
+                  </div>
+
+                  <i class="fa-solid fa-car-side"></i>
+                </div>
+              </p-card>
+            </div>
+
+            <div class="col-12 col-md-6 col-xl-3">
+              <p-card class="operation-summary-card">
+                <div class="d-flex align-items-center justify-content-between">
+                  <div>
+                    <div class="text-body-secondary small">Duplas ativas</div>
+                    <div class="fs-3 fw-bold">{{ duplasAtivas().length }}</div>
+                  </div>
+
+                  <i class="fa-solid fa-people-arrows"></i>
+                </div>
+              </p-card>
+            </div>
+
+            <div class="col-12 col-md-6 col-xl-3">
+              <p-card class="operation-summary-card">
+                <div class="d-flex align-items-center justify-content-between">
+                  <div>
+                    <div class="text-body-secondary small">Sobrinhos</div>
+                    <div class="fs-3 fw-bold">{{ sobrinhos().length }}</div>
+                  </div>
+
+                  <i class="fa-solid fa-child-reaching"></i>
+                </div>
+              </p-card>
+            </div>
+
+            <div class="col-12 col-md-6 col-xl-3">
+              <p-card class="operation-summary-card">
+                <div class="d-flex align-items-center justify-content-between">
+                  <div>
+                    <div class="text-body-secondary small">Vínculos ativos</div>
+                    <div class="fs-3 fw-bold">{{ vinculosAtivos().length }}</div>
+                  </div>
+
+                  <i class="fa-solid fa-link"></i>
+                </div>
+              </p-card>
+            </div>
           </div>
-          <i class="fa-solid fa-link"></i>
+
+          <div class="row g-4 mb-4">
+            <div class="col-12 col-xl-6">
+              <p-card class="shadow-sm border-0 h-100">
+                <ng-template pTemplate="header">
+                  <div class="px-4 pt-4">
+                    <h2 class="h5 mb-1">Preparação dos vínculos</h2>
+                    <p class="text-body-secondary small mb-0">
+                      Percentual de sobrinhos já vinculados a uma dupla.
+                    </p>
+                  </div>
+                </ng-template>
+
+                <div class="mb-2 d-flex justify-content-between small">
+                  <span>{{ vinculosAtivos().length }} vínculo(s) ativo(s)</span>
+                  <strong>{{ percentualVinculados() }}%</strong>
+                </div>
+
+                <p-progressBar [value]="percentualVinculados()" />
+
+                @if (percentualVinculados() < 100) { <div class="alert alert-warning py-2 px-3 mt-3 mb-0 small">
+                  <i class="fa-solid fa-circle-info me-2"></i>
+                  Ainda há sobrinhos sem vínculo ativo com uma dupla.
+            </div>
+            }
+            </p-card>
+          </div>
+
+          <div class="col-12 col-xl-6">
+            <p-card class="shadow-sm border-0 h-100">
+              <ng-template pTemplate="header">
+                <div class="px-4 pt-4">
+                  <h2 class="h5 mb-1">Presença dos sobrinhos</h2>
+                  <p class="text-body-secondary small mb-0">
+                    Indicador geral de presença dos participantes.
+                  </p>
+                </div>
+              </ng-template>
+
+              <div class="mb-2 d-flex justify-content-between small">
+                <span>{{ sobrinhosPresentes().length }} presente(s)</span>
+                <strong>{{ percentualPresentes() }}%</strong>
+              </div>
+
+              <p-progressBar [value]="percentualPresentes()" />
+
+              <div class="row g-2 mt-3">
+                <div class="col-6 col-md-3">
+                  <div class="status-mini-card">
+                    <div class="small text-body-secondary">Inscritos</div>
+                    <strong>{{ sobrinhosInscritos().length }}</strong>
+                  </div>
+                </div>
+
+                <div class="col-6 col-md-3">
+                  <div class="status-mini-card">
+                    <div class="small text-body-secondary">Presentes</div>
+                    <strong>{{ sobrinhosPresentes().length }}</strong>
+                  </div>
+                </div>
+
+                <div class="col-6 col-md-3">
+                  <div class="status-mini-card">
+                    <div class="small text-body-secondary">Ausentes</div>
+                    <strong>{{ sobrinhosAusentes().length }}</strong>
+                  </div>
+                </div>
+
+                <div class="col-6 col-md-3">
+                  <div class="status-mini-card">
+                    <div class="small text-body-secondary">Desistentes</div>
+                    <strong>{{ sobrinhosDesistentes().length }}</strong>
+                  </div>
+                </div>
+              </div>
+            </p-card>
+          </div>
         </div>
-      </p-card>
+
+        <div class="row g-3">
+          <div class="col-12 col-md-6 col-xl-3">
+            <div class="status-mini-card h-100">
+              <div class="small text-body-secondary">Tios aguardando check-in</div>
+              <strong>{{ tiosAguardandoCheckin().length }}</strong>
+            </div>
+          </div>
+
+          <div class="col-12 col-md-6 col-xl-3">
+            <div class="status-mini-card h-100">
+              <div class="small text-body-secondary">Tios com check-in</div>
+              <strong>{{ tiosComCheckin().length }}</strong>
+            </div>
+          </div>
+
+          <div class="col-12 col-md-6 col-xl-3">
+            <div class="status-mini-card h-100">
+              <div class="small text-body-secondary">Cadernos pendentes</div>
+              <strong>{{ cadernosPendentes().length }}</strong>
+            </div>
+          </div>
+
+          <div class="col-12 col-md-6 col-xl-3">
+            <div class="status-mini-card h-100">
+              <div class="small text-body-secondary">Cadernos no kit</div>
+              <strong>{{ cadernosNoKit().length }}</strong>
+            </div>
+          </div>
+        </div>
+</div>
+</p-tabpanel>
+
+<p-tabpanel value="LEITURAS_QR">
+  <div class="operacao-tab-content">
+    <div class="row g-4">
+      <div class="col-12 col-xl-6">
+        <p-card class="operation-action-card h-100">
+          <div class="d-flex align-items-start gap-3 mb-3">
+            <div class="action-icon mb-0">
+              <i class="fa-solid fa-qrcode"></i>
+            </div>
+
+            <div>
+              <h3 class="h6 mb-1">Check-in / Checkout por credencial</h3>
+              <p class="text-body-secondary small mb-0">
+                Use leitor de QR Code ou código de barras para agilizar a entrada e saída dos tios carona.
+              </p>
+            </div>
+          </div>
+
+          <form [formGroup]="codigoForm" (ngSubmit)="registrarOperacaoPorCodigo()" class="d-grid gap-3">
+            <div>
+              <label for="tipoOperacao" class="form-label">Operação</label>
+
+              <p-select inputId="tipoOperacao" formControlName="tipoOperacao" [options]="[
+                        { label: 'Registrar check-in', value: 'CHECKIN' },
+                        { label: 'Registrar checkout', value: 'CHECKOUT' }
+                      ]" optionLabel="label" optionValue="value" class="w-100" />
+            </div>
+
+            <div>
+              <label for="codigoIdentificacao" class="form-label">
+                QR Code ou código de barras
+              </label>
+
+              <div class="input-group">
+                <span class="input-group-text">
+                  <i class="fa-solid fa-barcode"></i>
+                </span>
+
+                <input id="codigoIdentificacao" pInputText type="text" class="form-control"
+                  formControlName="codigoIdentificacao" placeholder="Aponte o leitor ou digite o código do tio carona"
+                  autocomplete="off" (keydown.enter)="aoPressionarEnterCodigo($event)" />
+              </div>
+
+              @if (
+              codigoForm.controls.codigoIdentificacao.invalid &&
+              (
+              codigoForm.controls.codigoIdentificacao.touched ||
+              codigoForm.controls.codigoIdentificacao.dirty
+              )
+              ) {
+              <div class="form-text text-danger">
+                Informe o código da credencial do tio carona.
+              </div>
+              }
+            </div>
+
+            <div class="alert alert-warning py-2 px-3 mb-0 small">
+              <i class="fa-solid fa-circle-info me-2"></i>
+              A leitura aceita credenciais do tipo Tio Carona. Credenciais de sobrinho serão recusadas neste campo.
+            </div>
+
+            <p-button type="submit" label="Processar leitura" icon="fa-solid fa-barcode"
+              [loading]="processandoCodigo()" />
+          </form>
+        </p-card>
+      </div>
+
+      <div class="col-12 col-xl-6">
+        <p-card class="operation-action-card h-100">
+          <div class="d-flex align-items-start gap-3 mb-3">
+            <div class="action-icon mb-0">
+              <i class="fa-solid fa-child-reaching"></i>
+            </div>
+
+            <div>
+              <h3 class="h6 mb-1">Presença do sobrinho por credencial</h3>
+              <p class="text-body-secondary small mb-0">
+                Use o leitor de QR Code para registrar presença, ausência ou desistência do sobrinho.
+              </p>
+            </div>
+          </div>
+
+          <form [formGroup]="codigoSobrinhoForm" (ngSubmit)="registrarPresencaSobrinhoPorCodigo()" class="d-grid gap-3">
+            <div>
+              <label for="operacaoPresencaSobrinhoCodigo" class="form-label">Operação</label>
+
+              <p-select inputId="operacaoPresencaSobrinhoCodigo" formControlName="operacao" [options]="[
+                        { label: 'Marcar presente', value: 'PRESENTE' },
+                        { label: 'Marcar ausente', value: 'AUSENTE' },
+                        { label: 'Marcar desistente', value: 'DESISTENTE' }
+                      ]" optionLabel="label" optionValue="value" class="w-100" />
+            </div>
+
+            <div>
+              <label for="codigoIdentificacaoSobrinho" class="form-label">
+                QR Code ou código da credencial
+              </label>
+
+              <div class="input-group">
+                <span class="input-group-text">
+                  <i class="fa-solid fa-qrcode"></i>
+                </span>
+
+                <input id="codigoIdentificacaoSobrinho" pInputText type="text" class="form-control"
+                  formControlName="codigoIdentificacao" placeholder="Aponte o leitor ou digite o código do sobrinho"
+                  autocomplete="off" (keydown.enter)="aoPressionarEnterCodigoSobrinho($event)" />
+              </div>
+
+              @if (
+              codigoSobrinhoForm.controls.codigoIdentificacao.invalid &&
+              (
+              codigoSobrinhoForm.controls.codigoIdentificacao.touched ||
+              codigoSobrinhoForm.controls.codigoIdentificacao.dirty
+              )
+              ) {
+              <div class="form-text text-danger">
+                Informe o código da credencial do sobrinho.
+              </div>
+              }
+            </div>
+
+            <div class="alert alert-warning py-2 px-3 mb-0 small">
+              <i class="fa-solid fa-circle-info me-2"></i>
+              A leitura aceita credenciais do tipo Sobrinho. Credenciais de tio carona serão recusadas neste campo.
+            </div>
+
+            <p-button type="submit" label="Registrar presença" icon="fa-solid fa-qrcode" severity="success"
+              [loading]="processandoCodigoSobrinho()" />
+          </form>
+        </p-card>
+      </div>
     </div>
   </div>
+</p-tabpanel>
 
-  <div class="row g-4 mb-4">
-    <div class="col-12 col-xl-6">
-      <p-card class="shadow-sm border-0 h-100">
-        <ng-template pTemplate="header">
-          <div class="px-4 pt-4">
-            <h2 class="h5 mb-1">Preparação dos vínculos</h2>
+<p-tabpanel value="TIOS_CARONA">
+  <div class="operacao-tab-content">
+    <p-card class="shadow-sm border-0">
+      <ng-template pTemplate="header">
+        <div class="px-4 pt-4 d-flex flex-column flex-lg-row justify-content-between gap-3">
+          <div>
+            <h2 class="h5 mb-1">Check-in manual dos tios carona</h2>
             <p class="text-body-secondary small mb-0">
-              Percentual de sobrinhos já vinculados a uma dupla.
+              Use esta opção quando a leitura do QR Code ou código de barras não estiver disponível.
             </p>
           </div>
-        </ng-template>
 
-        <div class="mb-2 d-flex justify-content-between small">
-          <span>{{ vinculosAtivos().length }} vínculo(s) ativo(s)</span>
-          <strong>{{ percentualVinculados() }}%</strong>
-        </div>
+          <div class="d-flex flex-wrap gap-2">
+            <p-tag value="Aguardando" severity="warn" />
 
-        <p-progressBar [value]="percentualVinculados()" />
-
-        @if (percentualVinculados() < 100) { <div class="alert alert-warning py-2 px-3 mt-3 mb-0 small">
-          <i class="fa-solid fa-circle-info me-2"></i>
-          Ainda há sobrinhos sem vínculo ativo com uma dupla.
-    </div>
-    }
-    </p-card>
-  </div>
-
-  <div class="col-12 col-xl-6">
-    <p-card class="shadow-sm border-0 h-100">
-      <ng-template pTemplate="header">
-        <div class="px-4 pt-4">
-          <h2 class="h5 mb-1">Presença dos sobrinhos</h2>
-          <p class="text-body-secondary small mb-0">
-            Indicador inicial para o futuro check-in dos sobrinhos.
-          </p>
+            <span class="small text-body-secondary align-self-center">
+              {{ tiosAguardandoCheckin().length }} aguardando
+            </span>
+          </div>
         </div>
       </ng-template>
 
-      <div class="mb-2 d-flex justify-content-between small">
-        <span>{{ sobrinhosPresentes().length }} presente(s)</span>
-        <strong>{{ percentualPresentes() }}%</strong>
+      @if (tiosAtivos().length === 0) {
+      <div class="empty-state text-center py-5">
+        <i class="fa-solid fa-car-side text-body-secondary mb-3"></i>
+        <h3 class="h6 mb-1">Nenhum tio carona ativo</h3>
+        <p class="text-body-secondary small mb-0">
+          Adicione tios carona na Gestão do Evento para iniciar o check-in.
+        </p>
+      </div>
+      } @else {
+      <div class="row g-3 mb-3">
+        <div class="col-12 col-md-4">
+          <div class="status-mini-card">
+            <div class="small text-body-secondary">Aguardando check-in</div>
+            <strong>{{ tiosAguardandoCheckin().length }}</strong>
+          </div>
+        </div>
+
+        <div class="col-12 col-md-4">
+          <div class="status-mini-card">
+            <div class="small text-body-secondary">Com check-in</div>
+            <strong>{{ tiosComCheckin().length }}</strong>
+          </div>
+        </div>
+
+        <div class="col-12 col-md-4">
+          <div class="status-mini-card">
+            <div class="small text-body-secondary">Com checkout</div>
+            <strong>{{ tiosComCheckout().length }}</strong>
+          </div>
+        </div>
       </div>
 
-      <p-progressBar [value]="percentualPresentes()" />
+      <div class="operation-table-toolbar mb-3">
+        <div>
+          <div class="fw-semibold small">Lista de tios carona</div>
+          <div class="text-body-secondary small">
+            {{ tiosOperacaoFiltrados().length }} de {{ tiosAtivos().length }} tio(s)
+          </div>
+        </div>
 
-      <div class="row g-2 mt-3">
-        <div class="col-6 col-md-3">
+        <div class="table-search">
+          <span class="p-input-icon-left w-100">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input pInputText type="text" class="w-100" placeholder="Pesquisar tio, código ou status..."
+              [value]="filtroTiosOperacao()" (input)="alterarFiltroTiosOperacao($any($event.target).value)" />
+          </span>
+        </div>
+      </div>
+
+      <div class="table-responsive-wrapper">
+        <p-table [value]="tiosOperacaoFiltrados()" class="p-datatable-sm min-width-table" [paginator]="true" [rows]="10"
+          [rowsPerPageOptions]="[10, 20, 50]" [showCurrentPageReport]="true"
+          currentPageReportTemplate="Exibindo {first} a {last} de {totalRecords} registros"
+          paginatorDropdownAppendTo="body">
+          <ng-template pTemplate="header">
+            <tr>
+              <th>Tio carona</th>
+              <th>Código</th>
+              <th>Status operacional</th>
+              <th>Último Check-in</th>
+              <th>Último Checkout</th>
+              <th class="text-end">Ações</th>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="body" let-tio>
+            <tr>
+              <td class="fw-semibold">{{ tio.pessoaNome }}</td>
+
+              <td>
+                <span class="small font-monospace">
+                  {{ codigoIdentificacaoTio(tio) }}
+                </span>
+              </td>
+
+              <td>
+                <p-tag [value]="labelStatusOperacionalTio(tio)" [severity]="severityStatusOperacionalTio(tio)" />
+              </td>
+
+              <td>
+                @if (tio.checkinEm) {
+                <span class="small">{{ tio.checkinEm | date:'dd/MM/yyyy HH:mm' }}</span>
+                } @else {
+                <span class="small text-body-secondary">Não registrado</span>
+                }
+              </td>
+
+              <td>
+                @if (tio.checkoutEm) {
+                <span class="small">{{ tio.checkoutEm | date:'dd/MM/yyyy HH:mm' }}</span>
+                } @else {
+                <span class="small text-body-secondary">Não registrado</span>
+                }
+              </td>
+
+              <td class="text-end">
+                <div class="d-flex flex-column flex-lg-row justify-content-end gap-2">
+                  <p-button label="Check-in" icon="fa-solid fa-right-to-bracket" size="small" severity="success"
+                    [loading]="processandoManual() === tio.id" [disabled]="!podeCheckinManual(tio)"
+                    (onClick)="registrarCheckinManual(tio)" />
+
+                  <p-button label="Checkout" icon="fa-solid fa-right-from-bracket" size="small" severity="warn"
+                    [loading]="processandoManual() === tio.id" [disabled]="!podeCheckoutManual(tio)"
+                    (onClick)="registrarCheckoutManual(tio)" />
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </div>
+      }
+    </p-card>
+  </div>
+</p-tabpanel>
+
+<p-tabpanel value="SOBRINHOS">
+  <div class="operacao-tab-content">
+    <p-card class="shadow-sm border-0 mb-4">
+      <ng-template pTemplate="header">
+        <div class="px-4 pt-4 d-flex flex-column flex-lg-row justify-content-between gap-3">
+          <div>
+            <h2 class="h5 mb-1">Presença dos sobrinhos</h2>
+            <p class="text-body-secondary small mb-0">
+              Registre presença, ausência ou desistência. Cada alteração gera histórico para eventos com múltiplos dias.
+            </p>
+          </div>
+
+          <div class="d-flex flex-wrap gap-2">
+            <p-tag value="Presentes" severity="success" />
+
+            <span class="small text-body-secondary align-self-center">
+              {{ sobrinhosPresentes().length }} presente(s)
+            </span>
+          </div>
+        </div>
+      </ng-template>
+
+      @if (sobrinhos().length === 0) {
+      <div class="empty-state text-center py-5">
+        <i class="fa-solid fa-child-reaching text-body-secondary mb-3"></i>
+        <h3 class="h6 mb-1">Nenhum sobrinho cadastrado</h3>
+        <p class="text-body-secondary small mb-0">
+          Cadastre os sobrinhos na Gestão do Evento para iniciar a presença.
+        </p>
+      </div>
+      } @else {
+      <div class="row g-3 mb-3">
+        <div class="col-12 col-md-3">
           <div class="status-mini-card">
             <div class="small text-body-secondary">Inscritos</div>
             <strong>{{ sobrinhosInscritos().length }}</strong>
           </div>
         </div>
 
-        <div class="col-6 col-md-3">
+        <div class="col-12 col-md-3">
           <div class="status-mini-card">
             <div class="small text-body-secondary">Presentes</div>
             <strong>{{ sobrinhosPresentes().length }}</strong>
           </div>
         </div>
 
-        <div class="col-6 col-md-3">
+        <div class="col-12 col-md-3">
           <div class="status-mini-card">
             <div class="small text-body-secondary">Ausentes</div>
             <strong>{{ sobrinhosAusentes().length }}</strong>
           </div>
         </div>
 
-        <div class="col-6 col-md-3">
+        <div class="col-12 col-md-3">
           <div class="status-mini-card">
             <div class="small text-body-secondary">Desistentes</div>
             <strong>{{ sobrinhosDesistentes().length }}</strong>
           </div>
         </div>
       </div>
-    </p-card>
-  </div>
-</div>
 
-<div class="row g-4 mb-4">
-
-  <div class="col-12 col-xl-6">
-
-    <p-card class="operation-action-card h-100">
-      <div class="d-flex align-items-start gap-3 mb-3">
-        <div class="action-icon mb-0">
-          <i class="fa-solid fa-qrcode"></i>
+      <div class="operation-table-toolbar mb-3">
+        <div>
+          <div class="fw-semibold small">Lista de presença</div>
+          <div class="text-body-secondary small">
+            {{ presencaSobrinhosFiltrados().length }} de {{ sobrinhos().length }} sobrinho(s)
+          </div>
         </div>
 
-        <div>
-          <h3 class="h6 mb-1">Check-in / Checkout por credencial</h3>
+        <div class="table-search">
+          <span class="p-input-icon-left w-100">
+            <i class="fa-solid fa-magnifying-glass"></i>
+
+            <input pInputText type="text" class="w-100" placeholder="Pesquisar sobrinho, responsável ou status..."
+              [value]="filtroPresencaSobrinhos()" (input)="alterarFiltroPresencaSobrinhos($any($event.target).value)" />
+          </span>
+        </div>
+      </div>
+
+      <div class="table-responsive-wrapper">
+        <p-table [value]="presencaSobrinhosFiltrados()" class="p-datatable-sm min-width-table" [paginator]="true"
+          [rows]="10" [rowsPerPageOptions]="[10, 20, 50]" [showCurrentPageReport]="true"
+          paginatorDropdownAppendTo="body"
+          currentPageReportTemplate="Exibindo {first} a {last} de {totalRecords} registros">
+          <ng-template pTemplate="header">
+            <tr>
+              <th>Sobrinho</th>
+              <th>Responsável</th>
+              <th>Status presença</th>
+              <th>Última presença</th>
+              <th class="text-end">Ações</th>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="body" let-sobrinho>
+            <tr>
+              <td class="fw-semibold">{{ sobrinho.nome }}</td>
+
+              <td>
+                @if (sobrinho.responsavelNome) {
+                {{ sobrinho.responsavelNome }}
+                } @else {
+                <span class="small text-body-secondary">Não informado</span>
+                }
+              </td>
+
+              <td>
+                <p-tag [value]="labelSobrinhoStatus(statusPresencaSobrinho(sobrinho))"
+                  [severity]="severitySobrinhoStatus(statusPresencaSobrinho(sobrinho))" />
+              </td>
+
+              <td>
+                @if (ultimaPresencaSobrinho(sobrinho)) {
+                <span class="small">
+                  {{ ultimaPresencaSobrinho(sobrinho) | date:'dd/MM/yyyy HH:mm' }}
+                </span>
+                } @else {
+                <span class="small text-body-secondary">Não registrada</span>
+                }
+              </td>
+
+              <td class="text-end">
+                @if (sobrinhoDesistente(sobrinho)) {
+                <div class="d-flex justify-content-end">
+                  <span class="badge text-bg-danger">
+                    <i class="fa-solid fa-user-xmark me-1"></i>
+                    Desistente
+                  </span>
+                </div>
+                } @else {
+                <div class="d-flex flex-column flex-xl-row justify-content-end gap-2">
+                  <p-button label="Presente" icon="fa-solid fa-user-check" size="small" severity="success"
+                    [loading]="processandoPresencaSobrinho() === sobrinho.id" [disabled]="!podeMarcarPresente(sobrinho)"
+                    (onClick)="registrarPresencaSobrinho(sobrinho, 'PRESENTE')" />
+
+                  <p-button label="Ausente" icon="fa-solid fa-user-clock" size="small" severity="warn"
+                    [loading]="processandoPresencaSobrinho() === sobrinho.id" [disabled]="!podeMarcarAusente(sobrinho)"
+                    (onClick)="registrarPresencaSobrinho(sobrinho, 'AUSENTE')" />
+
+                  <p-button label="Desistente" icon="fa-solid fa-user-xmark" size="small" severity="danger"
+                    [loading]="processandoPresencaSobrinho() === sobrinho.id"
+                    [disabled]="!podeMarcarDesistente(sobrinho)"
+                    (onClick)="registrarPresencaSobrinho(sobrinho, 'DESISTENTE')" />
+                </div>
+                }
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </div>
+      }
+    </p-card>
+
+    <p-card class="shadow-sm border-0">
+      <ng-template pTemplate="header">
+        <div class="px-4 pt-4">
+          <h2 class="h5 mb-1">Sobrinhos do evento</h2>
           <p class="text-body-secondary small mb-0">
-            Use leitor de QR Code ou código de barras para agilizar a entrada e saída dos tios carona.
+            Visão operacional inicial dos participantes.
           </p>
         </div>
-      </div>
+      </ng-template>
 
-      <form [formGroup]="codigoForm" (ngSubmit)="registrarOperacaoPorCodigo()" class="d-grid gap-3">
-        <div>
-          <label for="tipoOperacao" class="form-label">Operação</label>
-
-          <p-select inputId="tipoOperacao" formControlName="tipoOperacao" [options]="[
-                { label: 'Registrar check-in', value: 'CHECKIN' },
-                { label: 'Registrar checkout', value: 'CHECKOUT' }
-              ]" optionLabel="label" optionValue="value" class="w-100" />
-        </div>
-
-        <div>
-          <label for="codigoIdentificacao" class="form-label">
-            QR Code ou código de barras
-          </label>
-
-          <div class="input-group">
-            <span class="input-group-text">
-              <i class="fa-solid fa-barcode"></i>
-            </span>
-
-            <input id="codigoIdentificacao" pInputText type="text" class="form-control"
-              formControlName="codigoIdentificacao" placeholder="Aponte o leitor ou digite o código do tio carona"
-              autocomplete="off" (keydown.enter)="aoPressionarEnterCodigo($event)" />
-          </div>
-
-          @if (
-          codigoForm.controls.codigoIdentificacao.invalid &&
-          (codigoForm.controls.codigoIdentificacao.touched || codigoForm.controls.codigoIdentificacao.dirty)
-          ) {
-          <div class="form-text text-danger">
-            Informe o código da credencial do tio carona.
-          </div>
-          }
-        </div>
-
-        <div class="alert alert-warning py-2 px-3 mb-0 small">
-          <i class="fa-solid fa-circle-info me-2"></i>
-          Aponte o leitor para o campo de código. Após a leitura, pressione Enter ou clique em Processar leitura.
-        </div>
-
-        <p-button type="submit" label="Registrar presença" icon="fa-solid fa-barcode" [loading]="processandoCodigo()" />
-      </form>
-    </p-card>
-
-  </div>
-
-  <div class="col-12 col-xl-6">
-
-    <p-card class="operation-action-card h-100">
-      <div class="d-flex align-items-start gap-3 mb-3">
-        <div class="action-icon mb-0">
-          <i class="fa-solid fa-child-reaching"></i>
-        </div>
-
-        <div>
-          <h3 class="h6 mb-1">Presença do sobrinho por credencial</h3>
-          <p class="text-body-secondary small mb-0">
-            Use o leitor de QR Code para registrar presença, ausência ou desistência do sobrinho.
-          </p>
-        </div>
-      </div>
-
-      <form [formGroup]="codigoSobrinhoForm" (ngSubmit)="registrarPresencaSobrinhoPorCodigo()" class="d-grid gap-3">
-        <div>
-          <label for="operacaoPresencaSobrinhoCodigo" class="form-label">Operação</label>
-
-          <p-select inputId="operacaoPresencaSobrinhoCodigo" formControlName="operacao" [options]="[
-            { label: 'Marcar presente', value: 'PRESENTE' },
-            { label: 'Marcar ausente', value: 'AUSENTE' },
-            { label: 'Marcar desistente', value: 'DESISTENTE' }
-          ]" optionLabel="label" optionValue="value" class="w-100" />
-        </div>
-
-        <div>
-          <label for="codigoIdentificacaoSobrinho" class="form-label">
-            QR Code ou código da credencial
-          </label>
-
-          <div class="input-group">
-            <span class="input-group-text">
-              <i class="fa-solid fa-qrcode"></i>
-            </span>
-
-            <input id="codigoIdentificacaoSobrinho" pInputText type="text" class="form-control"
-              formControlName="codigoIdentificacao" placeholder="Aponte o leitor ou digite o código do sobrinho"
-              autocomplete="off" (keydown.enter)="aoPressionarEnterCodigoSobrinho($event)" />
-          </div>
-
-          @if (
-          codigoSobrinhoForm.controls.codigoIdentificacao.invalid &&
-          (codigoSobrinhoForm.controls.codigoIdentificacao.touched ||
-          codigoSobrinhoForm.controls.codigoIdentificacao.dirty)
-          ) {
-          <div class="form-text text-danger">
-            Informe o código da credencial do sobrinho.
-          </div>
-          }
-        </div>
-
-        <div class="alert alert-warning py-2 px-3 mb-0 small">
-          <i class="fa-solid fa-circle-info me-2"></i>
-          A leitura aceita credenciais do tipo Sobrinho. Credenciais de tio carona serão recusadas neste campo.
-        </div>
-
-        <p-button type="submit" label="Registrar presença" icon="fa-solid fa-qrcode" severity="success"
-          [loading]="processandoCodigoSobrinho()" />
-      </form>
-    </p-card>
-
-  </div>
-
-  <div class="col-12 col-md-4 col-xl-2">
-    <p-card class="operation-action-card h-100">
-      <div class="action-icon">
-        <i class="fa-solid fa-clipboard-check"></i>
-      </div>
-
-      <h3 class="h6 mb-1">Presença dos sobrinhos</h3>
-      <p class="text-body-secondary small mb-3">
-        Controle de presença com histórico por dia de evento.
-      </p>
-
-      <p-tag value="Ativo" severity="success" />
-    </p-card>
-  </div>
-
-  <div class="col-12 col-md-4 col-xl-2">
-    <p-card class="operation-action-card h-100">
-      <div class="action-icon">
-        <i class="fa-solid fa-book-bible"></i>
-      </div>
-
-      <h3 class="h6 mb-1">Caderno do Choro</h3>
-      <p class="text-body-secondary small mb-3">
-        Controle dos cadernos por dupla e kit final.
-      </p>
-
-      <p-tag value="Ativo" severity="success" />
-    </p-card>
-  </div>
-
-  <div class="col-12 col-md-4 col-xl-2">
-    <p-card class="operation-action-card h-100">
-      <div class="action-icon">
-        <i class="fa-solid fa-map-location-dot"></i>
-      </div>
-
-      <h3 class="h6 mb-1">Mapa dos tios</h3>
-      <p class="text-body-secondary small mb-3">
-        Futuramente exibirá localização durante o evento.
-      </p>
-
-      <p-button label="Futuro" severity="secondary" variant="outlined" size="small" [disabled]="true" />
-    </p-card>
-  </div>
-</div>
-
-<p-card class="shadow-sm border-0 mb-4">
-  <ng-template pTemplate="header">
-    <div class="px-4 pt-4 d-flex flex-column flex-lg-row justify-content-between gap-3">
-      <div>
-        <h2 class="h5 mb-1">Check-in manual dos tios carona</h2>
+      @if (sobrinhos().length === 0) {
+      <div class="empty-state text-center py-5">
+        <i class="fa-solid fa-child-reaching text-body-secondary mb-3"></i>
+        <h3 class="h6 mb-1">Nenhum sobrinho cadastrado</h3>
         <p class="text-body-secondary small mb-0">
-          Use esta opção quando a leitura do QR Code ou código de barras não estiver disponível.
+          Cadastre os sobrinhos na Gestão do Evento para iniciar a operação.
         </p>
       </div>
-
-      <div class="d-flex flex-wrap gap-2">
-        <p-tag value="Aguardando" severity="warn" />
-
-        <span class="small text-body-secondary align-self-center">
-          {{ tiosAguardandoCheckin().length }} aguardando
-        </span>
-      </div>
-    </div>
-  </ng-template>
-
-  @if (tiosAtivos().length === 0) {
-  <div class="empty-state text-center py-5">
-    <i class="fa-solid fa-car-side text-body-secondary mb-3"></i>
-    <h3 class="h6 mb-1">Nenhum tio carona ativo</h3>
-    <p class="text-body-secondary small mb-0">
-      Adicione tios carona na Gestão do Evento para iniciar o check-in.
-    </p>
-  </div>
-  } @else {
-  <div class="row g-3 mb-3">
-    <div class="col-12 col-md-4">
-      <div class="status-mini-card">
-        <div class="small text-body-secondary">Aguardando check-in</div>
-        <strong>{{ tiosAguardandoCheckin().length }}</strong>
-      </div>
-    </div>
-
-    <div class="col-12 col-md-4">
-      <div class="status-mini-card">
-        <div class="small text-body-secondary">Com check-in</div>
-        <strong>{{ tiosComCheckin().length }}</strong>
-      </div>
-    </div>
-
-    <div class="col-12 col-md-4">
-      <div class="status-mini-card">
-        <div class="small text-body-secondary">Com checkout</div>
-        <strong>{{ tiosComCheckout().length }}</strong>
-      </div>
-    </div>
-  </div>
-
-  <div class="operation-table-toolbar mb-3">
-    <div>
-      <div class="fw-semibold small">Lista de tios carona</div>
-      <div class="text-body-secondary small">
-        {{ tiosOperacaoFiltrados().length }} de {{ tiosAtivos().length }} tio(s)
-      </div>
-    </div>
-
-    <div class="table-search">
-      <span class="p-input-icon-left w-100">
-        <i class="fa-solid fa-magnifying-glass"></i>
-        <input pInputText type="text" class="w-100" placeholder="Pesquisar tio, código ou status..."
-          [value]="filtroTiosOperacao()" (input)="alterarFiltroTiosOperacao($any($event.target).value)" />
-      </span>
-    </div>
-  </div>
-
-  <div class="table-responsive-wrapper">
-
-    <p-table [value]="tiosOperacaoFiltrados()" class="p-datatable-sm min-width-table" [paginator]="true" [rows]="10"
-      [rowsPerPageOptions]="[10, 20, 50]" [showCurrentPageReport]="true"
-      currentPageReportTemplate="Exibindo {first} a {last} de {totalRecords} registros"
-      paginatorDropdownAppendTo="body">
-      <ng-template pTemplate="header">
-        <tr>
-          <th>Tio carona</th>
-          <th>Código</th>
-          <th>Status operacional</th>
-          <th>Último Check-in</th>
-          <th>Último Checkout</th>
-          <th class="text-end">Ações</th>
-        </tr>
-      </ng-template>
-
-      <ng-template pTemplate="body" let-tio>
-        <tr>
-          <td class="fw-semibold">{{ tio.pessoaNome }}</td>
-
-          <td>
-            <span class="small font-monospace">
-              {{ codigoIdentificacaoTio(tio) }}
-            </span>
-          </td>
-
-          <td>
-            <p-tag [value]="labelStatusOperacionalTio(tio)" [severity]="severityStatusOperacionalTio(tio)" />
-          </td>
-
-          <td>
-            @if (tio.checkinEm) {
-            <span class="small">{{ tio.checkinEm | date:'dd/MM/yyyy HH:mm' }}</span>
-            } @else {
-            <span class="small text-body-secondary">Não registrado</span>
-            }
-          </td>
-
-          <td>
-            @if (tio.checkoutEm) {
-            <span class="small">{{ tio.checkoutEm | date:'dd/MM/yyyy HH:mm' }}</span>
-            } @else {
-            <span class="small text-body-secondary">Não registrado</span>
-            }
-          </td>
-
-          <td class="text-end">
-            <div class="d-flex flex-column flex-lg-row justify-content-end gap-2">
-              <p-button label="Check-in" icon="fa-solid fa-right-to-bracket" size="small" severity="success"
-                [loading]="processandoManual() === tio.id" [disabled]="!podeCheckinManual(tio)"
-                (onClick)="registrarCheckinManual(tio)" />
-
-              <p-button label="Checkout" icon="fa-solid fa-right-from-bracket" size="small" severity="warn"
-                [loading]="processandoManual() === tio.id" [disabled]="!podeCheckoutManual(tio)"
-                (onClick)="registrarCheckoutManual(tio)" />
-            </div>
-          </td>
-        </tr>
-      </ng-template>
-    </p-table>
-  </div>
-  }
-</p-card>
-
-<p-card class="shadow-sm border-0 mb-4">
-  <ng-template pTemplate="header">
-    <div class="px-4 pt-4 d-flex flex-column flex-lg-row justify-content-between gap-3">
-      <div>
-        <h2 class="h5 mb-1">Presença dos sobrinhos</h2>
-        <p class="text-body-secondary small mb-0">
-          Registre presença, ausência ou desistência. Cada alteração gera histórico para eventos com múltiplos dias.
-        </p>
-      </div>
-
-      <div class="d-flex flex-wrap gap-2">
-        <p-tag value="Presentes" severity="success" />
-
-        <span class="small text-body-secondary align-self-center">
-          {{ sobrinhosPresentes().length }} presente(s)
-        </span>
-      </div>
-    </div>
-  </ng-template>
-
-  @if (sobrinhos().length === 0) {
-  <div class="empty-state text-center py-5">
-    <i class="fa-solid fa-child-reaching text-body-secondary mb-3"></i>
-    <h3 class="h6 mb-1">Nenhum sobrinho cadastrado</h3>
-    <p class="text-body-secondary small mb-0">
-      Cadastre os sobrinhos na Gestão do Evento para iniciar a presença.
-    </p>
-  </div>
-  } @else {
-  <div class="row g-3 mb-3">
-    <div class="col-12 col-md-3">
-      <div class="status-mini-card">
-        <div class="small text-body-secondary">Inscritos</div>
-        <strong>{{ sobrinhosInscritos().length }}</strong>
-      </div>
-    </div>
-
-    <div class="col-12 col-md-3">
-      <div class="status-mini-card">
-        <div class="small text-body-secondary">Presentes</div>
-        <strong>{{ sobrinhosPresentes().length }}</strong>
-      </div>
-    </div>
-
-    <div class="col-12 col-md-3">
-      <div class="status-mini-card">
-        <div class="small text-body-secondary">Ausentes</div>
-        <strong>{{ sobrinhosAusentes().length }}</strong>
-      </div>
-    </div>
-
-    <div class="col-12 col-md-3">
-      <div class="status-mini-card">
-        <div class="small text-body-secondary">Desistentes</div>
-        <strong>{{ sobrinhosDesistentes().length }}</strong>
-      </div>
-    </div>
-  </div>
-
-  <div class="operation-table-toolbar mb-3">
-    <div>
-      <div class="fw-semibold small">Lista de presença</div>
-      <div class="text-body-secondary small">
-        {{ presencaSobrinhosFiltrados().length }} de {{ sobrinhos().length }} sobrinho(s)
-      </div>
-    </div>
-
-    <div class="table-search">
-      <span class="p-input-icon-left w-100">
-        <i class="fa-solid fa-magnifying-glass"></i>
-        <input pInputText type="text" class="w-100" placeholder="Pesquisar sobrinho, responsável ou status..."
-          [value]="filtroPresencaSobrinhos()" (input)="alterarFiltroPresencaSobrinhos($any($event.target).value)" />
-      </span>
-    </div>
-  </div>
-
-  <div class="table-responsive-wrapper">
-
-    <p-table [value]="presencaSobrinhosFiltrados()" class="p-datatable-sm min-width-table" [paginator]="true"
-      [rows]="10" [rowsPerPageOptions]="[10, 20, 50]" [showCurrentPageReport]="true" paginatorDropdownAppendTo="body"
-      currentPageReportTemplate="Exibindo {first} a {last} de {totalRecords} registros">
-      <ng-template pTemplate="header">
-        <tr>
-          <th>Sobrinho</th>
-          <th>Responsável</th>
-          <th>Status presença</th>
-          <th>Última presença</th>
-          <th class="text-end">Ações</th>
-        </tr>
-      </ng-template>
-
-      <ng-template pTemplate="body" let-sobrinho>
-        <tr>
-          <td class="fw-semibold">{{ sobrinho.nome }}</td>
-
-          <td>
-            @if (sobrinho.responsavelNome) {
-            {{ sobrinho.responsavelNome }}
-            } @else {
-            <span class="small text-body-secondary">Não informado</span>
-            }
-          </td>
-
-          <td>
-            <p-tag [value]="labelSobrinhoStatus(statusPresencaSobrinho(sobrinho))"
-              [severity]="severitySobrinhoStatus(statusPresencaSobrinho(sobrinho))" />
-          </td>
-
-          <td>
-            @if (ultimaPresencaSobrinho(sobrinho)) {
-            <span class="small">
-              {{ ultimaPresencaSobrinho(sobrinho) | date:'dd/MM/yyyy HH:mm' }}
-            </span>
-            } @else {
-            <span class="small text-body-secondary">Não registrada</span>
-            }
-          </td>
-
-          <td class="text-end">
-            @if (sobrinhoDesistente(sobrinho)) {
-            <div class="d-flex justify-content-end">
-              <span class="badge text-bg-danger">
-                <i class="fa-solid fa-user-xmark me-1"></i>
-                Desistente
-              </span>
-            </div>
-            } @else {
-            <div class="d-flex flex-column flex-xl-row justify-content-end gap-2">
-              <p-button label="Presente" icon="fa-solid fa-user-check" size="small" severity="success"
-                [loading]="processandoPresencaSobrinho() === sobrinho.id" [disabled]="!podeMarcarPresente(sobrinho)"
-                (onClick)="registrarPresencaSobrinho(sobrinho, 'PRESENTE')" />
-
-              <p-button label="Ausente" icon="fa-solid fa-user-clock" size="small" severity="warn"
-                [loading]="processandoPresencaSobrinho() === sobrinho.id" [disabled]="!podeMarcarAusente(sobrinho)"
-                (onClick)="registrarPresencaSobrinho(sobrinho, 'AUSENTE')" />
-
-              <p-button label="Desistente" icon="fa-solid fa-user-xmark" size="small" severity="danger"
-                [loading]="processandoPresencaSobrinho() === sobrinho.id" [disabled]="!podeMarcarDesistente(sobrinho)"
-                (onClick)="registrarPresencaSobrinho(sobrinho, 'DESISTENTE')" />
-            </div>
-            }
-          </td>
-
-        </tr>
-      </ng-template>
-    </p-table>
-  </div>
-  }
-</p-card>
-
-<p-card class="shadow-sm border-0 mb-4">
-  <ng-template pTemplate="header">
-    <div class="px-4 pt-4 d-flex flex-column flex-xl-row justify-content-between gap-3">
-      <div>
-        <h2 class="h5 mb-1">Caderno do Choro</h2>
-        <p class="text-body-secondary small mb-0">
-          Controle dos cadernos secretos por dupla, conferência da equipe e kit de encerramento.
-        </p>
-      </div>
-
-      <div class="d-flex flex-wrap gap-2">
-        <p-button label="Gerar/atualizar cadernos" icon="fa-solid fa-wand-magic-sparkles" severity="info" size="small"
-          [loading]="processandoCadernos()" (onClick)="gerarCadernos()" />
-      </div>
-    </div>
-  </ng-template>
-
-  <div class="row g-3 mb-3">
-    <div class="col-12 col-md-4 col-xl-2">
-      <div class="status-mini-card">
-        <div class="small text-body-secondary">Pendentes</div>
-        <strong>{{ cadernosPendentes().length }}</strong>
-      </div>
-    </div>
-
-    <div class="col-12 col-md-4 col-xl-2">
-      <div class="status-mini-card">
-        <div class="small text-body-secondary">Com a dupla</div>
-        <strong>{{ cadernosEntreguesADupla().length }}</strong>
-      </div>
-    </div>
-
-    <div class="col-12 col-md-4 col-xl-2">
-      <div class="status-mini-card">
-        <div class="small text-body-secondary">Recebidos</div>
-        <strong>{{ cadernosRecebidosDaDupla().length }}</strong>
-      </div>
-    </div>
-
-    <div class="col-12 col-md-4 col-xl-2">
-      <div class="status-mini-card">
-        <div class="small text-body-secondary">Conferidos</div>
-        <strong>{{ cadernosConferidos().length }}</strong>
-      </div>
-    </div>
-
-    <div class="col-12 col-md-4 col-xl-2">
-      <div class="status-mini-card">
-        <div class="small text-body-secondary">No kit</div>
-        <strong>{{ cadernosNoKit().length }}</strong>
-      </div>
-    </div>
-
-    <div class="col-12 col-md-4 col-xl-2">
-      <div class="status-mini-card">
-        <div class="small text-body-secondary">Entregues</div>
-        <strong>{{ cadernosEntreguesAoSobrinho().length }}</strong>
-      </div>
-    </div>
-  </div>
-
-  <div class="row g-3 mb-3 align-items-end">
-    <div class="col-12 col-xl-4">
-      <label for="duplaCaderno" class="form-label">Dupla</label>
-
-      <p-select inputId="duplaCaderno" [options]="opcoesDuplasCaderno()" optionLabel="label" optionValue="value"
-        placeholder="Todas as duplas" styleClass="w-100" panelStyleClass="vinculo-select-panel" [filter]="true"
-        filterBy="label,descricao" [showClear]="true" [ngModel]="duplaCadernoSelecionada()"
-        (ngModelChange)="alterarDuplaCadernoSelecionada($event)" appendTo="body">
-        <ng-template pTemplate="selectedItem" let-opcao>
-          @if (opcao) {
-          <div class="select-dupla-selected">
-            <div class="fw-semibold text-truncate">{{ opcao.label }}</div>
+      } @else {
+      <div class="operation-table-toolbar mb-3">
+        <div>
+          <div class="fw-semibold small">Lista geral de sobrinhos</div>
+          <div class="text-body-secondary small">
+            {{ sobrinhosEventoFiltrados().length }} de {{ sobrinhos().length }} sobrinho(s)
           </div>
-          }
-        </ng-template>
-
-        <ng-template pTemplate="item" let-opcao>
-          <div class="select-dupla-option">
-            <div class="fw-semibold text-truncate">{{ opcao.label }}</div>
-            <div class="small text-body-secondary text-truncate">{{ opcao.descricao }}</div>
-          </div>
-        </ng-template>
-      </p-select>
-    </div>
-
-    <div class="col-12 col-xl-4">
-      <div class="row g-2">
-        <div class="col-12 col-sm-6">
-          <p-button label="Entregar à dupla" icon="fa-solid fa-hand-holding-heart" severity="info" size="small"
-            styleClass="w-100" [loading]="processandoCadernos()" [disabled]="!podeEntregarCadernosADuplaEmLote()"
-            (onClick)="entregarCadernosADupla()" />
         </div>
 
-        <div class="col-12 col-sm-6">
-          <p-button label="Receber da dupla" icon="fa-solid fa-people-carry-box" severity="warn" size="small"
-            styleClass="w-100" [loading]="processandoCadernos()" [disabled]="!podeEntregarCadernosADuplaEmLote()"
-            (onClick)="receberCadernosDaDupla()" />
+        <div class="table-search">
+          <span class="p-input-icon-left w-100">
+            <i class="fa-solid fa-magnifying-glass"></i>
+
+            <input pInputText type="text" class="w-100" placeholder="Pesquisar sobrinho, responsável ou status..."
+              [value]="filtroSobrinhosEvento()" (input)="alterarFiltroSobrinhosEvento($any($event.target).value)" />
+          </span>
         </div>
       </div>
-    </div>
 
-    <div class="col-12 col-xl-4">
-      <div class="table-search w-100">
-        <span class="p-input-icon-left w-100">
-          <i class="fa-solid fa-magnifying-glass"></i>
+      <div class="table-responsive-wrapper">
+        <p-table [value]="sobrinhosEventoFiltrados()" class="p-datatable-sm min-width-table" [paginator]="true"
+          [rows]="10" [rowsPerPageOptions]="[10, 20, 50]" [showCurrentPageReport]="true"
+          paginatorDropdownAppendTo="body"
+          currentPageReportTemplate="Exibindo {first} a {last} de {totalRecords} registros">
+          <ng-template pTemplate="header">
+            <tr>
+              <th>Nome</th>
+              <th>Responsável</th>
+              <th>Contato</th>
+              <th>Status</th>
+            </tr>
+          </ng-template>
 
-          <input pInputText type="text" class="w-100" placeholder="Pesquisar caderno, sobrinho, dupla ou status..."
-            [value]="filtroCadernos()" (input)="alterarFiltroCadernos($any($event.target).value)" />
-        </span>
+          <ng-template pTemplate="body" let-sobrinho>
+            <tr>
+              <td class="fw-semibold">{{ sobrinho.nome }}</td>
+
+              <td>
+                @if (sobrinho.responsavelNome) {
+                {{ sobrinho.responsavelNome }}
+                } @else {
+                <span class="small text-body-secondary">Não informado</span>
+                }
+              </td>
+
+              <td>
+                @if (sobrinho.telefone) {
+                <div class="small">
+                  <i class="fa-solid fa-phone me-1"></i>
+                  {{ sobrinho.telefone }}
+                </div>
+                }
+
+                @if (sobrinho.responsavelTelefone) {
+                <div class="small text-body-secondary">
+                  Resp.: {{ sobrinho.responsavelTelefone }}
+                </div>
+                }
+
+                @if (!sobrinho.telefone && !sobrinho.responsavelTelefone) {
+                <span class="small text-body-secondary">Não informado</span>
+                }
+              </td>
+
+              <td>
+                <p-tag [value]="labelSobrinhoStatus(statusPresencaSobrinho(sobrinho))"
+                  [severity]="severitySobrinhoStatus(statusPresencaSobrinho(sobrinho))" />
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
       </div>
-    </div>
+      }
+    </p-card>
   </div>
+</p-tabpanel>
 
-  @if (cadernos().length === 0) {
-  <div class="empty-state text-center py-5">
-    <i class="fa-solid fa-book-bible text-body-secondary mb-3"></i>
-
-    <h3 class="h6 mb-1">Nenhum caderno gerado</h3>
-
-    <p class="text-body-secondary small mb-0">
-      Clique em <strong>Gerar/atualizar cadernos</strong> para criar os cadernos a partir dos vínculos ativos entre
-      sobrinhos e duplas.
-    </p>
-  </div>
-  } @else {
-  <div class="operation-table-toolbar mb-3">
-    <div>
-      <div class="fw-semibold small">Lista de cadernos</div>
-      <div class="text-body-secondary small">
-        {{ cadernosFiltrados().length }} de {{ cadernos().length }} caderno(s)
-      </div>
-    </div>
-  </div>
-
-  <div class="table-responsive-wrapper">
-    <p-table [value]="cadernosFiltrados()" class="p-datatable-sm min-width-table caderno-table" [paginator]="true"
-      [rows]="10" [rowsPerPageOptions]="[10, 20, 50]" [showCurrentPageReport]="true"
-      currentPageReportTemplate="Exibindo {first} a {last} de {totalRecords} registros"
-      paginatorDropdownAppendTo="body">
+<p-tabpanel value="CADERNO_CHORO">
+  <div class="operacao-tab-content">
+    <p-card class="shadow-sm border-0">
       <ng-template pTemplate="header">
-        <tr>
-          <th>Sobrinho</th>
-          <th>Dupla</th>
-          <th>Status</th>
-          <th>Entregue à dupla</th>
-          <th>Recebido da dupla</th>
-          <th>Kit</th>
-          <th class="text-end">Ações</th>
-        </tr>
+        <div class="px-4 pt-4 d-flex flex-column flex-xl-row justify-content-between gap-3">
+          <div>
+            <h2 class="h5 mb-1">Caderno do Choro</h2>
+            <p class="text-body-secondary small mb-0">
+              Controle dos cadernos secretos por dupla, conferência da equipe e kit de encerramento.
+            </p>
+          </div>
+
+          <div class="d-flex flex-wrap gap-2">
+            <p-button label="Gerar/atualizar cadernos" icon="fa-solid fa-wand-magic-sparkles" severity="info"
+              size="small" [loading]="processandoCadernos()" (onClick)="gerarCadernos()" />
+          </div>
+        </div>
       </ng-template>
 
-      <ng-template pTemplate="body" let-caderno>
-        <tr>
-          <td class="fw-semibold">{{ caderno.sobrinhoNome }}</td>
+      <div class="row g-3 mb-3">
+        <div class="col-12 col-md-4 col-xl-2">
+          <div class="status-mini-card">
+            <div class="small text-body-secondary">Pendentes</div>
+            <strong>{{ cadernosPendentes().length }}</strong>
+          </div>
+        </div>
 
-          <td>
-            <div class="fw-semibold small">
-              {{ caderno.duplaApelido || caderno.duplaCodigo }}
-            </div>
-            <div class="small text-body-secondary">
-              {{ caderno.tio1Nome }} e {{ caderno.tio2Nome }}
-            </div>
-          </td>
+        <div class="col-12 col-md-4 col-xl-2">
+          <div class="status-mini-card">
+            <div class="small text-body-secondary">Com a dupla</div>
+            <strong>{{ cadernosEntreguesADupla().length }}</strong>
+          </div>
+        </div>
 
-          <td>
-            <p-tag [value]="labelStatusCaderno(caderno.status)" [severity]="severityStatusCaderno(caderno.status)" />
-          </td>
+        <div class="col-12 col-md-4 col-xl-2">
+          <div class="status-mini-card">
+            <div class="small text-body-secondary">Recebidos</div>
+            <strong>{{ cadernosRecebidosDaDupla().length }}</strong>
+          </div>
+        </div>
 
-          <td>
-            @if (caderno.entregueADuplaEm) {
-            <span class="small">{{ caderno.entregueADuplaEm | date:'dd/MM/yyyy HH:mm' }}</span>
-            } @else {
-            <span class="small text-body-secondary">Não registrado</span>
-            }
-          </td>
+        <div class="col-12 col-md-4 col-xl-2">
+          <div class="status-mini-card">
+            <div class="small text-body-secondary">Conferidos</div>
+            <strong>{{ cadernosConferidos().length }}</strong>
+          </div>
+        </div>
 
-          <td>
-            @if (caderno.recebidoDaDuplaEm) {
-            <span class="small">{{ caderno.recebidoDaDuplaEm | date:'dd/MM/yyyy HH:mm' }}</span>
-            } @else {
-            <span class="small text-body-secondary">Não registrado</span>
-            }
-          </td>
+        <div class="col-12 col-md-4 col-xl-2">
+          <div class="status-mini-card">
+            <div class="small text-body-secondary">No kit</div>
+            <strong>{{ cadernosNoKit().length }}</strong>
+          </div>
+        </div>
 
-          <td>
-            @if (caderno.anexadoAoKitEm) {
-            <span class="small">{{ caderno.anexadoAoKitEm | date:'dd/MM/yyyy HH:mm' }}</span>
-            } @else {
-            <span class="small text-body-secondary">Não anexado</span>
-            }
-          </td>
-
-          <td class="text-end">
-            @if (caderno.status === 'ENTREGUE_AO_SOBRINHO') {
-            <div class="caderno-actions">
-              <span class="badge text-bg-success align-self-center">
-                <i class="fa-solid fa-check me-1"></i>
-                Fluxo concluído
-              </span>
-
-              <p-button icon="fa-solid fa-clock-rotate-left" size="small" severity="help"
-                styleClass="caderno-icon-button" pTooltip="Ver histórico" tooltipPosition="top"
-                ariaLabel="Ver histórico" (onClick)="abrirHistoricoCaderno(caderno)" />
-            </div>
-            } @else {
-            <div class="caderno-actions">
-              <p-button icon="fa-solid fa-clipboard-check" size="small" severity="warn" styleClass="caderno-icon-button"
-                pTooltip="Conferir caderno" tooltipPosition="top" ariaLabel="Conferir caderno"
-                [loading]="processandoCadernoId() === caderno.id" [disabled]="!podeConferirCaderno(caderno)"
-                (onClick)="conferirCaderno(caderno)" />
-
-              <p-button icon="fa-solid fa-box" size="small" severity="info" styleClass="caderno-icon-button"
-                pTooltip="Anexar ao kit" tooltipPosition="top" ariaLabel="Anexar ao kit"
-                [loading]="processandoCadernoId() === caderno.id" [disabled]="!podeAnexarCadernoAoKit(caderno)"
-                (onClick)="anexarCadernoAoKit(caderno)" />
-
-              <p-button icon="fa-solid fa-gift" size="small" severity="success" styleClass="caderno-icon-button"
-                pTooltip="Entregar ao sobrinho" tooltipPosition="top" ariaLabel="Entregar ao sobrinho"
-                [loading]="processandoCadernoId() === caderno.id" [disabled]="!podeEntregarCadernoAoSobrinho(caderno)"
-                (onClick)="entregarCadernoAoSobrinho(caderno)" />
-
-              <p-button icon="fa-solid fa-clock-rotate-left" size="small" severity="help"
-                styleClass="caderno-icon-button" pTooltip="Ver histórico" tooltipPosition="top"
-                ariaLabel="Ver histórico" (onClick)="abrirHistoricoCaderno(caderno)" />
-
-              <p-button icon="fa-solid fa-ellipsis" size="small" severity="danger" styleClass="caderno-icon-button"
-                pTooltip="Mais ações" tooltipPosition="top" ariaLabel="Mais ações"
-                (onClick)="abrirAcoesEspeciaisCaderno(caderno)" />
-            </div>
-            }
-          </td>
-
-        </tr>
-      </ng-template>
-    </p-table>
-  </div>
-  }
-</p-card>
-
-<p-card class="shadow-sm border-0">
-  <ng-template pTemplate="header">
-    <div class="px-4 pt-4">
-      <h2 class="h5 mb-1">Sobrinhos do evento</h2>
-      <p class="text-body-secondary small mb-0">
-        Visão operacional inicial dos participantes.
-      </p>
-    </div>
-  </ng-template>
-
-  @if (sobrinhos().length === 0) {
-  <div class="empty-state text-center py-5">
-    <i class="fa-solid fa-child-reaching text-body-secondary mb-3"></i>
-    <h3 class="h6 mb-1">Nenhum sobrinho cadastrado</h3>
-    <p class="text-body-secondary small mb-0">
-      Cadastre os sobrinhos na Gestão do Evento para iniciar a operação.
-    </p>
-  </div>
-  } @else {
-
-  <div class="operation-table-toolbar mb-3">
-    <div>
-      <div class="fw-semibold small">Lista geral de sobrinhos</div>
-      <div class="text-body-secondary small">
-        {{ sobrinhosEventoFiltrados().length }} de {{ sobrinhos().length }} sobrinho(s)
+        <div class="col-12 col-md-4 col-xl-2">
+          <div class="status-mini-card">
+            <div class="small text-body-secondary">Entregues</div>
+            <strong>{{ cadernosEntreguesAoSobrinho().length }}</strong>
+          </div>
+        </div>
       </div>
-    </div>
 
-    <div class="table-search">
-      <span class="p-input-icon-left w-100">
-        <i class="fa-solid fa-magnifying-glass"></i>
-        <input pInputText type="text" class="w-100" placeholder="Pesquisar sobrinho, responsável ou status..."
-          [value]="filtroSobrinhosEvento()" (input)="alterarFiltroSobrinhosEvento($any($event.target).value)" />
-      </span>
-    </div>
-  </div>
+      <div class="row g-3 mb-3 align-items-end">
+        <div class="col-12 col-xl-4">
+          <label for="duplaCaderno" class="form-label">Dupla</label>
 
-  <div class="table-responsive-wrapper">
+          <p-select inputId="duplaCaderno" [options]="opcoesDuplasCaderno()" optionLabel="label" optionValue="value"
+            placeholder="Todas as duplas" styleClass="w-100" panelStyleClass="vinculo-select-panel" [filter]="true"
+            filterBy="label,descricao" [showClear]="true" [ngModel]="duplaCadernoSelecionada()"
+            (ngModelChange)="alterarDuplaCadernoSelecionada($event)" appendTo="body">
+            <ng-template pTemplate="selectedItem" let-opcao>
+              @if (opcao) {
+              <div class="select-dupla-selected">
+                <div class="fw-semibold text-truncate">{{ opcao.label }}</div>
+              </div>
+              }
+            </ng-template>
 
-    <p-table [value]="sobrinhosEventoFiltrados()" class="p-datatable-sm min-width-table" [paginator]="true" [rows]="10"
-      [rowsPerPageOptions]="[10, 20, 50]" [showCurrentPageReport]="true" paginatorDropdownAppendTo="body"
-      currentPageReportTemplate="Exibindo {first} a {last} de {totalRecords} registros">
-      <ng-template pTemplate="header">
-        <tr>
-          <th>Nome</th>
-          <th>Responsável</th>
-          <th>Contato</th>
-          <th>Status</th>
-        </tr>
-      </ng-template>
+            <ng-template pTemplate="item" let-opcao>
+              <div class="select-dupla-option">
+                <div class="fw-semibold text-truncate">{{ opcao.label }}</div>
+                <div class="small text-body-secondary text-truncate">{{ opcao.descricao }}</div>
+              </div>
+            </ng-template>
+          </p-select>
+        </div>
 
-      <ng-template pTemplate="body" let-sobrinho>
-        <tr>
-          <td class="fw-semibold">{{ sobrinho.nome }}</td>
-
-          <td>
-            @if (sobrinho.responsavelNome) {
-            {{ sobrinho.responsavelNome }}
-            } @else {
-            <span class="small text-body-secondary">Não informado</span>
-            }
-          </td>
-
-          <td>
-            @if (sobrinho.telefone) {
-            <div class="small">
-              <i class="fa-solid fa-phone me-1"></i>
-              {{ sobrinho.telefone }}
+        <div class="col-12 col-xl-4">
+          <div class="row g-2">
+            <div class="col-12 col-sm-6">
+              <p-button label="Entregar à dupla" icon="fa-solid fa-hand-holding-heart" severity="info" size="small"
+                styleClass="w-100" [loading]="processandoCadernos()" [disabled]="!podeEntregarCadernosADuplaEmLote()"
+                (onClick)="entregarCadernosADupla()" />
             </div>
-            }
 
-            @if (sobrinho.responsavelTelefone) {
-            <div class="small text-body-secondary">
-              Resp.: {{ sobrinho.responsavelTelefone }}
+            <div class="col-12 col-sm-6">
+              <p-button label="Receber da dupla" icon="fa-solid fa-people-carry-box" severity="warn" size="small"
+                styleClass="w-100" [loading]="processandoCadernos()" [disabled]="!podeReceberCadernosDaDuplaEmLote()"
+                (onClick)="receberCadernosDaDupla()" />
             </div>
-            }
+          </div>
+        </div>
 
-            @if (!sobrinho.telefone && !sobrinho.responsavelTelefone) {
-            <span class="small text-body-secondary">Não informado</span>
-            }
-          </td>
+        <div class="col-12 col-xl-4">
+          <div class="table-search w-100">
+            <span class="p-input-icon-left w-100">
+              <i class="fa-solid fa-magnifying-glass"></i>
 
-          <td>
-            <p-tag [value]="labelSobrinhoStatus(statusPresencaSobrinho(sobrinho))"
-              [severity]="severitySobrinhoStatus(statusPresencaSobrinho(sobrinho))" />
-          </td>
-        </tr>
-      </ng-template>
-    </p-table>
+              <input pInputText type="text" class="w-100" placeholder="Pesquisar caderno, sobrinho, dupla ou status..."
+                [value]="filtroCadernos()" (input)="alterarFiltroCadernos($any($event.target).value)" />
+            </span>
+          </div>
+        </div>
+      </div>
+
+      @if (cadernos().length === 0) {
+      <div class="empty-state text-center py-5">
+        <i class="fa-solid fa-book-bible text-body-secondary mb-3"></i>
+
+        <h3 class="h6 mb-1">Nenhum caderno gerado</h3>
+
+        <p class="text-body-secondary small mb-0">
+          Clique em <strong>Gerar/atualizar cadernos</strong> para criar os cadernos a partir dos vínculos ativos entre
+          sobrinhos e duplas.
+        </p>
+      </div>
+      } @else {
+      <div class="operation-table-toolbar mb-3">
+        <div>
+          <div class="fw-semibold small">Lista de cadernos</div>
+          <div class="text-body-secondary small">
+            {{ cadernosFiltrados().length }} de {{ cadernos().length }} caderno(s)
+          </div>
+        </div>
+      </div>
+
+      <div class="table-responsive-wrapper">
+        <p-table [value]="cadernosFiltrados()" class="p-datatable-sm min-width-table caderno-table" [paginator]="true"
+          [rows]="10" [rowsPerPageOptions]="[10, 20, 50]" [showCurrentPageReport]="true"
+          currentPageReportTemplate="Exibindo {first} a {last} de {totalRecords} registros"
+          paginatorDropdownAppendTo="body">
+          <ng-template pTemplate="header">
+            <tr>
+              <th>Sobrinho</th>
+              <th>Dupla</th>
+              <th>Status</th>
+              <th>Entregue à dupla</th>
+              <th>Recebido da dupla</th>
+              <th>Kit</th>
+              <th class="text-end">Ações</th>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="body" let-caderno>
+            <tr>
+              <td class="fw-semibold">{{ caderno.sobrinhoNome }}</td>
+
+              <td>
+                <div class="fw-semibold small">
+                  {{ caderno.duplaApelido || caderno.duplaCodigo }}
+                </div>
+
+                <div class="small text-body-secondary">
+                  {{ caderno.tio1Nome }} e {{ caderno.tio2Nome }}
+                </div>
+              </td>
+
+              <td>
+                <p-tag [value]="labelStatusCaderno(caderno.status)"
+                  [severity]="severityStatusCaderno(caderno.status)" />
+              </td>
+
+              <td>
+                @if (caderno.entregueADuplaEm) {
+                <span class="small">{{ caderno.entregueADuplaEm | date:'dd/MM/yyyy HH:mm' }}</span>
+                } @else {
+                <span class="small text-body-secondary">Não registrado</span>
+                }
+              </td>
+
+              <td>
+                @if (caderno.recebidoDaDuplaEm) {
+                <span class="small">{{ caderno.recebidoDaDuplaEm | date:'dd/MM/yyyy HH:mm' }}</span>
+                } @else {
+                <span class="small text-body-secondary">Não registrado</span>
+                }
+              </td>
+
+              <td>
+                @if (caderno.anexadoAoKitEm) {
+                <span class="small">{{ caderno.anexadoAoKitEm | date:'dd/MM/yyyy HH:mm' }}</span>
+                } @else {
+                <span class="small text-body-secondary">Não anexado</span>
+                }
+              </td>
+
+              <td class="text-end">
+                @if (caderno.status === 'ENTREGUE_AO_SOBRINHO') {
+                <div class="caderno-actions">
+                  <span class="badge text-bg-success align-self-center">
+                    <i class="fa-solid fa-check me-1"></i>
+                    Fluxo concluído
+                  </span>
+
+                  <p-button icon="fa-solid fa-clock-rotate-left" size="small" severity="help"
+                    styleClass="caderno-icon-button" pTooltip="Ver histórico" tooltipPosition="top"
+                    ariaLabel="Ver histórico" (onClick)="abrirHistoricoCaderno(caderno)" />
+                </div>
+                } @else {
+                <div class="caderno-actions">
+                  <p-button icon="fa-solid fa-clipboard-check" size="small" severity="warn"
+                    styleClass="caderno-icon-button" pTooltip="Conferir caderno" tooltipPosition="top"
+                    ariaLabel="Conferir caderno" [loading]="processandoCadernoId() === caderno.id"
+                    [disabled]="!podeConferirCaderno(caderno)" (onClick)="conferirCaderno(caderno)" />
+
+                  <p-button icon="fa-solid fa-box" size="small" severity="info" styleClass="caderno-icon-button"
+                    pTooltip="Anexar ao kit" tooltipPosition="top" ariaLabel="Anexar ao kit"
+                    [loading]="processandoCadernoId() === caderno.id" [disabled]="!podeAnexarCadernoAoKit(caderno)"
+                    (onClick)="anexarCadernoAoKit(caderno)" />
+
+                  <p-button icon="fa-solid fa-gift" size="small" severity="success" styleClass="caderno-icon-button"
+                    pTooltip="Entregar ao sobrinho" tooltipPosition="top" ariaLabel="Entregar ao sobrinho"
+                    [loading]="processandoCadernoId() === caderno.id"
+                    [disabled]="!podeEntregarCadernoAoSobrinho(caderno)"
+                    (onClick)="entregarCadernoAoSobrinho(caderno)" />
+
+                  <p-button icon="fa-solid fa-clock-rotate-left" size="small" severity="help"
+                    styleClass="caderno-icon-button" pTooltip="Ver histórico" tooltipPosition="top"
+                    ariaLabel="Ver histórico" (onClick)="abrirHistoricoCaderno(caderno)" />
+
+                  <p-button icon="fa-solid fa-ellipsis" size="small" severity="danger" styleClass="caderno-icon-button"
+                    pTooltip="Mais ações" tooltipPosition="top" ariaLabel="Mais ações"
+                    (onClick)="abrirAcoesEspeciaisCaderno(caderno)" />
+                </div>
+                }
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </div>
+      }
+    </p-card>
   </div>
-  }
-</p-card>
+</p-tabpanel>
+</p-tabpanels>
+</p-tabs>
 
 <p-dialog header="Histórico do Caderno do Choro" [visible]="historicoCadernoVisivel()"
   (visibleChange)="historicoCadernoVisivel.set($event)" [modal]="true" [style]="{ width: 'min(95vw, 980px)' }"
@@ -996,7 +1039,6 @@
   </div>
   } @else {
   <div class="historico-caderno-scroll">
-
     <p-timeline [value]="historicoCadernoTimeline()" layout="horizontal" align="top"
       styleClass="historico-caderno-timeline">
       <ng-template pTemplate="marker" let-item>
@@ -1021,7 +1063,6 @@
         </div>
       </ng-template>
     </p-timeline>
-
   </div>
   }
 
@@ -1030,7 +1071,6 @@
       (onClick)="fecharHistoricoCaderno()" />
   </ng-template>
 </p-dialog>
-
 
 <p-dialog [header]="tituloOperacaoCaderno()" [visible]="operacaoCadernoVisivel()"
   (visibleChange)="operacaoCadernoVisivel.set($event)" [modal]="true" [style]="{ width: 'min(95vw, 560px)' }"
@@ -1083,8 +1123,6 @@
   </ng-template>
 </p-dialog>
 
-
-<!-- Modal mais ações - Caderno do choro -->
 <p-dialog header="Ações especiais do caderno" [visible]="acoesEspeciaisCadernoVisivel()"
   (visibleChange)="acoesEspeciaisCadernoVisivel.set($event)" [modal]="true" [style]="{ width: 'min(95vw, 560px)' }"
   [dismissableMask]="true" (onHide)="fecharAcoesEspeciaisCaderno()">
@@ -1117,5 +1155,4 @@
   </div>
   }
 </p-dialog>
-
 </div>

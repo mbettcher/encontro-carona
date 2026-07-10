@@ -16,6 +16,7 @@ import { DialogModule } from 'primeng/dialog';
 import { TimelineModule } from 'primeng/timeline';
 import { TextareaModule } from 'primeng/textarea';
 import { TooltipModule } from 'primeng/tooltip';
+import { TabsModule } from 'primeng/tabs';
 
 import {
   CadernoChoro,
@@ -38,6 +39,13 @@ type OperacaoCadernoChoro =
   | 'SUBSTITUIDO'
   | 'CANCELADO';
 
+type AbaOperacao =
+  | 'VISAO_GERAL'
+  | 'LEITURAS_QR'
+  | 'TIOS_CARONA'
+  | 'SOBRINHOS'
+  | 'CADERNO_CHORO';
+
 @Component({
   selector: 'app-evento-operacao',
   standalone: true,
@@ -56,7 +64,8 @@ type OperacaoCadernoChoro =
     TimelineModule,
     TextareaModule,
     TooltipModule,
-    TagModule
+    TagModule,
+    TabsModule
   ],
   templateUrl: './evento-operacao.component.html',
   styleUrl: './evento-operacao.component.scss'
@@ -95,6 +104,7 @@ export class EventoOperacaoComponent implements OnInit {
   readonly observacaoOperacaoCaderno = signal('');
   readonly acoesEspeciaisCadernoVisivel = signal(false);
   readonly processandoCodigoSobrinho = signal(false);
+  readonly abaOperacaoAtiva = signal<AbaOperacao>('VISAO_GERAL');
 
   readonly historicoCadernoTimeline = computed(() =>
     [...this.historicoCaderno()].reverse()
@@ -281,6 +291,38 @@ export class EventoOperacaoComponent implements OnInit {
     );
   });
 
+  readonly totalCadernosProblematicos = computed(() =>
+    this.cadernos().filter(caderno =>
+      ['PERDIDO', 'SUBSTITUIDO', 'CANCELADO'].includes(caderno.status)
+    ).length
+  );
+
+  readonly totalCredenciaisOperacionais = computed(() =>
+    this.tiosAtivos().length + this.sobrinhos().length
+  );
+
+  readonly totalPendenciasOperacionais = computed(() => {
+    let total = 0;
+
+    if (this.percentualVinculados() < 100) {
+      total++;
+    }
+
+    if (this.tiosAguardandoCheckin().length > 0) {
+      total++;
+    }
+
+    if (this.sobrinhosInscritos().length > 0) {
+      total++;
+    }
+
+    if (this.cadernosPendentes().length > 0) {
+      total++;
+    }
+
+    return total;
+  });
+
   ngOnInit(): void {
     this.carregarDados();
   }
@@ -306,6 +348,10 @@ export class EventoOperacaoComponent implements OnInit {
         this.toastError('Não foi possível carregar os cadernos do choro.');
       }
     });
+  }
+
+  alterarAbaOperacao(aba: string | number | undefined): void {
+    this.abaOperacaoAtiva.set(aba as AbaOperacao);
   }
 
   alterarFiltroCadernos(valor: string): void {
