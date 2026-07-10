@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Observable, forkJoin, map, of, switchMap } from 'rxjs';
+import { Observable, map } from 'rxjs';
 import { environment } from 'src/environments/environment';
 
 import {
@@ -72,6 +72,20 @@ export class EventoGestaoService {
     );
   }
 
+  inativarDupla(eventoId: number, duplaId: number): Observable<DuplaTioCarona> {
+    return this.http.patch<DuplaTioCarona>(
+      `${this.apiUrl}/eventos/${eventoId}/duplas/${duplaId}/inativar`,
+      {}
+    );
+  }
+
+  reativarDupla(eventoId: number, duplaId: number): Observable<DuplaTioCarona> {
+    return this.http.patch<DuplaTioCarona>(
+      `${this.apiUrl}/eventos/${eventoId}/duplas/${duplaId}/reativar`,
+      {}
+    );
+  }
+
   listarSobrinhos(eventoId: number): Observable<Sobrinho[]> {
     return this.http.get<Sobrinho[]>(`${this.apiUrl}/eventos/${eventoId}/sobrinhos`);
   }
@@ -100,29 +114,21 @@ export class EventoGestaoService {
     );
   }
 
-  /**
-   * O backend atual ainda não expõe GET /eventos/{eventoId}/vinculos.
-   *
-   * Então montamos a lista geral de vínculos a partir das duplas:
-   * 1. GET /eventos/{eventoId}/duplas
-   * 2. Para cada dupla: GET /eventos/{eventoId}/vinculos/duplas/{duplaId}/sobrinhos
-   * 3. Junta tudo em uma lista única.
-   */
   listarVinculos(eventoId: number): Observable<SobrinhoDupla[]> {
-    return this.listarDuplas(eventoId).pipe(
-      switchMap(duplas => {
-        if (duplas.length === 0) {
-          return of([]);
-        }
+    return this.http.get<SobrinhoDupla[]>(`${this.apiUrl}/eventos/${eventoId}/vinculos`);
+  }
 
-        const requisicoes = duplas.map(dupla =>
-          this.listarSobrinhosDaDupla(eventoId, dupla.id)
-        );
+  removerVinculo(eventoId: number, vinculoId: number): Observable<SobrinhoDupla> {
+    return this.http.patch<SobrinhoDupla>(
+      `${this.apiUrl}/eventos/${eventoId}/vinculos/${vinculoId}/remover`,
+      {}
+    );
+  }
 
-        return forkJoin(requisicoes).pipe(
-          map(resultados => resultados.flat())
-        );
-      })
+  reativarVinculo(eventoId: number, vinculoId: number): Observable<SobrinhoDupla> {
+    return this.http.patch<SobrinhoDupla>(
+      `${this.apiUrl}/eventos/${eventoId}/vinculos/${vinculoId}/reativar`,
+      {}
     );
   }
 

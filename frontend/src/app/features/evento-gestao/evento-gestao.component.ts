@@ -24,6 +24,7 @@ import {
   TioCaronaStatus,
   VinculoStatus
 } from '../../shared/models';
+import { CustomFormHelperService } from '../../shared/services/custom-form-helper.service';
 import { EventoGestaoService } from './evento-gestao.service';
 
 type AbaGestao = 'TIOS' | 'DUPLAS' | 'SOBRINHOS' | 'VINCULOS';
@@ -57,6 +58,7 @@ export class EventoGestaoComponent implements OnInit {
   private readonly service = inject(EventoGestaoService);
   private readonly fb = inject(FormBuilder);
   private readonly messageService = inject(MessageService);
+  private readonly customFormHelper = inject(CustomFormHelperService);
 
   readonly eventoId = Number(this.route.snapshot.paramMap.get('eventoId'));
 
@@ -73,6 +75,8 @@ export class EventoGestaoComponent implements OnInit {
   readonly salvandoDupla = signal(false);
   readonly salvandoSobrinho = signal(false);
   readonly salvandoVinculo = signal(false);
+  readonly processandoDuplaId = signal<number | null>(null);
+  readonly processandoVinculoId = signal<number | null>(null);
 
   readonly tio1Selecionado = signal(0);
   readonly tio2Selecionado = signal(0);
@@ -107,6 +111,22 @@ export class EventoGestaoComponent implements OnInit {
     sobrinhoId: [0, [Validators.required, Validators.min(1)]],
     duplaId: [0, [Validators.required, Validators.min(1)]]
   });
+
+  readonly duplasAtivas = computed(() =>
+    this.duplas().filter(dupla => dupla.status === 'ATIVA')
+  );
+
+  readonly duplasInativas = computed(() =>
+    this.duplas().filter(dupla => dupla.status === 'INATIVA')
+  );
+
+  readonly vinculosAtivos = computed(() =>
+    this.vinculos().filter(vinculo => vinculo.status === 'ATIVO')
+  );
+
+  readonly vinculosRemovidos = computed(() =>
+    this.vinculos().filter(vinculo => vinculo.status === 'REMOVIDO')
+  );
 
   readonly opcoesPessoasTioCarona = computed<OpcaoNumerica[]>(() => {
     const pessoasJaAdicionadas = new Set(
@@ -322,6 +342,18 @@ export class EventoGestaoComponent implements OnInit {
     this.filtroVinculos.set(valor);
   }
 
+  formatarDupla(): void {
+    this.customFormHelper.formatarCamposComTitleCase(this.duplaForm, ['apelido']);
+  }
+
+  formatarSobrinho(): void {
+    this.customFormHelper.formatarCamposComTitleCase(this.sobrinhoForm, [
+      'nome',
+      'responsavelNome',
+      'endereco'
+    ]);
+  }
+
   adicionarTioCarona(): void {
     if (this.tioForm.invalid) {
       this.tioForm.markAllAsTouched();
@@ -369,6 +401,8 @@ export class EventoGestaoComponent implements OnInit {
       return;
     }
 
+    this.formatarDupla();
+
     const valor = this.duplaForm.getRawValue();
 
     if (Number(valor.tio1Id) === Number(valor.tio2Id)) {
@@ -400,7 +434,7 @@ export class EventoGestaoComponent implements OnInit {
           message: erro.message
         });
 
-        this.toastError('Não foi possível criar a dupla. Confira se os tios já não estão em outra dupla ativa.');
+        this.toastError(this.mensagemErro(erro, 'Não foi possível criar a dupla. Confira se os tios já não estão em outra dupla ativa.'));
         this.salvandoDupla.set(false);
       }
     });
@@ -412,6 +446,8 @@ export class EventoGestaoComponent implements OnInit {
       this.toastWarn(this.mensagemValidacaoSobrinho());
       return;
     }
+
+    this.formatarSobrinho();
 
     const valor = this.sobrinhoForm.getRawValue();
 
@@ -484,9 +520,89 @@ export class EventoGestaoComponent implements OnInit {
       },
       error: erro => {
         console.error('Erro ao vincular sobrinho', erro);
-        this.toastError('Não foi possível vincular o sobrinho à dupla.');
+        this.toastError(this.mensagemErro(erro, 'Não foi possível vincular o sobrinho à dupla.'));
         this.salvandoVinculo.set(false);
       }
+    });
+  }
+
+  inativarDupla(dupla: DuplaTioCarona): void {
+    if (!window.confirm(`Deseja inativar a dupla ${dupla.apelido || dupla.codigo}?`)) {
+      return;
+    }
+
+    this.processandoDuplaId.set(dupla.id);
+
+    this.service.inativarDupla(this.eventoId, dupla.id).subscribe({
+      next: duplaAtualizada => {
+        this.atualizarDuplaNaLista(duplaAtualizada);
+        this.toastSuccess('Dupla inativada com sucesso.');
+      },
+      error: erro => {
+        console.error('Erro ao inativar dupla', erro);
+        this.toastError(this.mensagemErro(erro, 'Não foi possível inativar a dupla.'));
+      },
+      complete: () => this.processandoDuplaId.set(null)
+    });
+  }
+
+  reativarDupla(dupla: DuplaTioCarona): void {
+    if (!window.confirm(`Deseja reativar a dupla ${dupla.apelido || dupla.codigo}?`)) {
+      return;
+    }
+
+    this.processandoDuplaId.set(dupla.id);
+
+    this.service.reativarDupla(this.eventoId, dupla.id).subscribe({
+      next: duplaAtualizada => {
+        this.atualizarDuplaNaLista(duplaAtualizada);
+        this.toastSuccess('Dupla reativada com sucesso.');
+      },
+      error: erro => {
+        console.error('Erro ao reativar dupla', erro);
+        this.toastError(this.mensagemErro(erro, 'Não foi possível reativar a dupla.'));
+      },
+      complete: () => this.processandoDuplaId.set(null)
+    });
+  }
+
+  removerVinculo(vinculo: SobrinhoDupla): void {
+    if (!window.confirm(`Deseja remover o vínculo de ${vinculo.sobrinhoNome}?`)) {
+      return;
+    }
+
+    this.processandoVinculoId.set(vinculo.id);
+
+    this.service.removerVinculo(this.eventoId, vinculo.id).subscribe({
+      next: vinculoAtualizado => {
+        this.atualizarVinculoNaLista(vinculoAtualizado);
+        this.toastSuccess('Vínculo removido com sucesso.');
+      },
+      error: erro => {
+        console.error('Erro ao remover vínculo', erro);
+        this.toastError(this.mensagemErro(erro, 'Não foi possível remover o vínculo.'));
+      },
+      complete: () => this.processandoVinculoId.set(null)
+    });
+  }
+
+  reativarVinculo(vinculo: SobrinhoDupla): void {
+    if (!window.confirm(`Deseja reativar o vínculo de ${vinculo.sobrinhoNome}?`)) {
+      return;
+    }
+
+    this.processandoVinculoId.set(vinculo.id);
+
+    this.service.reativarVinculo(this.eventoId, vinculo.id).subscribe({
+      next: vinculoAtualizado => {
+        this.atualizarVinculoNaLista(vinculoAtualizado);
+        this.toastSuccess('Vínculo reativado com sucesso.');
+      },
+      error: erro => {
+        console.error('Erro ao reativar vínculo', erro);
+        this.toastError(this.mensagemErro(erro, 'Não foi possível reativar o vínculo.'));
+      },
+      complete: () => this.processandoVinculoId.set(null)
     });
   }
 
@@ -538,6 +654,18 @@ export class EventoGestaoComponent implements OnInit {
 
   severityStatusVinculo(status: VinculoStatus): 'success' | 'secondary' {
     return status === 'ATIVO' ? 'success' : 'secondary';
+  }
+
+  private atualizarDuplaNaLista(duplaAtualizada: DuplaTioCarona): void {
+    this.duplas.update(duplas =>
+      duplas.map(dupla => dupla.id === duplaAtualizada.id ? duplaAtualizada : dupla)
+    );
+  }
+
+  private atualizarVinculoNaLista(vinculoAtualizado: SobrinhoDupla): void {
+    this.vinculos.update(vinculos =>
+      vinculos.map(vinculo => vinculo.id === vinculoAtualizado.id ? vinculoAtualizado : vinculo)
+    );
   }
 
   private carregarEvento(): void {
