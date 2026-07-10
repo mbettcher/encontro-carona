@@ -651,11 +651,21 @@ export class EventoGestaoComponent implements OnInit {
   }
 
   nomeDuplaVinculo(vinculo: SobrinhoDupla): string {
+    const dupla = this.duplaDoVinculo(vinculo);
+
+    if (dupla?.apelido?.trim()) {
+      return dupla.apelido.trim();
+    }
+
+    if (dupla?.codigo?.trim()) {
+      return dupla.codigo.trim();
+    }
+
     if (vinculo.duplaCodigo?.trim()) {
       return vinculo.duplaCodigo.trim();
     }
 
-    return vinculo.duplaCodigo || `Dupla #${vinculo.duplaId}`;
+    return `Dupla #${vinculo.duplaId}`;
   }
 
   labelStatusTio(status: TioCaronaStatus): string {
@@ -896,20 +906,14 @@ export class EventoGestaoComponent implements OnInit {
   }
 
   labelDuplaVinculo(vinculo: SobrinhoDupla): string {
-    const dupla = this.duplaDoVinculo(vinculo);
-
-    if (!dupla) {
-      return vinculo.duplaCodigo;
-    }
-
-    return dupla.apelido || dupla.codigo;
+    return this.nomeDuplaVinculo(vinculo);
   }
 
   tooltipDuplaVinculo(vinculo: SobrinhoDupla): string {
     const dupla = this.duplaDoVinculo(vinculo);
 
     if (!dupla) {
-      return vinculo.duplaCodigo;
+      return vinculo.duplaCodigo || `Dupla #${vinculo.duplaId}`;
     }
 
     return `${dupla.tio1Nome} e ${dupla.tio2Nome}`;
