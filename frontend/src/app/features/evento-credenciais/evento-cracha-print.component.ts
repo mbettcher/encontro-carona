@@ -49,6 +49,7 @@ export class EventoCrachaPrintComponent implements OnInit, OnDestroy {
 
     readonly tipo = signal<TipoCredencial | null>(null);
     readonly credencialId = signal<number | null>(null);
+    readonly credencialIds = signal<number[]>([]);
 
     readonly itens = signal<CredencialCrachaPrint[]>([]);
 
@@ -59,6 +60,10 @@ export class EventoCrachaPrintComponent implements OnInit, OnDestroy {
     readonly titulo = computed(() => {
         if (this.credencialId()) {
             return 'Crachá individual';
+        }
+
+        if (this.credencialIds().length > 0) {
+            return 'Crachás filtrados';
         }
 
         switch (this.tipo()) {
@@ -74,6 +79,10 @@ export class EventoCrachaPrintComponent implements OnInit, OnDestroy {
     readonly descricao = computed(() => {
         if (this.credencialId()) {
             return 'Impressão individual de crachá/carteirinha.';
+        }
+
+        if (this.credencialIds().length > 0) {
+            return 'Impressão dos crachás ativos conforme os filtros selecionados na tela de credenciais.';
         }
 
         switch (this.tipo()) {
@@ -135,6 +144,7 @@ export class EventoCrachaPrintComponent implements OnInit, OnDestroy {
     private lerParametros(): void {
         const tipoParam = this.route.snapshot.queryParamMap.get('tipo');
         const credencialIdParam = this.route.snapshot.queryParamMap.get('credencialId');
+        const idsParam = this.route.snapshot.queryParamMap.get('ids');
 
         if (tipoParam === 'SOBRINHO' || tipoParam === 'TIO_CARONA') {
             this.tipo.set(tipoParam);
@@ -146,6 +156,15 @@ export class EventoCrachaPrintComponent implements OnInit, OnDestroy {
             if (!Number.isNaN(id) && id > 0) {
                 this.credencialId.set(id);
             }
+        }
+
+        if (idsParam) {
+            const ids = idsParam
+                .split(',')
+                .map(id => Number(id.trim()))
+                .filter(id => !Number.isNaN(id) && id > 0);
+
+            this.credencialIds.set([...new Set(ids)]);
         }
     }
 
@@ -175,10 +194,13 @@ export class EventoCrachaPrintComponent implements OnInit, OnDestroy {
 
     private filtrarCredenciais(credenciais: CredencialEvento[]): CredencialEvento[] {
         const credencialId = this.credencialId();
+        const credencialIds = this.credencialIds();
+        const idsSelecionados = new Set(credencialIds);
 
         return credenciais
             .filter(credencial => credencial.status === 'ATIVA')
             .filter(credencial => !credencialId || credencial.id === credencialId)
+            .filter(credencial => idsSelecionados.size === 0 || idsSelecionados.has(credencial.id))
             .sort((a, b) => this.nomePrincipal(a).localeCompare(this.nomePrincipal(b), 'pt-BR'));
     }
 

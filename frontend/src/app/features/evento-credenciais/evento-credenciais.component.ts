@@ -105,6 +105,11 @@ export class EventoCredenciaisComponent implements OnInit {
             });
     });
 
+
+    readonly credenciaisFiltradasAtivas = computed(() =>
+        this.credenciaisFiltradas().filter(credencial => credencial.status === 'ATIVA')
+    );
+
     ngOnInit(): void {
         this.carregar();
     }
@@ -248,6 +253,42 @@ export class EventoCredenciaisComponent implements OnInit {
         );
     }
 
+    imprimirQrCodesFiltrados(): void {
+        const ids = this.idsCredenciaisAtivasFiltradas();
+
+        if (ids.length === 0) {
+            this.toastError('Não há credenciais ativas nos filtros atuais para imprimir QR Codes.');
+            return;
+        }
+
+        this.router.navigate(
+            ['/eventos', this.eventoId, 'credenciais', 'impressao-qrcode'],
+            {
+                queryParams: {
+                    ids: ids.join(',')
+                }
+            }
+        );
+    }
+
+    imprimirCrachasFiltrados(): void {
+        const ids = this.idsCredenciaisAtivasFiltradas();
+
+        if (ids.length === 0) {
+            this.toastError('Não há credenciais ativas nos filtros atuais para imprimir crachás.');
+            return;
+        }
+
+        this.router.navigate(
+            ['/eventos', this.eventoId, 'credenciais', 'impressao-crachas'],
+            {
+                queryParams: {
+                    ids: ids.join(',')
+                }
+            }
+        );
+    }
+
     imprimirCrachaIndividual(credencial: CredencialEvento): void {
         if (credencial.status !== 'ATIVA') {
             this.toastError('Somente credenciais ativas podem ser impressas.');
@@ -330,6 +371,10 @@ export class EventoCredenciaisComponent implements OnInit {
             default:
                 return 'secondary';
         }
+    }
+
+    private idsCredenciaisAtivasFiltradas(): number[] {
+        return this.credenciaisFiltradasAtivas().map(credencial => credencial.id);
     }
 
     private gerarPorTipo(tipo: TipoCredencial): void {
