@@ -12,6 +12,7 @@ import { MessageService } from 'primeng/api';
 
 import { Pessoa, PessoaRequest, PessoaTipo } from '../../shared/models';
 import { CustomFormHelperService } from '../../shared/services/custom-form-helper.service';
+import { TelefoneMaskDirective } from '../../shared/directives/telefone-mask.directive';
 import { PessoasService } from './pessoas.service';
 
 type TipoFiltro = PessoaTipo | 'TODOS';
@@ -38,7 +39,8 @@ interface TipoFiltroOpcao {
     SelectModule,
     TableModule,
     TagModule,
-    TextareaModule
+    TextareaModule,
+    TelefoneMaskDirective
   ],
   templateUrl: './pessoas.component.html',
   styleUrl: './pessoas.component.scss'
@@ -218,15 +220,15 @@ export class PessoasComponent implements OnInit {
     }
   }
 
-  private limparFormulario(): void {
+  limparFormulario(): void {
     this.pessoaEmEdicao.set(null);
 
-    this.form.reset({
+    this.customFormHelper.resetarFormulario(this.form, {
       nome: '',
       telefone: '',
       email: '',
       dataNascimento: '',
-      tipo: 'TIO_CARONA',
+      tipo: 'TIO_CARONA' as PessoaTipo,
       observacoes: ''
     });
   }

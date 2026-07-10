@@ -1,4 +1,3 @@
-import { DatePipe } from '@angular/common';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -46,7 +45,6 @@ interface DashboardAction {
   standalone: true,
   selector: 'app-dashboard',
   imports: [
-    DatePipe,
     FormsModule,
     RouterLink,
     ButtonModule,

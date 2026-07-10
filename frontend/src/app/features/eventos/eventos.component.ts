@@ -238,17 +238,17 @@ export class EventosComponent implements OnInit {
     return paroquia?.nome ?? `Paróquia #${evento.paroquiaId}`;
   }
 
-  private limparFormulario(): void {
+  limparFormulario(): void {
     this.eventoEmEdicao.set(null);
 
-    this.form.reset({
+    this.customFormHelper.resetarFormulario(this.form, {
       paroquiaId: 0,
       nome: '',
       tema: '',
       local: '',
       dataInicio: '',
       dataFim: '',
-      status: 'PLANEJADO',
+      status: 'PLANEJADO' as EventoStatus,
       monitoramentoAtivo: false,
       monitoramentoInicio: '05:00',
       monitoramentoFim: '20:00'

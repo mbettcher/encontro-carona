@@ -28,6 +28,7 @@ import {
   VinculoStatus
 } from '../../shared/models';
 import { CustomFormHelperService } from '../../shared/services/custom-form-helper.service';
+import { TelefoneMaskDirective } from '../../shared/directives/telefone-mask.directive';
 import { EventoGestaoService } from './evento-gestao.service';
 
 type AbaGestao = 'TIOS' | 'DUPLAS' | 'SOBRINHOS' | 'VINCULOS';
@@ -52,7 +53,8 @@ interface OpcaoNumerica {
     TableModule,
     TagModule,
     TextareaModule,
-    TooltipModule
+    TooltipModule,
+    TelefoneMaskDirective
   ],
   templateUrl: './evento-gestao.component.html',
   styleUrl: './evento-gestao.component.scss'
@@ -464,7 +466,7 @@ export class EventoGestaoComponent implements OnInit {
       next: () => {
         this.toastSuccess('Tio carona adicionado ao evento com sucesso.');
         this.salvandoTio.set(false);
-        this.tioForm.reset({ pessoaId: 0, observacoes: '' });
+        this.limparFormularioTio();
         this.carregarTiosCarona();
       },
       error: erro => {
@@ -512,9 +514,7 @@ export class EventoGestaoComponent implements OnInit {
       next: () => {
         this.toastSuccess('Dupla criada com sucesso.');
         this.salvandoDupla.set(false);
-        this.duplaForm.reset({ tio1Id: 0, tio2Id: 0, apelido: '' });
-        this.tio1Selecionado.set(0);
-        this.tio2Selecionado.set(0);
+        this.limparFormularioDupla();
         this.carregarDuplas();
         this.carregarVinculos();
       },
@@ -558,20 +558,11 @@ export class EventoGestaoComponent implements OnInit {
       next: () => {
         this.toastSuccess('Encontrista cadastrado com sucesso.');
         this.salvandoSobrinho.set(false);
-        this.sobrinhoForm.reset({
-          nome: '',
-          telefone: '',
-          responsavelNome: '',
-          responsavelTelefone: '',
-          endereco: '',
-          dataNascimento: '',
-          restricaoAlimentar: '',
-          observacaoMedica: ''
-        });
+        this.limparFormularioSobrinho();
         this.carregarSobrinhos();
       },
       error: erro => {
-        console.error('Erro ao cadastrar sobrinho', erro);
+        console.error('Erro ao cadastrar encontrista', erro);
         this.toastError(this.mensagemErro(erro, 'Não foi possível cadastrar o encontrista.'));
         this.salvandoSobrinho.set(false);
       }
@@ -606,7 +597,7 @@ export class EventoGestaoComponent implements OnInit {
       next: () => {
         this.toastSuccess('Encontrista vinculado à dupla com sucesso.');
         this.salvandoVinculo.set(false);
-        this.vinculoForm.reset({ sobrinhoId: 0, duplaId: 0 });
+        this.limparFormularioVinculo();
         this.carregarVinculos();
         this.carregarSobrinhos();
       },
@@ -1322,5 +1313,43 @@ export class EventoGestaoComponent implements OnInit {
     }
 
     return `${dupla.tio1Nome} e ${dupla.tio2Nome}`;
+  }
+
+  limparFormularioTio(): void {
+    this.customFormHelper.resetarFormulario(this.tioForm, {
+      pessoaId: 0,
+      observacoes: ''
+    });
+  }
+
+  limparFormularioDupla(): void {
+    this.tio1Selecionado.set(0);
+    this.tio2Selecionado.set(0);
+
+    this.customFormHelper.resetarFormulario(this.duplaForm, {
+      tio1Id: 0,
+      tio2Id: 0,
+      apelido: ''
+    });
+  }
+
+  limparFormularioSobrinho(): void {
+    this.customFormHelper.resetarFormulario(this.sobrinhoForm, {
+      nome: '',
+      telefone: '',
+      responsavelNome: '',
+      responsavelTelefone: '',
+      endereco: '',
+      dataNascimento: '',
+      restricaoAlimentar: '',
+      observacaoMedica: ''
+    });
+  }
+
+  limparFormularioVinculo(): void {
+    this.customFormHelper.resetarFormulario(this.vinculoForm, {
+      sobrinhoId: 0,
+      duplaId: 0
+    });
   }
 }

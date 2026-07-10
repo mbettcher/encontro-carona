@@ -10,6 +10,7 @@ import { TagModule } from 'primeng/tag';
 
 import { Paroquia, ParoquiaRequest } from '../../shared/models';
 import { CustomFormHelperService } from '../../shared/services/custom-form-helper.service';
+import { TelefoneMaskDirective } from '../../shared/directives/telefone-mask.directive';
 import { ParoquiasService } from './paroquias.service';
 
 @Component({
@@ -21,7 +22,8 @@ import { ParoquiasService } from './paroquias.service';
     CardModule,
     InputTextModule,
     TableModule,
-    TagModule
+    TagModule,
+    TelefoneMaskDirective
   ],
   templateUrl: './paroquias.component.html',
   styleUrl: './paroquias.component.scss'
@@ -168,10 +170,10 @@ export class ParoquiasComponent implements OnInit {
     return partes.length > 0 ? partes.join(' - ') : 'Não informado';
   }
 
-  private limparFormulario(): void {
+  limparFormulario(): void {
     this.paroquiaEmEdicao.set(null);
 
-    this.form.reset({
+    this.customFormHelper.resetarFormulario(this.form, {
       nome: '',
       endereco: '',
       cidade: '',

@@ -1,4 +1,3 @@
-import { DatePipe } from '@angular/common';
 import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
@@ -26,7 +25,6 @@ interface CredencialQrCodePrint {
     selector: 'app-evento-qrcode-print',
     standalone: true,
     imports: [
-        DatePipe,
         RouterLink,
         ButtonModule,
         ProgressSpinnerModule,

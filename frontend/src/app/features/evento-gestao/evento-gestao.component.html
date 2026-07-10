@@ -139,8 +139,13 @@
               placeholder="Observações sobre a participação no evento"></textarea>
           </div>
 
-          <p-button type="submit" label="Adicionar ao evento" icon="fa-solid fa-plus" [loading]="salvandoTio()"
-            [disabled]="opcoesPessoasTioCarona().length === 0" />
+          <div class="d-flex flex-column flex-sm-row gap-2">
+            <p-button type="submit" label="Adicionar ao evento" icon="fa-solid fa-plus" [loading]="salvandoTio()"
+              [disabled]="opcoesPessoasTioCarona().length === 0" />
+
+            <p-button type="button" label="Limpar" icon="fa-solid fa-eraser" severity="secondary" [outlined]="true"
+              [disabled]="salvandoTio()" (onClick)="limparFormularioTio()" />
+          </div>
         </form>
       </p-card>
     </div>
@@ -277,8 +282,13 @@
               placeholder="Ex.: Dupla Azul" (blur)="formatarDupla()" />
           </div>
 
-          <p-button type="submit" label="Criar dupla" icon="fa-solid fa-people-arrows" [loading]="salvandoDupla()"
-            [disabled]="!podeFormarNovaDupla()" />
+          <div class="d-flex flex-column flex-sm-row gap-2">
+            <p-button type="submit" label="Criar dupla" icon="fa-solid fa-people-arrows" [loading]="salvandoDupla()"
+              [disabled]="!podeFormarNovaDupla()" />
+
+            <p-button type="button" label="Limpar" icon="fa-solid fa-eraser" severity="secondary" [outlined]="true"
+              [disabled]="salvandoDupla()" (onClick)="limparFormularioDupla()" />
+          </div>
         </form>
       </p-card>
     </div>
@@ -404,7 +414,7 @@
           <div>
             <label for="telefoneSobrinho" class="form-label">Telefone</label>
 
-            <input id="telefoneSobrinho" pInputText type="text" class="w-100" formControlName="telefone"
+            <input id="telefoneSobrinho" pInputText type="text" class="w-100" formControlName="telefone" appTelefoneMask
               placeholder="(00) 00000-0000" />
           </div>
 
@@ -426,7 +436,7 @@
                 class="text-danger">*</span></label>
 
             <input id="responsavelTelefone" pInputText type="text" class="w-100" formControlName="responsavelTelefone"
-              placeholder="(00) 00000-0000" />
+              appTelefoneMask placeholder="(00) 00000-0000" />
 
             @if (sobrinhoForm.controls.responsavelTelefone.touched &&
             sobrinhoForm.controls.responsavelTelefone.hasError('required')) {
@@ -476,8 +486,13 @@
               placeholder="Informação relevante para a equipe"></textarea>
           </div>
 
-          <p-button type="submit" label="Cadastrar sobrinho" icon="fa-solid fa-child-reaching"
-            [loading]="salvandoSobrinho()" />
+          <div class="d-flex flex-column flex-sm-row gap-2">
+            <p-button type="submit" label="Cadastrar encontrista" icon="fa-solid fa-child-reaching"
+              [loading]="salvandoSobrinho()" />
+
+            <p-button type="button" label="Limpar" icon="fa-solid fa-eraser" severity="secondary" [outlined]="true"
+              [disabled]="salvandoSobrinho()" (onClick)="limparFormularioSobrinho()" />
+          </div>
         </form>
       </p-card>
     </div>
@@ -637,8 +652,13 @@
             }
           </div>
 
-          <p-button type="submit" label="Vincular" icon="fa-solid fa-link" [loading]="salvandoVinculo()"
-            [disabled]="opcoesSobrinhos().length === 0 || opcoesDuplas().length === 0" />
+          <div class="d-flex flex-column flex-sm-row gap-2">
+            <p-button type="submit" label="Vincular" icon="fa-solid fa-link" [loading]="salvandoVinculo()"
+              [disabled]="opcoesSobrinhos().length === 0 || opcoesDuplas().length === 0" />
+
+            <p-button type="button" label="Limpar" icon="fa-solid fa-eraser" severity="secondary" [outlined]="true"
+              [disabled]="salvandoVinculo()" (onClick)="limparFormularioVinculo()" />
+          </div>
         </form>
       </p-card>
     </div>
@@ -729,7 +749,7 @@
                     }
                   </div>
                 </td>
-                
+
               </tr>
             </ng-template>
           </p-table>
@@ -911,14 +931,14 @@
           placeholder="Nome completo" (blur)="formatarEdicaoSobrinho()" />
 
         @if (sobrinhoEdicaoForm.controls.nome.touched && sobrinhoEdicaoForm.controls.nome.invalid) {
-        <div class="form-text text-danger">Informe o nome do encotrista.</div>
+        <div class="form-text text-danger">Informe o nome do encontrista.</div>
         }
       </div>
 
       <div class="col-12 col-md-6">
         <label for="telefoneSobrinhoEdicao" class="form-label">Telefone</label>
         <input id="telefoneSobrinhoEdicao" pInputText type="text" class="w-100" formControlName="telefone"
-          placeholder="(00) 00000-0000" />
+          appTelefoneMask placeholder="(00) 00000-0000" />
       </div>
 
       <div class="col-12 col-md-6">
@@ -936,7 +956,7 @@
         <label for="responsavelTelefoneEdicao" class="form-label">Telefone do responsável <span
             class="text-danger">*</span></label>
         <input id="responsavelTelefoneEdicao" pInputText type="text" class="w-100" formControlName="responsavelTelefone"
-          placeholder="(00) 00000-0000" />
+          appTelefoneMask placeholder="(00) 00000-0000" />
 
         @if (sobrinhoEdicaoForm.controls.responsavelTelefone.touched &&
         sobrinhoEdicaoForm.controls.responsavelTelefone.hasError('required')) {
