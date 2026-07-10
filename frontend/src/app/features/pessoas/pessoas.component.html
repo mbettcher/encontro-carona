@@ -31,7 +31,7 @@
           <div>
             <label for="nome" class="form-label">Nome *</label>
             <input id="nome" pInputText type="text" class="w-100" formControlName="nome"
-              placeholder="Ex.: João da Silva" />
+              placeholder="Ex.: João da Silva" (blur)="formatarCamposTexto()" />
 
             @if (form.controls.nome.touched && form.controls.nome.invalid) {
             <div class="form-text text-danger">

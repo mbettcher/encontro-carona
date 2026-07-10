@@ -187,6 +187,7 @@
                 <th>Nome</th>
                 <th>Status</th>
                 <th>Observações</th>
+                <th class="text-end">Ações</th>
               </tr>
             </ng-template>
 
@@ -202,6 +203,11 @@
                   } @else {
                   <span class="small text-body-secondary">Sem observações</span>
                   }
+                </td>
+                <td class="text-end">
+                  <p-button icon="fa-solid fa-pen-to-square" size="small" severity="secondary"
+                    pTooltip="Editar observações" tooltipPosition="top" ariaLabel="Editar tio carona"
+                    (onClick)="abrirEdicaoTio(tio)" />
                 </td>
               </tr>
             </ng-template>
@@ -342,15 +348,21 @@
                   <p-tag [value]="labelStatusDupla(dupla.status)" [severity]="severityStatusDupla(dupla.status)" />
                 </td>
                 <td class="text-end">
-                  @if (dupla.status === 'ATIVA') {
-                  <p-button icon="fa-solid fa-ban" size="small" severity="warn"
-                    pTooltip="Inativar dupla" tooltipPosition="top" ariaLabel="Inativar dupla"
-                    [loading]="processandoDuplaId() === dupla.id" (onClick)="inativarDupla(dupla)" />
-                  } @else {
-                  <p-button icon="fa-solid fa-rotate-left" size="small" severity="success"
-                    pTooltip="Reativar dupla" tooltipPosition="top" ariaLabel="Reativar dupla"
-                    [loading]="processandoDuplaId() === dupla.id" (onClick)="reativarDupla(dupla)" />
-                  }
+                  <div class="d-flex justify-content-end gap-2">
+                    <p-button icon="fa-solid fa-pen-to-square" size="small" severity="secondary"
+                      pTooltip="Editar apelido" tooltipPosition="top" ariaLabel="Editar dupla"
+                      (onClick)="abrirEdicaoDupla(dupla)" />
+
+                    @if (dupla.status === 'ATIVA') {
+                    <p-button icon="fa-solid fa-ban" size="small" severity="warn" pTooltip="Inativar dupla"
+                      tooltipPosition="top" ariaLabel="Inativar dupla" [loading]="processandoDuplaId() === dupla.id"
+                      (onClick)="inativarDupla(dupla)" />
+                    } @else {
+                    <p-button icon="fa-solid fa-rotate-left" size="small" severity="success" pTooltip="Reativar dupla"
+                      tooltipPosition="top" ariaLabel="Reativar dupla" [loading]="processandoDuplaId() === dupla.id"
+                      (onClick)="reativarDupla(dupla)" />
+                    }
+                  </div>
                 </td>
               </tr>
             </ng-template>
@@ -513,6 +525,7 @@
                 <th>Responsável</th>
                 <th>Contato</th>
                 <th>Status</th>
+                <th class="text-end">Ações</th>
               </tr>
             </ng-template>
 
@@ -547,6 +560,11 @@
                 <td>
                   <p-tag [value]="labelStatusSobrinho(sobrinho.status)"
                     [severity]="severityStatusSobrinho(sobrinho.status)" />
+                </td>
+                <td class="text-end">
+                  <p-button icon="fa-solid fa-pen-to-square" size="small" severity="secondary"
+                    pTooltip="Editar sobrinho" tooltipPosition="top" ariaLabel="Editar sobrinho"
+                    (onClick)="abrirEdicaoSobrinho(sobrinho)" />
                 </td>
               </tr>
             </ng-template>
@@ -683,15 +701,21 @@
                     [severity]="severityStatusVinculo(vinculo.status)" />
                 </td>
                 <td class="text-end">
-                  @if (vinculo.status === 'ATIVO') {
-                  <p-button icon="fa-solid fa-link-slash" size="small" severity="warn"
-                    pTooltip="Remover vínculo" tooltipPosition="top" ariaLabel="Remover vínculo"
-                    [loading]="processandoVinculoId() === vinculo.id" (onClick)="removerVinculo(vinculo)" />
-                  } @else {
-                  <p-button icon="fa-solid fa-rotate-left" size="small" severity="success"
-                    pTooltip="Reativar vínculo" tooltipPosition="top" ariaLabel="Reativar vínculo"
-                    [loading]="processandoVinculoId() === vinculo.id" (onClick)="reativarVinculo(vinculo)" />
-                  }
+                  <div class="d-flex justify-content-end gap-2">
+                    @if (vinculo.status === 'ATIVO') {
+                    <p-button icon="fa-solid fa-right-left" size="small" severity="secondary" pTooltip="Trocar dupla"
+                      tooltipPosition="top" ariaLabel="Trocar dupla do vínculo"
+                      (onClick)="abrirTrocaDuplaVinculo(vinculo)" />
+
+                    <p-button icon="fa-solid fa-link-slash" size="small" severity="warn" pTooltip="Remover vínculo"
+                      tooltipPosition="top" ariaLabel="Remover vínculo"
+                      [loading]="processandoVinculoId() === vinculo.id" (onClick)="removerVinculo(vinculo)" />
+                    } @else {
+                    <p-button icon="fa-solid fa-rotate-left" size="small" severity="success" pTooltip="Reativar vínculo"
+                      tooltipPosition="top" ariaLabel="Reativar vínculo"
+                      [loading]="processandoVinculoId() === vinculo.id" (onClick)="reativarVinculo(vinculo)" />
+                    }
+                  </div>
                 </td>
               </tr>
             </ng-template>
@@ -702,4 +726,213 @@
     </div>
   </div>
   }
+
+  <p-dialog header="Editar tio carona" [visible]="tioEdicaoVisivel()" (visibleChange)="tioEdicaoVisivel.set($event)"
+    [modal]="true" [style]="{ width: 'min(95vw, 520px)' }" [draggable]="false" [resizable]="false"
+    (onHide)="fecharEdicaoTio()">
+    <form [formGroup]="tioEdicaoForm" class="d-grid gap-3">
+      <div>
+        <label for="observacoesTioEdicao" class="form-label">Observações</label>
+        <textarea id="observacoesTioEdicao" pTextarea rows="5" class="w-100" formControlName="observacoes"
+          placeholder="Observações sobre a participação no evento"></textarea>
+
+        @if (tioEdicaoForm.controls.observacoes.touched && tioEdicaoForm.controls.observacoes.invalid) {
+        <div class="form-text text-danger">
+          As observações devem ter no máximo 500 caracteres.
+        </div>
+        }
+      </div>
+    </form>
+
+    <ng-template pTemplate="footer">
+      <div class="d-flex justify-content-end gap-2">
+        <p-button label="Cancelar" severity="secondary" [outlined]="true" (onClick)="fecharEdicaoTio()" />
+        <p-button label="Salvar" icon="fa-solid fa-floppy-disk" [loading]="salvandoEdicaoTio()"
+          (onClick)="salvarEdicaoTio()" />
+      </div>
+    </ng-template>
+  </p-dialog>
+
+  <p-dialog header="Editar dupla" [visible]="duplaEdicaoVisivel()" (visibleChange)="duplaEdicaoVisivel.set($event)"
+    [modal]="true" [style]="{ width: 'min(95vw, 520px)' }" [draggable]="false" [resizable]="false"
+    (onHide)="fecharEdicaoDupla()">
+    <form [formGroup]="duplaEdicaoForm" class="d-grid gap-3">
+      <div>
+        <label for="apelidoDuplaEdicao" class="form-label">Apelido da dupla</label>
+        <input id="apelidoDuplaEdicao" pInputText type="text" class="w-100" formControlName="apelido"
+          placeholder="Ex.: Dupla Azul" (blur)="formatarEdicaoDupla()" />
+
+        @if (duplaEdicaoForm.controls.apelido.touched && duplaEdicaoForm.controls.apelido.invalid) {
+        <div class="form-text text-danger">
+          O apelido deve ter no máximo 120 caracteres.
+        </div>
+        }
+      </div>
+
+      @if (duplaEmEdicao()) {
+      <div class="alert alert-light border small mb-0">
+        <div class="fw-semibold mb-1">Tios da dupla</div>
+        <div>{{ duplaEmEdicao()?.tio1Nome }}</div>
+        <div>{{ duplaEmEdicao()?.tio2Nome }}</div>
+      </div>
+      }
+    </form>
+
+    <ng-template pTemplate="footer">
+      <div class="d-flex justify-content-end gap-2">
+        <p-button label="Cancelar" severity="secondary" [outlined]="true" (onClick)="fecharEdicaoDupla()" />
+        <p-button label="Salvar" icon="fa-solid fa-floppy-disk" [loading]="salvandoEdicaoDupla()"
+          (onClick)="salvarEdicaoDupla()" />
+      </div>
+    </ng-template>
+  </p-dialog>
+
+  <p-dialog header="Editar sobrinho" [visible]="sobrinhoEdicaoVisivel()"
+    (visibleChange)="sobrinhoEdicaoVisivel.set($event)" [modal]="true" [style]="{ width: 'min(95vw, 780px)' }"
+    [draggable]="false" [resizable]="false" (onHide)="fecharEdicaoSobrinho()">
+    <form [formGroup]="sobrinhoEdicaoForm" class="row g-3">
+      <div class="col-12 col-md-6">
+        <label for="nomeSobrinhoEdicao" class="form-label">Nome <span class="text-danger">*</span></label>
+        <input id="nomeSobrinhoEdicao" pInputText type="text" class="w-100" formControlName="nome"
+          placeholder="Nome completo" (blur)="formatarEdicaoSobrinho()" />
+
+        @if (sobrinhoEdicaoForm.controls.nome.touched && sobrinhoEdicaoForm.controls.nome.invalid) {
+        <div class="form-text text-danger">Informe o nome do sobrinho.</div>
+        }
+      </div>
+
+      <div class="col-12 col-md-6">
+        <label for="telefoneSobrinhoEdicao" class="form-label">Telefone</label>
+        <input id="telefoneSobrinhoEdicao" pInputText type="text" class="w-100" formControlName="telefone"
+          placeholder="(00) 00000-0000" />
+      </div>
+
+      <div class="col-12 col-md-6">
+        <label for="responsavelNomeEdicao" class="form-label">Responsável <span class="text-danger">*</span></label>
+        <input id="responsavelNomeEdicao" pInputText type="text" class="w-100" formControlName="responsavelNome"
+          placeholder="Nome do responsável" (blur)="formatarEdicaoSobrinho()" />
+
+        @if (sobrinhoEdicaoForm.controls.responsavelNome.touched &&
+        sobrinhoEdicaoForm.controls.responsavelNome.hasError('required')) {
+        <div class="form-text text-danger">Informe o nome do responsável.</div>
+        }
+      </div>
+
+      <div class="col-12 col-md-6">
+        <label for="responsavelTelefoneEdicao" class="form-label">Telefone do responsável <span
+            class="text-danger">*</span></label>
+        <input id="responsavelTelefoneEdicao" pInputText type="text" class="w-100" formControlName="responsavelTelefone"
+          placeholder="(00) 00000-0000" />
+
+        @if (sobrinhoEdicaoForm.controls.responsavelTelefone.touched &&
+        sobrinhoEdicaoForm.controls.responsavelTelefone.hasError('required')) {
+        <div class="form-text text-danger">Informe o telefone do responsável.</div>
+        }
+      </div>
+
+      <div class="col-12 col-md-6">
+        <label for="dataNascimentoEdicao" class="form-label">Data de nascimento <span
+            class="text-danger">*</span></label>
+        <input id="dataNascimentoEdicao" pInputText type="date" class="w-100" formControlName="dataNascimento" />
+
+        @if (sobrinhoEdicaoForm.controls.dataNascimento.touched &&
+        sobrinhoEdicaoForm.controls.dataNascimento.hasError('required')) {
+        <div class="form-text text-danger">Informe a data de nascimento.</div>
+        }
+      </div>
+
+      <div class="col-12 col-md-6">
+        <label for="enderecoSobrinhoEdicao" class="form-label">Endereço <span class="text-danger">*</span></label>
+        <input id="enderecoSobrinhoEdicao" pInputText type="text" class="w-100" formControlName="endereco"
+          placeholder="Endereço do sobrinho" (blur)="formatarEdicaoSobrinho()" />
+
+        @if (sobrinhoEdicaoForm.controls.endereco.touched &&
+        sobrinhoEdicaoForm.controls.endereco.hasError('required')) {
+        <div class="form-text text-danger">Informe o endereço do sobrinho.</div>
+        }
+      </div>
+
+      <div class="col-12">
+        <label for="restricaoAlimentarEdicao" class="form-label">Restrição alimentar</label>
+        <textarea id="restricaoAlimentarEdicao" pTextarea rows="3" class="w-100" formControlName="restricaoAlimentar"
+          placeholder="Ex.: alergias, restrições alimentares"></textarea>
+      </div>
+
+      <div class="col-12">
+        <label for="observacaoMedicaEdicao" class="form-label">Observação médica</label>
+        <textarea id="observacaoMedicaEdicao" pTextarea rows="3" class="w-100" formControlName="observacaoMedica"
+          placeholder="Informação relevante para a equipe"></textarea>
+      </div>
+    </form>
+
+    <ng-template pTemplate="footer">
+      <div class="d-flex justify-content-end gap-2">
+        <p-button label="Cancelar" severity="secondary" [outlined]="true" (onClick)="fecharEdicaoSobrinho()" />
+        <p-button label="Salvar" icon="fa-solid fa-floppy-disk" [loading]="salvandoEdicaoSobrinho()"
+          (onClick)="salvarEdicaoSobrinho()" />
+      </div>
+    </ng-template>
+  </p-dialog>
+
+  <p-dialog header="Trocar dupla do vínculo" [visible]="vinculoTrocaDuplaVisivel()"
+    (visibleChange)="vinculoTrocaDuplaVisivel.set($event)" [modal]="true" [style]="{ width: 'min(95vw, 560px)' }"
+    [draggable]="false" [resizable]="false" (onHide)="fecharTrocaDuplaVinculo()">
+    <form [formGroup]="vinculoTrocaDuplaForm" class="d-grid gap-3">
+      @if (vinculoEmTroca()) {
+      <div class="alert alert-light border small mb-0">
+        <div class="fw-semibold mb-1">Sobrinho</div>
+        <div>{{ vinculoEmTroca()?.sobrinhoNome }}</div>
+        <div class="text-body-secondary mt-1">
+          Dupla atual: {{ nomeDuplaVinculo(vinculoEmTroca()!) }}
+        </div>
+      </div>
+      }
+
+      <div>
+        <label for="novaDuplaVinculo" class="form-label">
+          Nova dupla <span class="text-danger">*</span>
+        </label>
+
+        <p-select inputId="novaDuplaVinculo" [options]="opcoesDuplasParaTroca()" optionLabel="label" optionValue="value"
+          formControlName="duplaId" placeholder="Selecione a nova dupla" styleClass="w-100 vinculo-select"
+          panelStyleClass="vinculo-select-panel" appendTo="body" [filter]="true" filterBy="label,descricao">
+
+          <ng-template pTemplate="selectedItem" let-opcao>
+            @if (opcao) {
+            <div class="select-dupla-selected">
+              <div class="fw-semibold text-truncate">{{ opcao.label }}</div>
+            </div>
+            }
+          </ng-template>
+
+          <ng-template pTemplate="item" let-opcao>
+            <div class="select-dupla-option">
+              <div class="fw-semibold text-truncate">{{ opcao.label }}</div>
+              <div class="small text-body-secondary text-truncate">{{ opcao.descricao }}</div>
+            </div>
+          </ng-template>
+        </p-select>
+
+        @if (vinculoTrocaDuplaForm.controls.duplaId.touched &&
+        vinculoTrocaDuplaForm.controls.duplaId.invalid) {
+        <div class="form-text text-danger">Selecione a nova dupla.</div>
+        }
+      </div>
+
+      @if (opcoesDuplasParaTroca().length === 0) {
+      <div class="alert alert-warning py-2 px-3 mb-0 small">
+        <i class="fa-solid fa-circle-info me-2"></i>
+        Não há outra dupla ativa disponível para troca.
+      </div>
+      }
+    </form>
+
+    <ng-template pTemplate="footer">
+      <div class="d-flex justify-content-end gap-2">
+        <p-button label="Cancelar" severity="secondary" [outlined]="true" (onClick)="fecharTrocaDuplaVinculo()" />
+        <p-button label="Trocar dupla" icon="fa-solid fa-right-left" [loading]="salvandoTrocaDupla()"
+          [disabled]="opcoesDuplasParaTroca().length === 0" (onClick)="salvarTrocaDuplaVinculo()" />
+      </div>
+    </ng-template>
+  </p-dialog>
 </div>

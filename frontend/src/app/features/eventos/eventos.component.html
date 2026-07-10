@@ -38,7 +38,7 @@
             <label for="nome" class="form-label">Nome do evento *</label>
 
             <input id="nome" pInputText type="text" class="w-100" formControlName="nome"
-              placeholder="Ex.: Encontro de Jovens 2026" />
+              placeholder="Ex.: Encontro de Jovens 2026" (blur)="formatarCamposTexto()" />
 
             @if (form.controls.nome.touched && form.controls.nome.invalid) {
             <div class="form-text text-danger">
@@ -51,14 +51,14 @@
             <label for="tema" class="form-label">Tema</label>
 
             <input id="tema" pInputText type="text" class="w-100" formControlName="tema"
-              placeholder="Ex.: Chamados à missão" />
+              placeholder="Ex.: Chamados à missão" (blur)="formatarCamposTexto()" />
           </div>
 
           <div>
             <label for="local" class="form-label">Local</label>
 
             <input id="local" pInputText type="text" class="w-100" formControlName="local"
-              placeholder="Ex.: Salão paroquial" />
+              placeholder="Ex.: Salão paroquial" (blur)="formatarCamposTexto()" />
           </div>
 
           <div class="row g-3">

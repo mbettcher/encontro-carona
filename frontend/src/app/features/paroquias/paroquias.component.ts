@@ -9,6 +9,7 @@ import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
 
 import { Paroquia, ParoquiaRequest } from '../../shared/models';
+import { CustomFormHelperService } from '../../shared/services/custom-form-helper.service';
 import { ParoquiasService } from './paroquias.service';
 
 @Component({
@@ -29,6 +30,7 @@ export class ParoquiasComponent implements OnInit {
   private readonly service = inject(ParoquiasService);
   private readonly fb = inject(FormBuilder);
   private readonly messageService = inject(MessageService);
+  private readonly customFormHelper = inject(CustomFormHelperService);
 
   readonly paroquias = signal<Paroquia[]>([]);
   readonly carregando = signal(false);
@@ -90,6 +92,8 @@ export class ParoquiasComponent implements OnInit {
       return;
     }
 
+    this.formatarCamposTexto();
+
     const payload = this.montarPayload();
     const paroquiaAtual = this.paroquiaEmEdicao();
 
@@ -143,6 +147,15 @@ export class ParoquiasComponent implements OnInit {
 
   cancelarEdicao(): void {
     this.limparFormulario();
+  }
+
+  formatarCamposTexto(): void {
+    this.customFormHelper.formatarCamposComTitleCase(this.form, [
+      'nome',
+      'endereco',
+      'cidade',
+      'responsavel'
+    ]);
   }
 
   enderecoFormatado(paroquia: Paroquia): string {

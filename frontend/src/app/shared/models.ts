@@ -124,6 +124,10 @@ export interface TioCaronaEventoRequest {
   observacoes?: string;
 }
 
+export interface AtualizarTioCaronaEventoRequest {
+  observacoes?: string;
+}
+
 export interface DuplaTioCarona {
   id: number;
   eventoId: number;
@@ -139,6 +143,10 @@ export interface DuplaTioCarona {
 export interface DuplaTioCaronaRequest {
   tio1Id: number;
   tio2Id: number;
+  apelido?: string;
+}
+
+export interface AtualizarDuplaTioCaronaRequest {
   apelido?: string;
 }
 
@@ -195,6 +203,10 @@ export interface VincularSobrinhoRequest {
   duplaId: number;
 }
 
+export interface TrocarDuplaVinculoRequest {
+  duplaId: number;
+}
+
 export type StatusCadernoChoro =
   | 'PENDENTE'
   | 'ENTREGUE_A_DUPLA'
@@ -246,13 +258,13 @@ export interface CadernoChoroHistorico {
   ocorridoEm: string;
 }
 
-export type TipoCredencial = 
-  'TIO_CARONA' 
+export type TipoCredencial =
+  'TIO_CARONA'
   | 'SOBRINHO';
 
-export type StatusCredencial = 
-  'ATIVA' 
-  | 'INATIVA' 
+export type StatusCredencial =
+  'ATIVA'
+  | 'INATIVA'
   | 'CANCELADA';
 
 export interface CredencialEvento {

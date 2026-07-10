@@ -4,6 +4,8 @@ import { Observable, map } from 'rxjs';
 import { environment } from 'src/environments/environment';
 
 import {
+  AtualizarDuplaTioCaronaRequest,
+  AtualizarTioCaronaEventoRequest,
   DuplaTioCarona,
   DuplaTioCaronaRequest,
   Evento,
@@ -13,6 +15,7 @@ import {
   SobrinhoRequest,
   TioCaronaEvento,
   TioCaronaEventoRequest,
+  TrocarDuplaVinculoRequest,
   VincularSobrinhoRequest
 } from '../../shared/models';
 
@@ -61,6 +64,17 @@ export class EventoGestaoService {
     );
   }
 
+  atualizarTioCarona(
+    eventoId: number,
+    tioCaronaEventoId: number,
+    request: AtualizarTioCaronaEventoRequest
+  ): Observable<TioCaronaEvento> {
+    return this.http.patch<TioCaronaEvento>(
+      `${this.apiUrl}/eventos/${eventoId}/tios-carona/${tioCaronaEventoId}`,
+      this.limpar(request)
+    );
+  }
+
   listarDuplas(eventoId: number): Observable<DuplaTioCarona[]> {
     return this.http.get<DuplaTioCarona[]>(`${this.apiUrl}/eventos/${eventoId}/duplas`);
   }
@@ -68,6 +82,17 @@ export class EventoGestaoService {
   criarDupla(eventoId: number, request: DuplaTioCaronaRequest): Observable<DuplaTioCarona> {
     return this.http.post<DuplaTioCarona>(
       `${this.apiUrl}/eventos/${eventoId}/duplas`,
+      this.limpar(request)
+    );
+  }
+
+  atualizarDupla(
+    eventoId: number,
+    duplaId: number,
+    request: AtualizarDuplaTioCaronaRequest
+  ): Observable<DuplaTioCarona> {
+    return this.http.patch<DuplaTioCarona>(
+      `${this.apiUrl}/eventos/${eventoId}/duplas/${duplaId}`,
       this.limpar(request)
     );
   }
@@ -93,6 +118,13 @@ export class EventoGestaoService {
   criarSobrinho(eventoId: number, request: SobrinhoRequest): Observable<Sobrinho> {
     return this.http.post<Sobrinho>(
       `${this.apiUrl}/eventos/${eventoId}/sobrinhos`,
+      this.limpar(request)
+    );
+  }
+
+  atualizarSobrinho(eventoId: number, sobrinhoId: number, request: SobrinhoRequest): Observable<Sobrinho> {
+    return this.http.put<Sobrinho>(
+      `${this.apiUrl}/eventos/${eventoId}/sobrinhos/${sobrinhoId}`,
       this.limpar(request)
     );
   }
@@ -129,6 +161,17 @@ export class EventoGestaoService {
     return this.http.patch<SobrinhoDupla>(
       `${this.apiUrl}/eventos/${eventoId}/vinculos/${vinculoId}/reativar`,
       {}
+    );
+  }
+
+  trocarDuplaVinculo(
+    eventoId: number,
+    vinculoId: number,
+    request: TrocarDuplaVinculoRequest
+  ): Observable<SobrinhoDupla> {
+    return this.http.patch<SobrinhoDupla>(
+      `${this.apiUrl}/eventos/${eventoId}/vinculos/${vinculoId}/trocar-dupla`,
+      this.limpar(request)
     );
   }
 

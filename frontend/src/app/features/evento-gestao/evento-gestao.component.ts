@@ -6,6 +6,7 @@ import { finalize } from 'rxjs';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
+import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
 import { TableModule } from 'primeng/table';
@@ -44,6 +45,7 @@ interface OpcaoNumerica {
     RouterLink,
     ButtonModule,
     CardModule,
+    DialogModule,
     InputTextModule,
     SelectModule,
     TableModule,
@@ -80,6 +82,22 @@ export class EventoGestaoComponent implements OnInit {
   readonly processandoDuplaId = signal<number | null>(null);
   readonly processandoVinculoId = signal<number | null>(null);
 
+  readonly tioEdicaoVisivel = signal(false);
+  readonly salvandoEdicaoTio = signal(false);
+  readonly tioEmEdicao = signal<TioCaronaEvento | null>(null);
+
+  readonly duplaEdicaoVisivel = signal(false);
+  readonly salvandoEdicaoDupla = signal(false);
+  readonly duplaEmEdicao = signal<DuplaTioCarona | null>(null);
+
+  readonly sobrinhoEdicaoVisivel = signal(false);
+  readonly salvandoEdicaoSobrinho = signal(false);
+  readonly sobrinhoEmEdicao = signal<Sobrinho | null>(null);
+
+  readonly vinculoTrocaDuplaVisivel = signal(false);
+  readonly salvandoTrocaDupla = signal(false);
+  readonly vinculoEmTroca = signal<SobrinhoDupla | null>(null);
+
   readonly tio1Selecionado = signal(0);
   readonly tio2Selecionado = signal(0);
   readonly filtroTios = signal('');
@@ -111,6 +129,29 @@ export class EventoGestaoComponent implements OnInit {
 
   readonly vinculoForm = this.fb.nonNullable.group({
     sobrinhoId: [0, [Validators.required, Validators.min(1)]],
+    duplaId: [0, [Validators.required, Validators.min(1)]]
+  });
+
+  readonly tioEdicaoForm = this.fb.nonNullable.group({
+    observacoes: ['', [Validators.maxLength(500)]]
+  });
+
+  readonly duplaEdicaoForm = this.fb.nonNullable.group({
+    apelido: ['', [Validators.maxLength(120)]]
+  });
+
+  readonly sobrinhoEdicaoForm = this.fb.nonNullable.group({
+    nome: ['', [Validators.required, Validators.maxLength(150)]],
+    telefone: ['', [Validators.maxLength(30)]],
+    responsavelNome: ['', [Validators.required, Validators.maxLength(150)]],
+    responsavelTelefone: ['', [Validators.required, Validators.maxLength(30)]],
+    endereco: ['', [Validators.required, Validators.maxLength(180)]],
+    dataNascimento: ['', [Validators.required]],
+    restricaoAlimentar: ['', [Validators.maxLength(500)]],
+    observacaoMedica: ['', [Validators.maxLength(500)]]
+  });
+
+  readonly vinculoTrocaDuplaForm = this.fb.nonNullable.group({
     duplaId: [0, [Validators.required, Validators.min(1)]]
   });
 
@@ -202,6 +243,19 @@ export class EventoGestaoComponent implements OnInit {
         value: dupla.id
       }))
   );
+
+  readonly opcoesDuplasParaTroca = computed<OpcaoNumerica[]>(() => {
+    const vinculo = this.vinculoEmTroca();
+
+    return this.duplas()
+      .filter(dupla => dupla.status === 'ATIVA')
+      .filter(dupla => dupla.id !== vinculo?.duplaId)
+      .map(dupla => ({
+        label: dupla.apelido || dupla.codigo,
+        descricao: `${dupla.tio1Nome} e ${dupla.tio2Nome}`,
+        value: dupla.id
+      }));
+  });
 
   readonly idsSobrinhosComVinculoAtivo = computed<Set<number>>(() => {
     const ids = new Set<number>();
@@ -350,6 +404,18 @@ export class EventoGestaoComponent implements OnInit {
 
   formatarSobrinho(): void {
     this.customFormHelper.formatarCamposComTitleCase(this.sobrinhoForm, [
+      'nome',
+      'responsavelNome',
+      'endereco'
+    ]);
+  }
+
+  formatarEdicaoDupla(): void {
+    this.customFormHelper.formatarCamposComTitleCase(this.duplaEdicaoForm, ['apelido']);
+  }
+
+  formatarEdicaoSobrinho(): void {
+    this.customFormHelper.formatarCamposComTitleCase(this.sobrinhoEdicaoForm, [
       'nome',
       'responsavelNome',
       'endereco'
@@ -668,6 +734,221 @@ export class EventoGestaoComponent implements OnInit {
     return `Dupla #${vinculo.duplaId}`;
   }
 
+
+  abrirEdicaoTio(tio: TioCaronaEvento): void {
+    this.tioEmEdicao.set(tio);
+    this.tioEdicaoForm.reset({
+      observacoes: tio.observacoes ?? ''
+    });
+    this.tioEdicaoVisivel.set(true);
+  }
+
+  fecharEdicaoTio(): void {
+    this.tioEdicaoVisivel.set(false);
+    this.tioEmEdicao.set(null);
+    this.tioEdicaoForm.reset({ observacoes: '' });
+  }
+
+  salvarEdicaoTio(): void {
+    const tio = this.tioEmEdicao();
+
+    if (!tio) {
+      return;
+    }
+
+    if (this.tioEdicaoForm.invalid) {
+      this.tioEdicaoForm.markAllAsTouched();
+      this.toastWarn('Revise as observações antes de salvar.');
+      return;
+    }
+
+    const valor = this.tioEdicaoForm.getRawValue();
+
+    this.salvandoEdicaoTio.set(true);
+
+    this.service.atualizarTioCarona(this.eventoId, tio.id, {
+      observacoes: this.normalizarTextoOpcional(valor.observacoes)
+    }).pipe(finalize(() => this.salvandoEdicaoTio.set(false)))
+      .subscribe({
+        next: tioAtualizado => {
+          this.atualizarTioNaLista(tioAtualizado);
+          this.toastSuccess('Tio carona atualizado com sucesso.');
+          this.fecharEdicaoTio();
+        },
+        error: erro => {
+          console.error('Erro ao atualizar tio carona', erro);
+          this.toastError(this.mensagemErro(erro, 'Não foi possível atualizar o tio carona.'));
+        }
+      });
+  }
+
+  abrirEdicaoDupla(dupla: DuplaTioCarona): void {
+    this.duplaEmEdicao.set(dupla);
+    this.duplaEdicaoForm.reset({
+      apelido: dupla.apelido ?? ''
+    });
+    this.duplaEdicaoVisivel.set(true);
+  }
+
+  fecharEdicaoDupla(): void {
+    this.duplaEdicaoVisivel.set(false);
+    this.duplaEmEdicao.set(null);
+    this.duplaEdicaoForm.reset({ apelido: '' });
+  }
+
+  salvarEdicaoDupla(): void {
+    const dupla = this.duplaEmEdicao();
+
+    if (!dupla) {
+      return;
+    }
+
+    if (this.duplaEdicaoForm.invalid) {
+      this.duplaEdicaoForm.markAllAsTouched();
+      this.toastWarn('Revise o apelido da dupla antes de salvar.');
+      return;
+    }
+
+    this.formatarEdicaoDupla();
+
+    const valor = this.duplaEdicaoForm.getRawValue();
+
+    this.salvandoEdicaoDupla.set(true);
+
+    this.service.atualizarDupla(this.eventoId, dupla.id, {
+      apelido: this.normalizarTextoOpcional(valor.apelido)
+    }).pipe(finalize(() => this.salvandoEdicaoDupla.set(false)))
+      .subscribe({
+        next: duplaAtualizada => {
+          this.atualizarDuplaNaLista(duplaAtualizada);
+          this.toastSuccess('Dupla atualizada com sucesso.');
+          this.fecharEdicaoDupla();
+        },
+        error: erro => {
+          console.error('Erro ao atualizar dupla', erro);
+          this.toastError(this.mensagemErro(erro, 'Não foi possível atualizar a dupla.'));
+        }
+      });
+  }
+
+  abrirEdicaoSobrinho(sobrinho: Sobrinho): void {
+    this.sobrinhoEmEdicao.set(sobrinho);
+    this.sobrinhoEdicaoForm.reset({
+      nome: sobrinho.nome ?? '',
+      telefone: sobrinho.telefone ?? '',
+      responsavelNome: sobrinho.responsavelNome ?? '',
+      responsavelTelefone: sobrinho.responsavelTelefone ?? '',
+      endereco: sobrinho.endereco ?? '',
+      dataNascimento: sobrinho.dataNascimento?.substring(0, 10) ?? '',
+      restricaoAlimentar: sobrinho.restricaoAlimentar ?? '',
+      observacaoMedica: sobrinho.observacaoMedica ?? ''
+    });
+    this.sobrinhoEdicaoVisivel.set(true);
+  }
+
+  fecharEdicaoSobrinho(): void {
+    this.sobrinhoEdicaoVisivel.set(false);
+    this.sobrinhoEmEdicao.set(null);
+    this.sobrinhoEdicaoForm.reset({
+      nome: '',
+      telefone: '',
+      responsavelNome: '',
+      responsavelTelefone: '',
+      endereco: '',
+      dataNascimento: '',
+      restricaoAlimentar: '',
+      observacaoMedica: ''
+    });
+  }
+
+  salvarEdicaoSobrinho(): void {
+    const sobrinho = this.sobrinhoEmEdicao();
+
+    if (!sobrinho) {
+      return;
+    }
+
+    if (this.sobrinhoEdicaoForm.invalid) {
+      this.sobrinhoEdicaoForm.markAllAsTouched();
+      this.toastWarn(this.mensagemValidacaoEdicaoSobrinho());
+      return;
+    }
+
+    this.formatarEdicaoSobrinho();
+
+    const valor = this.sobrinhoEdicaoForm.getRawValue();
+
+    this.salvandoEdicaoSobrinho.set(true);
+
+    this.service.atualizarSobrinho(this.eventoId, sobrinho.id, {
+      nome: valor.nome.trim(),
+      telefone: this.normalizarTextoOpcional(valor.telefone),
+      responsavelNome: this.normalizarTextoOpcional(valor.responsavelNome),
+      responsavelTelefone: this.normalizarTextoOpcional(valor.responsavelTelefone),
+      endereco: this.normalizarTextoOpcional(valor.endereco),
+      dataNascimento: this.normalizarTextoOpcional(valor.dataNascimento),
+      restricaoAlimentar: this.normalizarTextoOpcional(valor.restricaoAlimentar),
+      observacaoMedica: this.normalizarTextoOpcional(valor.observacaoMedica)
+    }).pipe(finalize(() => this.salvandoEdicaoSobrinho.set(false)))
+      .subscribe({
+        next: sobrinhoAtualizado => {
+          this.atualizarSobrinhoNaLista(sobrinhoAtualizado);
+          this.toastSuccess('Sobrinho atualizado com sucesso.');
+          this.fecharEdicaoSobrinho();
+          this.carregarVinculos();
+        },
+        error: erro => {
+          console.error('Erro ao atualizar sobrinho', erro);
+          this.toastError(this.mensagemErro(erro, 'Não foi possível atualizar o sobrinho.'));
+        }
+      });
+  }
+
+  abrirTrocaDuplaVinculo(vinculo: SobrinhoDupla): void {
+    this.vinculoEmTroca.set(vinculo);
+    this.vinculoTrocaDuplaForm.reset({ duplaId: 0 });
+    this.vinculoTrocaDuplaVisivel.set(true);
+  }
+
+  fecharTrocaDuplaVinculo(): void {
+    this.vinculoTrocaDuplaVisivel.set(false);
+    this.vinculoEmTroca.set(null);
+    this.vinculoTrocaDuplaForm.reset({ duplaId: 0 });
+  }
+
+  salvarTrocaDuplaVinculo(): void {
+    const vinculo = this.vinculoEmTroca();
+
+    if (!vinculo) {
+      return;
+    }
+
+    if (this.vinculoTrocaDuplaForm.invalid) {
+      this.vinculoTrocaDuplaForm.markAllAsTouched();
+      this.toastWarn('Selecione a nova dupla do vínculo.');
+      return;
+    }
+
+    const valor = this.vinculoTrocaDuplaForm.getRawValue();
+
+    this.salvandoTrocaDupla.set(true);
+
+    this.service.trocarDuplaVinculo(this.eventoId, vinculo.id, {
+      duplaId: Number(valor.duplaId)
+    }).pipe(finalize(() => this.salvandoTrocaDupla.set(false)))
+      .subscribe({
+        next: vinculoAtualizado => {
+          this.atualizarVinculoNaLista(vinculoAtualizado);
+          this.toastSuccess('Dupla do vínculo atualizada com sucesso.');
+          this.fecharTrocaDuplaVinculo();
+        },
+        error: erro => {
+          console.error('Erro ao trocar dupla do vínculo', erro);
+          this.toastError(this.mensagemErro(erro, 'Não foi possível trocar a dupla do vínculo.'));
+        }
+      });
+  }
+
   labelStatusTio(status: TioCaronaStatus): string {
     return status === 'ATIVO' ? 'Ativo' : 'Inativo';
   }
@@ -718,9 +999,21 @@ export class EventoGestaoComponent implements OnInit {
     return status === 'ATIVO' ? 'success' : 'secondary';
   }
 
+  private atualizarTioNaLista(tioAtualizado: TioCaronaEvento): void {
+    this.tiosCarona.update(tios =>
+      tios.map(tio => tio.id === tioAtualizado.id ? tioAtualizado : tio)
+    );
+  }
+
   private atualizarDuplaNaLista(duplaAtualizada: DuplaTioCarona): void {
     this.duplas.update(duplas =>
       duplas.map(dupla => dupla.id === duplaAtualizada.id ? duplaAtualizada : dupla)
+    );
+  }
+
+  private atualizarSobrinhoNaLista(sobrinhoAtualizado: Sobrinho): void {
+    this.sobrinhos.update(sobrinhos =>
+      sobrinhos.map(sobrinho => sobrinho.id === sobrinhoAtualizado.id ? sobrinhoAtualizado : sobrinho)
     );
   }
 
@@ -848,30 +1141,38 @@ export class EventoGestaoComponent implements OnInit {
   }
 
   private mensagemValidacaoSobrinho(): string {
+    return this.mensagemValidacaoFormularioSobrinho(this.sobrinhoForm);
+  }
+
+  private mensagemValidacaoEdicaoSobrinho(): string {
+    return this.mensagemValidacaoFormularioSobrinho(this.sobrinhoEdicaoForm);
+  }
+
+  private mensagemValidacaoFormularioSobrinho(formulario: any): string {
     const campos: string[] = [];
 
-    if (this.sobrinhoForm.controls.nome.hasError('required')) {
+    if (formulario.controls.nome.hasError('required')) {
       campos.push('nome do sobrinho');
     }
 
-    if (this.sobrinhoForm.controls.responsavelNome.hasError('required')) {
+    if (formulario.controls.responsavelNome.hasError('required')) {
       campos.push('nome do responsável');
     }
 
-    if (this.sobrinhoForm.controls.responsavelTelefone.hasError('required')) {
+    if (formulario.controls.responsavelTelefone.hasError('required')) {
       campos.push('telefone do responsável');
     }
 
-    if (this.sobrinhoForm.controls.dataNascimento.hasError('required')) {
+    if (formulario.controls.dataNascimento.hasError('required')) {
       campos.push('data de nascimento');
     }
 
-    if (this.sobrinhoForm.controls.endereco.hasError('required')) {
+    if (formulario.controls.endereco.hasError('required')) {
       campos.push('endereço');
     }
 
     if (campos.length === 0) {
-      return 'Revise os dados do sobrinho antes de cadastrar.';
+      return 'Revise os dados do sobrinho antes de salvar.';
     }
 
     if (campos.length === 1) {

@@ -13,6 +13,7 @@ import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
 
 import { Evento, EventoRequest, EventoStatus, ParoquiaResumo } from '../../shared/models';
+import { CustomFormHelperService } from '../../shared/services/custom-form-helper.service';
 import { EventosService } from './eventos.service';
 
 interface StatusOpcao {
@@ -42,6 +43,7 @@ export class EventosComponent implements OnInit {
   private readonly service = inject(EventosService);
   private readonly fb = inject(FormBuilder);
   private readonly messageService = inject(MessageService);
+  private readonly customFormHelper = inject(CustomFormHelperService);
 
   readonly eventos = signal<Evento[]>([]);
   readonly paroquias = signal<ParoquiaResumo[]>([]);
@@ -131,6 +133,8 @@ export class EventosComponent implements OnInit {
       return;
     }
 
+    this.formatarCamposTexto();
+
     const payload = this.montarPayload();
     const eventoAtual = this.eventoEmEdicao();
 
@@ -198,6 +202,14 @@ export class EventosComponent implements OnInit {
 
   cancelarEdicao(): void {
     this.limparFormulario();
+  }
+
+  formatarCamposTexto(): void {
+    this.customFormHelper.formatarCamposComTitleCase(this.form, [
+      'nome',
+      'tema',
+      'local'
+    ]);
   }
 
   labelStatus(status: EventoStatus): string {

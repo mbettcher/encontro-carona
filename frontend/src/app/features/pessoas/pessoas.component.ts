@@ -11,6 +11,7 @@ import { TextareaModule } from 'primeng/textarea';
 import { MessageService } from 'primeng/api';
 
 import { Pessoa, PessoaRequest, PessoaTipo } from '../../shared/models';
+import { CustomFormHelperService } from '../../shared/services/custom-form-helper.service';
 import { PessoasService } from './pessoas.service';
 
 type TipoFiltro = PessoaTipo | 'TODOS';
@@ -47,6 +48,7 @@ export class PessoasComponent implements OnInit {
   private readonly service = inject(PessoasService);
   private readonly fb = inject(FormBuilder);
   private readonly messageService = inject(MessageService);
+  private readonly customFormHelper = inject(CustomFormHelperService);
 
   readonly pessoas = signal<Pessoa[]>([]);
   readonly carregando = signal(false);
@@ -133,6 +135,8 @@ export class PessoasComponent implements OnInit {
       return;
     }
 
+    this.formatarCamposTexto();
+
     const payload = this.montarPayload();
     const pessoaAtual = this.pessoaEmEdicao();
 
@@ -187,6 +191,10 @@ export class PessoasComponent implements OnInit {
 
   cancelarEdicao(): void {
     this.limparFormulario();
+  }
+
+  formatarCamposTexto(): void {
+    this.customFormHelper.formatarCamposComTitleCase(this.form, ['nome']);
   }
 
   alterarFiltro(tipo: TipoFiltro): void {

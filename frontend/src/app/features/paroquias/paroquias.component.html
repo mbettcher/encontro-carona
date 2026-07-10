@@ -24,7 +24,7 @@
           <div>
             <label for="nome" class="form-label">Nome da paróquia *</label>
             <input id="nome" pInputText type="text" class="w-100" formControlName="nome"
-              placeholder="Ex.: Paróquia São José" />
+              placeholder="Ex.: Paróquia São José" (blur)="formatarCamposTexto()" />
 
             @if (form.controls.nome.touched && form.controls.nome.invalid) {
             <div class="form-text text-danger">
@@ -36,14 +36,14 @@
           <div>
             <label for="endereco" class="form-label">Endereço</label>
             <input id="endereco" pInputText type="text" class="w-100" formControlName="endereco"
-              placeholder="Rua, número, bairro" />
+              placeholder="Rua, número, bairro" (blur)="formatarCamposTexto()" />
           </div>
 
           <div class="row g-3">
             <div class="col-12 col-md-8">
               <label for="cidade" class="form-label">Cidade</label>
               <input id="cidade" pInputText type="text" class="w-100" formControlName="cidade"
-                placeholder="Ex.: Juiz de Fora" />
+                placeholder="Ex.: Juiz de Fora" (blur)="formatarCamposTexto()" />
             </div>
 
             <div class="col-12 col-md-4">
@@ -62,7 +62,7 @@
           <div>
             <label for="responsavel" class="form-label">Responsável</label>
             <input id="responsavel" pInputText type="text" class="w-100" formControlName="responsavel"
-              placeholder="Nome do responsável" />
+              placeholder="Nome do responsável" (blur)="formatarCamposTexto()" />
           </div>
 
           <div class="row g-3">
