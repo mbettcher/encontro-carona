@@ -1,24 +1,189 @@
-<h2 class="h4 mb-4">
-    <i class="fa-solid fa-chart-line me-2"></i>
-    Dashboard
-</h2>
+<div class="dashboard-page">
+    <section class="dashboard-hero mb-4">
+        <div class="dashboard-hero-content">
+            <div>
+                <div class="dashboard-eyebrow">
+                    <i class="fa-solid fa-chart-line me-2"></i>
+                    Painel operacional
+                </div>
 
-<div class="row g-3">
-    @for (card of cards; track card.label) {
-    <div class="col-12 col-md-6 col-xl-3">
-        <div class="card shadow-sm border-0 h-100">
-            <div class="card-body d-flex gap-3 align-items-center">
-                <span class="ec-card-icon"><i [class]="card.icon"></i></span>
-                <div>
-                    <div class="text-muted small">{{ card.label }}</div>
-                    <div class="h4 mb-0">{{ card.value }}</div>
+                <h1 class="dashboard-title mb-2">Dashboard do Encontro</h1>
+
+                <p class="dashboard-subtitle mb-0">
+                    Acompanhe os principais indicadores do cadastro, da preparação e da operação do evento.
+                </p>
+            </div>
+
+            <div class="dashboard-hero-actions">
+                <div class="event-select-wrapper">
+                    <label for="eventoDashboard" class="form-label text-white-50 small mb-1">Evento monitorado</label>
+
+                    <p-select inputId="eventoDashboard" [options]="opcoesEvento()" optionLabel="label"
+                        optionValue="value" [ngModel]="eventoSelecionadoId()" (ngModelChange)="alterarEvento($event)"
+                        placeholder="Selecione um evento" styleClass="w-100 dashboard-event-select"
+                        panelStyleClass="dashboard-event-select-panel" appendTo="body">
+                    </p-select>
+                </div>
+
+                <p-button label="Atualizar" icon="fa-solid fa-rotate" severity="secondary" [outlined]="false"
+                    [loading]="carregandoBase() || carregandoEvento()" (onClick)="carregarDashboard()">
+                </p-button>
+            </div>
+        </div>
+    </section>
+
+    @if (carregandoBase()) {
+    <div class="dashboard-loading py-5">
+        <p-progress-spinner strokeWidth="4" animationDuration=".8s" />
+        <div class="text-body-secondary mt-3">Carregando indicadores...</div>
+    </div>
+    } @else {
+    <section class="mb-4">
+        <div class="section-heading mb-3">
+            <div>
+                <h2 class="h5 mb-1">Visão geral do sistema</h2>
+                <p class="text-body-secondary small mb-0">
+                    Indicadores globais de cadastros e preparação.
+                </p>
+            </div>
+        </div>
+
+        <div class="dashboard-summary-grid">
+            @for (card of cardsGerais(); track card.titulo) {
+            <article class="dashboard-stat-card" [class]="classeTemaCard(card.tema)">
+                <div class="stat-icon">
+                    <i [class]="card.icone"></i>
+                </div>
+
+                <div class="stat-content">
+                    <div class="stat-title">{{ card.titulo }}</div>
+                    <div class="stat-value">{{ card.valor }}</div>
+                    <div class="stat-subtitle">{{ card.subtitulo }}</div>
+                </div>
+            </article>
+            }
+        </div>
+    </section>
+
+    <section class="mb-4">
+        <div class="section-heading mb-3">
+            <div>
+                <h2 class="h5 mb-1">Resumo do evento</h2>
+                <p class="text-body-secondary small mb-0">
+                    @if (eventoSelecionado()) {
+                    {{ eventoSelecionado()?.nome }}
+                    } @else {
+                    Selecione um evento para visualizar os indicadores operacionais.
+                    }
+                </p>
+            </div>
+
+            @if (eventoSelecionado()) {
+            <p-tag [value]="labelOperacao()" [severity]="badgeOperacao()" />
+            }
+        </div>
+
+        @if (!eventoSelecionadoId()) {
+        <div class="empty-dashboard-state text-center py-5">
+            <i class="fa-solid fa-calendar-plus text-body-secondary mb-3"></i>
+            <h3 class="h6 mb-1">Nenhum evento cadastrado</h3>
+            <p class="text-body-secondary small mb-3">
+                Cadastre o primeiro evento para liberar os indicadores operacionais.
+            </p>
+
+            <p-button label="Cadastrar evento" icon="fa-solid fa-calendar-plus" routerLink="/eventos" />
+        </div>
+        } @else if (carregandoEvento()) {
+        <div class="dashboard-loading py-5">
+            <p-progress-spinner strokeWidth="4" animationDuration=".8s" />
+            <div class="text-body-secondary mt-3">Carregando dados do evento...</div>
+        </div>
+        } @else {
+        <div class="dashboard-summary-grid mb-4">
+            @for (card of cardsEvento(); track card.titulo) {
+            <article class="dashboard-stat-card" [class]="classeTemaCard(card.tema)">
+                <div class="stat-icon">
+                    <i [class]="card.icone"></i>
+                </div>
+
+                <div class="stat-content">
+                    <div class="stat-title">{{ card.titulo }}</div>
+                    <div class="stat-value">{{ card.valor }}</div>
+                    <div class="stat-subtitle">{{ card.subtitulo }}</div>
+                </div>
+            </article>
+            }
+        </div>
+
+        <div class="row g-3">
+            <div class="col-12 col-xl-5">
+                <div class="dashboard-panel h-100">
+                    <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+                        <div>
+                            <h3 class="h6 mb-1">Preparação da operação</h3>
+                            <p class="text-body-secondary small mb-0">
+                                Leituras rápidas sobre credenciais e presença.
+                            </p>
+                        </div>
+
+                        <span class="operation-dot" [class.ready]="operacaoPronta()"></span>
+                    </div>
+
+                    <div class="metric-row mb-3">
+                        <div>
+                            <div class="metric-label">Credenciais ativas</div>
+                            <div class="metric-help">Comparação com tios ativos e encontristas não desistentes.</div>
+                        </div>
+                        <strong>{{ progressoCredenciais() }}%</strong>
+                    </div>
+
+                    <div class="progress-track mb-4">
+                        <div class="progress-fill" [style.width.%]="progressoCredenciais()"></div>
+                    </div>
+
+                    <div class="metric-row mb-3">
+                        <div>
+                            <div class="metric-label">Presença registrada</div>
+                            <div class="metric-help">Percentual de encontristas marcados como presentes.</div>
+                        </div>
+                        <strong>{{ progressoPresenca() }}%</strong>
+                    </div>
+
+                    <div class="progress-track">
+                        <div class="progress-fill presence" [style.width.%]="progressoPresenca()"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-xl-7">
+                <div class="dashboard-panel h-100">
+                    <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+                        <div>
+                            <h3 class="h6 mb-1">Ações rápidas</h3>
+                            <p class="text-body-secondary small mb-0">
+                                Acesse as telas mais usadas na preparação da versão 1.0.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="quick-actions-grid">
+                        @for (acao of acoesRapidas(); track acao.titulo) {
+                        <a class="quick-action" [class]="classeTemaCard(acao.tema)" [routerLink]="acao.routerLink">
+                            <span class="quick-action-icon">
+                                <i [class]="acao.icone"></i>
+                            </span>
+
+                            <span>
+                                <strong>{{ acao.titulo }}</strong>
+                                <small>{{ acao.descricao }}</small>
+                            </span>
+                        </a>
+                        }
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
+        }
+    </section>
     }
-</div>
-
-<div class="alert alert-info mt-4">
-    <strong>Primeira entrega:</strong> esta tela ainda usa números fixos. No próximo bloco, ligaremos os indicadores ao backend.
 </div>

@@ -131,7 +131,7 @@ export class EventoGestaoService {
   }
 
   /**
-   * Endpoint suportado pelo backend atual para consultar os sobrinhos
+   * Endpoint suportado pelo backend atual para consultar os encontristas
    * vinculados a uma dupla específica.
    */
   listarSobrinhosDaDupla(eventoId: number, duplaId: number): Observable<SobrinhoDupla[]> {
