@@ -21,7 +21,7 @@
         As credenciais ativas poderão ser impressas como crachá, QR Code avulso ou adesivo para colar atrás do crachá.
     </div>
 
-    <div class="row g-3 mb-4">
+    <!--div class="row g-3 mb-4">
         @for (card of cardsResumoCredenciais(); track card.filtro) {
         <div class="col-12 col-md-6 col-xl-4 col-xxl-2">
             <p-card class="summary-card">
@@ -43,6 +43,92 @@
             </p-card>
         </div>
         }
+    </div-->
+
+    <div class="credenciais-summary-grid mb-4">
+        <button type="button" class="credencial-stat-card total" [class.active]="filtroRapidoAtivo() === 'TODAS'"
+            (click)="aplicarFiltroRapido('TODAS')">
+
+            <div class="stat-icon">
+                <i class="fa-solid fa-id-card"></i>
+            </div>
+
+            <div class="stat-content">
+                <div class="stat-title">Total de credenciais</div>
+                <div class="stat-value">{{ totalCredenciais() }}</div>
+                <div class="stat-subtitle">Todas as credenciais do evento</div>
+            </div>
+        </button>
+
+        <button type="button" class="credencial-stat-card ativas" [class.active]="filtroRapidoAtivo() === 'ATIVAS'"
+            (click)="aplicarFiltroRapido('ATIVAS')">
+
+            <div class="stat-icon">
+                <i class="fa-solid fa-circle-check"></i>
+            </div>
+
+            <div class="stat-content">
+                <div class="stat-title">Ativas</div>
+                <div class="stat-value">{{ totalCredenciaisAtivas() }}</div>
+                <div class="stat-subtitle">Prontas para uso e impressão</div>
+            </div>
+        </button>
+
+        <button type="button" class="credencial-stat-card tios" [class.active]="filtroRapidoAtivo() === 'TIOS'"
+            (click)="aplicarFiltroRapido('TIOS')">
+
+            <div class="stat-icon">
+                <i class="fa-solid fa-car-side"></i>
+            </div>
+
+            <div class="stat-content">
+                <div class="stat-title">Tios carona</div>
+                <div class="stat-value">{{ totalCredenciaisTios() }}</div>
+                <div class="stat-subtitle">Credenciais dos tios do evento</div>
+            </div>
+        </button>
+
+        <button type="button" class="credencial-stat-card sobrinhos"
+            [class.active]="filtroRapidoAtivo() === 'SOBRINHOS'" (click)="aplicarFiltroRapido('SOBRINHOS')">
+
+            <div class="stat-icon">
+                <i class="fa-solid fa-child-reaching"></i>
+            </div>
+
+            <div class="stat-content">
+                <div class="stat-title">Sobrinhos</div>
+                <div class="stat-value">{{ totalCredenciaisSobrinhos() }}</div>
+                <div class="stat-subtitle">Credenciais dos participantes</div>
+            </div>
+        </button>
+
+        <button type="button" class="credencial-stat-card inativas" [class.active]="filtroRapidoAtivo() === 'INATIVAS'"
+            (click)="aplicarFiltroRapido('INATIVAS')">
+
+            <div class="stat-icon">
+                <i class="fa-solid fa-pause-circle"></i>
+            </div>
+
+            <div class="stat-content">
+                <div class="stat-title">Inativas</div>
+                <div class="stat-value">{{ totalCredenciaisInativas() }}</div>
+                <div class="stat-subtitle">Credenciais temporariamente inativas</div>
+            </div>
+        </button>
+
+        <button type="button" class="credencial-stat-card canceladas"
+            [class.active]="filtroRapidoAtivo() === 'CANCELADAS'" (click)="aplicarFiltroRapido('CANCELADAS')">
+
+            <div class="stat-icon">
+                <i class="fa-solid fa-ban"></i>
+            </div>
+
+            <div class="stat-content">
+                <div class="stat-title">Canceladas</div>
+                <div class="stat-value">{{ totalCredenciaisCanceladas() }}</div>
+                <div class="stat-subtitle">Credenciais fora de uso</div>
+            </div>
+        </button>
     </div>
 
     <p-card class="shadow-sm border-0 mb-4">
@@ -243,25 +329,25 @@
                         <td class="text-end">
                             <div class="credencial-actions">
                                 <p-button icon="fa-solid fa-qrcode" size="small" severity="secondary"
-                                    styleClass="credencial-icon-button" pTooltip="Imprimir QR Code individual"
+                                    styleClass="credencial-icon-button me-1" pTooltip="Imprimir QR Code individual"
                                     tooltipPosition="top" ariaLabel="Imprimir QR Code individual"
                                     [disabled]="credencial.status !== 'ATIVA'"
                                     (onClick)="imprimirQrCodeIndividual(credencial)" />
 
-                                <p-button icon="fa-solid fa-print" size="small" severity="secondary"
-                                    styleClass="credencial-icon-button" pTooltip="Imprimir crachá individual"
+                                <p-button icon="fa-solid fa-print" size="small" severity="info"
+                                    styleClass="credencial-icon-button me-1" pTooltip="Imprimir crachá individual"
                                     tooltipPosition="top" ariaLabel="Imprimir crachá individual"
                                     [disabled]="credencial.status !== 'ATIVA'"
                                     (onClick)="imprimirCrachaIndividual(credencial)" />
 
                                 <p-button icon="fa-solid fa-pause" size="small" severity="warn"
-                                    styleClass="credencial-icon-button" pTooltip="Inativar credencial"
+                                    styleClass="credencial-icon-button me-1" pTooltip="Inativar credencial"
                                     tooltipPosition="top" ariaLabel="Inativar credencial"
                                     [loading]="processandoCredencialId() === credencial.id"
                                     [disabled]="!podeInativar(credencial)" (onClick)="inativar(credencial)" />
 
                                 <p-button icon="fa-solid fa-play" size="small" severity="success"
-                                    styleClass="credencial-icon-button" pTooltip="Reativar credencial"
+                                    styleClass="credencial-icon-button me-1" pTooltip="Reativar credencial"
                                     tooltipPosition="top" ariaLabel="Reativar credencial"
                                     [loading]="processandoCredencialId() === credencial.id"
                                     [disabled]="!podeReativar(credencial)" (onClick)="reativar(credencial)" />

@@ -188,6 +188,30 @@ export class EventoCredenciaisComponent implements OnInit {
         this.credenciaisFiltradas().filter(credencial => credencial.status === 'ATIVA')
     );
 
+    readonly totalCredenciais = computed(() =>
+        this.credenciais().length
+    );
+
+    readonly totalCredenciaisAtivas = computed(() =>
+        this.credenciaisAtivas().length
+    );
+
+    readonly totalCredenciaisTios = computed(() =>
+        this.credenciaisTios().length
+    );
+
+    readonly totalCredenciaisSobrinhos = computed(() =>
+        this.credenciaisSobrinhos().length
+    );
+
+    readonly totalCredenciaisInativas = computed(() =>
+        this.credenciaisInativas().length
+    );
+
+    readonly totalCredenciaisCanceladas = computed(() =>
+        this.credenciaisCanceladas().length
+    );
+
     ngOnInit(): void {
         this.carregar();
     }
