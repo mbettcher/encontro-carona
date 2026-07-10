@@ -96,9 +96,9 @@
             </div>
 
             <div class="stat-content">
-                <div class="stat-title">Sobrinhos</div>
+                <div class="stat-title">Encontristas</div>
                 <div class="stat-value">{{ totalCredenciaisSobrinhos() }}</div>
-                <div class="stat-subtitle">Credenciais dos participantes</div>
+                <div class="stat-subtitle">Credenciais dos encontristas</div>
             </div>
         </button>
 
@@ -145,7 +145,7 @@
                     <p-button label="Gerar tios carona" icon="fa-solid fa-car-side" severity="info" size="small"
                         [loading]="gerando()" (onClick)="gerarTiosCarona()" />
 
-                    <p-button label="Gerar sobrinhos" icon="fa-solid fa-child-reaching" severity="success" size="small"
+                    <p-button label="Gerar Encontrista" icon="fa-solid fa-child-reaching" severity="success" size="small"
                         [loading]="gerando()" (onClick)="gerarSobrinhos()" />
                 </div>
             </div>
@@ -205,7 +205,7 @@
                         [styleClass]="filtroRapidoAtivo() === 'TIOS' ? 'quick-filter-button active' : 'quick-filter-button'"
                         (onClick)="aplicarFiltroRapido('TIOS')" />
 
-                    <p-button label="Sobrinhos" icon="fa-solid fa-child-reaching" size="small" severity="help"
+                    <p-button label="Encontristas" icon="fa-solid fa-child-reaching" size="small" severity="help"
                         [styleClass]="filtroRapidoAtivo() === 'SOBRINHOS' ? 'quick-filter-button active' : 'quick-filter-button'"
                         (onClick)="aplicarFiltroRapido('SOBRINHOS')" />
 
@@ -249,7 +249,7 @@
                     <p-button label="QR todos" icon="fa-solid fa-qrcode" severity="secondary" size="small"
                         [disabled]="credenciaisAtivas().length === 0" (onClick)="imprimirQrCodes()" />
 
-                    <p-button label="QR Sobrinhos" icon="fa-solid fa-child-reaching" severity="success" size="small"
+                    <p-button label="QR Encontristas" icon="fa-solid fa-child-reaching" severity="success" size="small"
                         [disabled]="credenciaisSobrinhos().length === 0" (onClick)="imprimirQrCodes('SOBRINHO')" />
 
                     <p-button label="QR Tios" icon="fa-solid fa-car-side" severity="info" size="small"

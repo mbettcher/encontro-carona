@@ -627,7 +627,7 @@ export class EventoOperacaoComponent implements OnInit {
       case 'ANEXADO_AO_KIT':
         return 'Anexar caderno ao kit';
       case 'ENTREGUE_AO_SOBRINHO':
-        return 'Entregar kit ao sobrinho';
+        return 'Entregar kit ao encontrista';
       case 'PERDIDO':
         return 'Marcar caderno como perdido';
       case 'SUBSTITUIDO':
@@ -648,7 +648,7 @@ export class EventoOperacaoComponent implements OnInit {
       case 'ANEXADO_AO_KIT':
         return 'Confirme que o caderno foi anexado ao saco do choro / kit de encerramento.';
       case 'ENTREGUE_AO_SOBRINHO':
-        return 'Confirme que o kit final foi entregue ao sobrinho no encerramento.';
+        return 'Confirme que o kit final foi entregue ao encontrista no encerramento.';
       case 'PERDIDO':
         return 'Registre a ocorrência de perda do caderno. Informe detalhes na observação.';
       case 'SUBSTITUIDO':
@@ -858,8 +858,8 @@ export class EventoOperacaoComponent implements OnInit {
         );
       },
       error: erro => {
-        console.error('Erro ao registrar presença do sobrinho', erro);
-        this.toastError(this.mensagemErro(erro, 'Não foi possível registrar a presença do sobrinho.'));
+        console.error('Erro ao registrar presença do encontrista', erro);
+        this.toastError(this.mensagemErro(erro, 'Não foi possível registrar a presença do encontrista.'));
       },
       complete: () => {
         this.processandoPresencaSobrinho.set(null);
@@ -929,7 +929,7 @@ export class EventoOperacaoComponent implements OnInit {
       case 'ANEXADO_AO_KIT':
         return 'Anexado ao kit';
       case 'ENTREGUE_AO_SOBRINHO':
-        return 'Entregue ao sobrinho';
+        return 'Entregue ao encontrista';
       case 'PERDIDO':
         return 'Perdido';
       case 'SUBSTITUIDO':
@@ -1092,7 +1092,7 @@ export class EventoOperacaoComponent implements OnInit {
       next: sobrinhos => this.sobrinhos.set(sobrinhos),
       error: erro => {
         console.error('Erro ao carregar sobrinhos', erro);
-        this.toastError('Não foi possível carregar os sobrinhos.');
+        this.toastError('Não foi possível carregar os encontristas.');
       }
     });
   }

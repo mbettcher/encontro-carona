@@ -77,7 +77,7 @@ export class EventoCredenciaisComponent implements OnInit {
     readonly opcoesTipo = [
         { label: 'Todos os tipos', value: null },
         { label: 'Tio carona', value: 'TIO_CARONA' as TipoCredencial },
-        { label: 'Sobrinho', value: 'SOBRINHO' as TipoCredencial }
+        { label: 'Encontrista', value: 'SOBRINHO' as TipoCredencial }
     ];
 
     readonly opcoesStatus = [
@@ -133,9 +133,9 @@ export class EventoCredenciaisComponent implements OnInit {
             filtro: 'TIOS'
         },
         {
-            titulo: 'Sobrinhos',
+            titulo: 'Encontristas',
             valor: this.credenciaisSobrinhos().length,
-            subtitulo: 'credenciais de sobrinhos',
+            subtitulo: 'credenciais de encontristas',
             icone: 'fa-solid fa-child-reaching',
             tema: 'primary',
             filtro: 'SOBRINHOS'
@@ -463,7 +463,7 @@ export class EventoCredenciaisComponent implements OnInit {
             return credencial.pessoaNome || 'Tio carona';
         }
 
-        return credencial.sobrinhoNome || 'Sobrinho';
+        return credencial.sobrinhoNome || 'Encontrista';
     }
 
     labelTipo(tipo: TipoCredencial): string {
@@ -471,7 +471,7 @@ export class EventoCredenciaisComponent implements OnInit {
             case 'TIO_CARONA':
                 return 'Tio carona';
             case 'SOBRINHO':
-                return 'Sobrinho';
+                return 'Encontrista';
             default:
                 return tipo;
         }

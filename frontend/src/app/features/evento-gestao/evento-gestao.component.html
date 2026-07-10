@@ -52,7 +52,7 @@
       <p-card class="summary-card">
         <div class="d-flex align-items-center justify-content-between">
           <div>
-            <div class="text-body-secondary small">Sobrinhos</div>
+            <div class="text-body-secondary small">Encontristas</div>
             <div class="fs-3 fw-bold">{{ sobrinhos().length }}</div>
           </div>
           <i class="fa-solid fa-child-reaching"></i>
@@ -87,7 +87,7 @@
     <button type="button" class="tab-button" [class.active]="abaAtiva() === 'SOBRINHOS'"
       (click)="alterarAba('SOBRINHOS')">
       <i class="fa-solid fa-child-reaching me-2"></i>
-      Sobrinhos
+      Encontristas
     </button>
 
     <button type="button" class="tab-button" [class.active]="abaAtiva() === 'VINCULOS'"
@@ -380,7 +380,7 @@
       <p-card class="shadow-sm border-0 h-100">
         <ng-template pTemplate="header">
           <div class="px-4 pt-4">
-            <h2 class="h5 mb-1">Cadastrar sobrinho</h2>
+            <h2 class="h5 mb-1">Cadastrar encontrista</h2>
             <p class="text-body-secondary small mb-0">
               Dados básicos do jovem/adolescente participante.
             </p>
@@ -396,7 +396,7 @@
 
             @if (sobrinhoForm.controls.nome.touched && sobrinhoForm.controls.nome.invalid) {
             <div class="form-text text-danger">
-              Informe o nome do sobrinho.
+              Informe o nome do encontrista.
             </div>
             }
           </div>
@@ -444,7 +444,7 @@
             @if (sobrinhoForm.controls.dataNascimento.touched &&
             sobrinhoForm.controls.dataNascimento.hasError('required')) {
             <div class="form-text text-danger">
-              Informe data de nascimento do sobrinho.
+              Informe data de nascimento do encontrista.
             </div>
             }
           </div>
@@ -457,7 +457,7 @@
             @if (sobrinhoForm.controls.endereco.touched &&
             sobrinhoForm.controls.endereco.hasError('required')) {
             <div class="form-text text-danger">
-              Informe o endereço do sobrinho.
+              Informe o endereço do encontrista.
             </div>
             }
           </div>
@@ -489,16 +489,16 @@
 
             <div class="d-flex flex-column flex-lg-row justify-content-between gap-3">
               <div>
-                <h2 class="h5 mb-1">Sobrinhos cadastrados</h2>
+                <h2 class="h5 mb-1">Encontristas cadastrados</h2>
                 <p class="text-body-secondary small mb-0">
-                  {{ sobrinhosFiltrados().length }} de {{ sobrinhos().length }} sobrinho(s)
+                  {{ sobrinhosFiltrados().length }} de {{ sobrinhos().length }} encontrista(s)
                 </p>
               </div>
 
               <div class="table-search">
                 <span class="p-input-icon-left w-100">
                   <i class="fa-solid fa-magnifying-glass"></i>
-                  <input pInputText type="text" class="w-100" placeholder="Pesquisar sobrinho..."
+                  <input pInputText type="text" class="w-100" placeholder="Pesquisar encontrista..."
                     [value]="filtroSobrinhos()" (input)="alterarFiltroSobrinhos($any($event.target).value)" />
                 </span>
               </div>
@@ -510,9 +510,9 @@
         @if (sobrinhosFiltrados().length === 0) {
         <div class="empty-state text-center py-5">
           <i class="fa-solid fa-child-reaching text-body-secondary mb-3"></i>
-          <h3 class="h6 mb-1">Nenhum sobrinho cadastrado</h3>
+          <h3 class="h6 mb-1">Nenhum encontrista cadastrado</h3>
           <p class="text-body-secondary small mb-0">
-            Cadastre os sobrinhos para depois vinculá-los às duplas.
+            Cadastre os encontristas para depois vinculá-los às duplas.
           </p>
         </div>
         } @else {
@@ -563,7 +563,7 @@
                 </td>
                 <td class="text-end">
                   <p-button icon="fa-solid fa-pen-to-square" size="small" severity="secondary"
-                    pTooltip="Editar sobrinho" tooltipPosition="top" ariaLabel="Editar sobrinho"
+                    pTooltip="Editar encontrista" tooltipPosition="top" ariaLabel="Editar encontrista"
                     (onClick)="abrirEdicaoSobrinho(sobrinho)" />
                 </td>
               </tr>
@@ -582,26 +582,26 @@
       <p-card class="shadow-sm border-0 h-100">
         <ng-template pTemplate="header">
           <div class="px-4 pt-4">
-            <h2 class="h5 mb-1">Vincular sobrinho à dupla</h2>
+            <h2 class="h5 mb-1">Vincular encontrista à dupla</h2>
             <p class="text-body-secondary small mb-0">
-              Cada sobrinho deve ser acompanhado por uma dupla.
+              Cada encontrista deve ser acompanhado por uma dupla.
             </p>
           </div>
         </ng-template>
 
         <form [formGroup]="vinculoForm" (ngSubmit)="vincularSobrinho()" class="d-grid gap-3">
           <div>
-            <label for="sobrinhoId" class="form-label">Sobrinho *</label>
+            <label for="sobrinhoId" class="form-label">Encontrista *</label>
 
             <p-select inputId="sobrinhoId" [options]="opcoesSobrinhos()" optionLabel="label" optionValue="value"
-              formControlName="sobrinhoId" placeholder="Selecione o sobrinho" class="w-100 vinculo-select"
+              formControlName="sobrinhoId" placeholder="Selecione o encontrista" class="w-100 vinculo-select"
               panelStyleClass="vinculo-select-panel" [disabled]="opcoesSobrinhos().length === 0" />
 
             @if (opcoesSobrinhos().length === 0) {
             <div class="alert alert-warning py-2 px-3 mb-0 mt-2 small">
               <i class="fa-solid fa-circle-info me-2"></i>
-              Não há sobrinhos disponíveis para vínculo. Todos os sobrinhos ativos já estão vinculados ou não há
-              sobrinhos cadastrados.
+              Não há encontristas disponíveis para vínculo. Todos os encontristas ativos já estão vinculados ou não há
+              encontristas cadastrados.
             </div>
             }
           </div>
@@ -632,7 +632,7 @@
             @if (opcoesDuplas().length === 0) {
             <div class="alert alert-warning py-2 px-3 mb-0 mt-2 small">
               <i class="fa-solid fa-circle-info me-2"></i>
-              Não há duplas disponíveis. Forme pelo menos uma dupla ativa antes de vincular sobrinhos.
+              Não há duplas disponíveis. Forme pelo menos uma dupla ativa antes de vincular encontristas.
             </div>
             }
           </div>
@@ -673,7 +673,7 @@
           <i class="fa-solid fa-link text-body-secondary mb-3"></i>
           <h3 class="h6 mb-1">Nenhum vínculo cadastrado</h3>
           <p class="text-body-secondary small mb-0">
-            Vincule os sobrinhos às duplas de tios carona.
+            Vincule os encontristas às duplas de tios carona.
           </p>
         </div>
         } @else {
@@ -681,7 +681,7 @@
           <p-table [value]="vinculosFiltrados()" class="p-datatable-sm min-width-table">
             <ng-template pTemplate="header">
               <tr>
-                <th>Sobrinho</th>
+                <th>Encontrista</th>
                 <th>Dupla</th>
                 <th>Status</th>
                 <th class="text-end">Ações</th>
@@ -752,7 +752,7 @@
     </div>
 
     <div class="mb-3">
-      <div class="small text-body-secondary">Sobrinho</div>
+      <div class="small text-body-secondary">Encontrista</div>
       <div class="fw-semibold">{{ vinculoEmSubstituicao()?.sobrinhoNome }}</div>
     </div>
 
@@ -901,7 +901,7 @@
     </ng-template>
   </p-dialog>
 
-  <p-dialog header="Editar sobrinho" [visible]="sobrinhoEdicaoVisivel()"
+  <p-dialog header="Editar encontrista" [visible]="sobrinhoEdicaoVisivel()"
     (visibleChange)="sobrinhoEdicaoVisivel.set($event)" [modal]="true" [style]="{ width: 'min(95vw, 780px)' }"
     [draggable]="false" [resizable]="false" (onHide)="fecharEdicaoSobrinho()">
     <form [formGroup]="sobrinhoEdicaoForm" class="row g-3">
@@ -911,7 +911,7 @@
           placeholder="Nome completo" (blur)="formatarEdicaoSobrinho()" />
 
         @if (sobrinhoEdicaoForm.controls.nome.touched && sobrinhoEdicaoForm.controls.nome.invalid) {
-        <div class="form-text text-danger">Informe o nome do sobrinho.</div>
+        <div class="form-text text-danger">Informe o nome do encotrista.</div>
         }
       </div>
 
@@ -958,11 +958,11 @@
       <div class="col-12 col-md-6">
         <label for="enderecoSobrinhoEdicao" class="form-label">Endereço <span class="text-danger">*</span></label>
         <input id="enderecoSobrinhoEdicao" pInputText type="text" class="w-100" formControlName="endereco"
-          placeholder="Endereço do sobrinho" (blur)="formatarEdicaoSobrinho()" />
+          placeholder="Endereço do encontrista" (blur)="formatarEdicaoSobrinho()" />
 
         @if (sobrinhoEdicaoForm.controls.endereco.touched &&
         sobrinhoEdicaoForm.controls.endereco.hasError('required')) {
-        <div class="form-text text-danger">Informe o endereço do sobrinho.</div>
+        <div class="form-text text-danger">Informe o endereço do encontrista.</div>
         }
       </div>
 
@@ -994,7 +994,7 @@
     <form [formGroup]="vinculoTrocaDuplaForm" class="d-grid gap-3">
       @if (vinculoEmTroca()) {
       <div class="alert alert-light border small mb-0">
-        <div class="fw-semibold mb-1">Sobrinho</div>
+        <div class="fw-semibold mb-1">Encontrista</div>
         <div>{{ vinculoEmTroca()?.sobrinhoNome }}</div>
         <div class="text-body-secondary mt-1">
           Dupla atual: {{ nomeDuplaVinculo(vinculoEmTroca()!) }}

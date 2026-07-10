@@ -58,7 +58,7 @@ export class PessoasComponent implements OnInit {
 
   readonly tiposPessoa: TipoOpcao[] = [
     { label: 'Tio Carona', value: 'TIO_CARONA' },
-    { label: 'Sobrinho', value: 'SOBRINHO' },
+    { label: 'Encontrista', value: 'SOBRINHO' },
     { label: 'Responsável', value: 'RESPONSAVEL' },
     { label: 'Equipe', value: 'EQUIPE' }
   ];
@@ -66,7 +66,7 @@ export class PessoasComponent implements OnInit {
   readonly tiposFiltro: TipoFiltroOpcao[] = [
     { label: 'Todos', value: 'TODOS' },
     { label: 'Tios Carona', value: 'TIO_CARONA' },
-    { label: 'Sobrinhos', value: 'SOBRINHO' },
+    { label: 'Encontristas', value: 'SOBRINHO' },
     { label: 'Responsáveis', value: 'RESPONSAVEL' },
     { label: 'Equipe', value: 'EQUIPE' }
   ];

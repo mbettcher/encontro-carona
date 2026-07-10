@@ -12,7 +12,7 @@ export class DashboardService {
     return [
       { label: 'Eventos', value: '1', icon: 'fa-solid fa-calendar-days' },
       { label: 'Tios carona', value: '0', icon: 'fa-solid fa-van-shuttle' },
-      { label: 'Sobrinhos', value: '0', icon: 'fa-solid fa-child-reaching' },
+      { label: 'Encontristas', value: '0', icon: 'fa-solid fa-child-reaching' },
       { label: 'Cadernos pendentes', value: '0', icon: 'fa-solid fa-book' }
     ];
   }

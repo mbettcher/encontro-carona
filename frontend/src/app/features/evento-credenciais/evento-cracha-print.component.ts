@@ -68,7 +68,7 @@ export class EventoCrachaPrintComponent implements OnInit, OnDestroy {
 
         switch (this.tipo()) {
             case 'SOBRINHO':
-                return 'Crachás dos sobrinhos';
+                return 'Crachás dos encontristas';
             case 'TIO_CARONA':
                 return 'Crachás dos tios carona';
             default:
@@ -87,7 +87,7 @@ export class EventoCrachaPrintComponent implements OnInit, OnDestroy {
 
         switch (this.tipo()) {
             case 'SOBRINHO':
-                return 'Impressão em lote dos crachás dos sobrinhos.';
+                return 'Impressão em lote dos crachás dos encontristas.';
             case 'TIO_CARONA':
                 return 'Impressão em lote dos crachás dos tios carona.';
             default:
@@ -131,14 +131,14 @@ export class EventoCrachaPrintComponent implements OnInit, OnDestroy {
             case 'TIO_CARONA':
                 return 'Tio carona';
             case 'SOBRINHO':
-                return 'Sobrinho';
+                return 'Encontrista';
             default:
                 return tipo;
         }
     }
 
     ngClassTipo(tipo: TipoCredencial): string {
-        return tipo === 'SOBRINHO' ? 'sobrinho' : 'tio';
+        return tipo === 'SOBRINHO' ? 'encontrista' : 'tio';
     }
 
     private lerParametros(): void {
@@ -225,7 +225,7 @@ export class EventoCrachaPrintComponent implements OnInit, OnDestroy {
             return credencial.pessoaNome || 'Tio carona';
         }
 
-        return credencial.sobrinhoNome || 'Sobrinho';
+        return credencial.sobrinhoNome || 'Encontrista';
     }
 
     private subtitulo(credencial: CredencialEvento): string {

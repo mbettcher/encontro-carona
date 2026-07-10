@@ -63,7 +63,7 @@ export class EventoQrCodePrintComponent implements OnInit, OnDestroy {
 
         switch (this.tipo()) {
             case 'SOBRINHO':
-                return 'QR Codes dos sobrinhos';
+                return 'QR Codes dos encontristas';
             case 'TIO_CARONA':
                 return 'QR Codes dos tios carona';
             default:
@@ -82,7 +82,7 @@ export class EventoQrCodePrintComponent implements OnInit, OnDestroy {
 
         switch (this.tipo()) {
             case 'SOBRINHO':
-                return 'Impressão em lote dos QR Codes dos sobrinhos para adesivos.';
+                return 'Impressão em lote dos QR Codes dos encontristas para adesivos.';
             case 'TIO_CARONA':
                 return 'Impressão em lote dos QR Codes dos tios carona para adesivos.';
             default:
@@ -206,7 +206,7 @@ export class EventoQrCodePrintComponent implements OnInit, OnDestroy {
             return credencial.pessoaNome || 'Tio carona';
         }
 
-        return credencial.sobrinhoNome || 'Sobrinho';
+        return credencial.sobrinhoNome || 'Encontrista';
     }
 
     private subtitulo(credencial: CredencialEvento): string {
@@ -216,7 +216,7 @@ export class EventoQrCodePrintComponent implements OnInit, OnDestroy {
 
         return credencial.responsavelNome
             ? `Resp.: ${credencial.responsavelNome}`
-            : 'Sobrinho';
+            : 'Encontrista';
     }
 
     labelTipo(tipo: TipoCredencial): string {
@@ -224,7 +224,7 @@ export class EventoQrCodePrintComponent implements OnInit, OnDestroy {
             case 'TIO_CARONA':
                 return 'Tio carona';
             case 'SOBRINHO':
-                return 'Sobrinho';
+                return 'Encontrista';
             default:
                 return tipo;
         }

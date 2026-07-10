@@ -39,7 +39,7 @@
   @if (!operacaoPronta()) {
   <div class="alert alert-warning py-2 px-3 mb-4 small">
     <i class="fa-solid fa-circle-info me-2"></i>
-    A operação ainda possui pendências de preparação. Verifique se há tios carona, duplas, sobrinhos e vínculos
+    A operação ainda possui pendências de preparação. Verifique se há tios carona, duplas, encontristas e vínculos
     cadastrados.
   </div>
   }
@@ -63,7 +63,7 @@
 
       <p-tab value="SOBRINHOS">
         <i class="fa-solid fa-child-reaching me-2"></i>
-        Sobrinhos
+        Encontristas
       </p-tab>
 
       <p-tab value="CADERNO_CHORO">
@@ -106,7 +106,7 @@
               <p-card class="operation-summary-card">
                 <div class="d-flex align-items-center justify-content-between">
                   <div>
-                    <div class="text-body-secondary small">Sobrinhos</div>
+                    <div class="text-body-secondary small">Encontristas</div>
                     <div class="fs-3 fw-bold">{{ sobrinhos().length }}</div>
                   </div>
 
@@ -136,7 +136,7 @@
                   <div class="px-4 pt-4">
                     <h2 class="h5 mb-1">Preparação dos vínculos</h2>
                     <p class="text-body-secondary small mb-0">
-                      Percentual de sobrinhos já vinculados a uma dupla.
+                      Percentual de encontristas já vinculados a uma dupla.
                     </p>
                   </div>
                 </ng-template>
@@ -150,7 +150,7 @@
 
                 @if (percentualVinculados() < 100) { <div class="alert alert-warning py-2 px-3 mt-3 mb-0 small">
                   <i class="fa-solid fa-circle-info me-2"></i>
-                  Ainda há sobrinhos sem vínculo ativo com uma dupla.
+                  Ainda há encontristas sem vínculo ativo com uma dupla.
             </div>
             }
             </p-card>
@@ -160,9 +160,9 @@
             <p-card class="shadow-sm border-0 h-100">
               <ng-template pTemplate="header">
                 <div class="px-4 pt-4">
-                  <h2 class="h5 mb-1">Presença dos sobrinhos</h2>
+                  <h2 class="h5 mb-1">Presença dos encontristas</h2>
                   <p class="text-body-secondary small mb-0">
-                    Indicador geral de presença dos participantes.
+                    Indicador geral de presença dos encontristas.
                   </p>
                 </div>
               </ng-template>
@@ -517,7 +517,7 @@
       <ng-template pTemplate="header">
         <div class="px-4 pt-4 d-flex flex-column flex-lg-row justify-content-between gap-3">
           <div>
-            <h2 class="h5 mb-1">Presença dos sobrinhos</h2>
+            <h2 class="h5 mb-1">Presença dos Encontristas</h2>
             <p class="text-body-secondary small mb-0">
               Registre presença, ausência ou desistência. Cada alteração gera histórico para eventos com múltiplos dias.
             </p>
@@ -536,9 +536,9 @@
       @if (sobrinhos().length === 0) {
       <div class="empty-state text-center py-5">
         <i class="fa-solid fa-child-reaching text-body-secondary mb-3"></i>
-        <h3 class="h6 mb-1">Nenhum sobrinho cadastrado</h3>
+        <h3 class="h6 mb-1">Nenhum encontrista cadastrado</h3>
         <p class="text-body-secondary small mb-0">
-          Cadastre os sobrinhos na Gestão do Evento para iniciar a presença.
+          Cadastre os encontristas na Gestão do Evento para iniciar a presença.
         </p>
       </div>
       } @else {
@@ -576,7 +576,7 @@
         <div>
           <div class="fw-semibold small">Lista de presença</div>
           <div class="text-body-secondary small">
-            {{ presencaSobrinhosFiltrados().length }} de {{ sobrinhos().length }} sobrinho(s)
+            {{ presencaSobrinhosFiltrados().length }} de {{ sobrinhos().length }} encontrista(s)
           </div>
         </div>
 
@@ -584,7 +584,7 @@
           <span class="p-input-icon-left w-100">
             <i class="fa-solid fa-magnifying-glass"></i>
 
-            <input pInputText type="text" class="w-100" placeholder="Pesquisar sobrinho, responsável ou status..."
+            <input pInputText type="text" class="w-100" placeholder="Pesquisar encontrista, responsável ou status..."
               [value]="filtroPresencaSobrinhos()" (input)="alterarFiltroPresencaSobrinhos($any($event.target).value)" />
           </span>
         </div>
@@ -667,7 +667,7 @@
     <p-card class="shadow-sm border-0">
       <ng-template pTemplate="header">
         <div class="px-4 pt-4">
-          <h2 class="h5 mb-1">Sobrinhos do evento</h2>
+          <h2 class="h5 mb-1">Encontristas do evento</h2>
           <p class="text-body-secondary small mb-0">
             Visão operacional inicial dos participantes.
           </p>
@@ -677,15 +677,15 @@
       @if (sobrinhos().length === 0) {
       <div class="empty-state text-center py-5">
         <i class="fa-solid fa-child-reaching text-body-secondary mb-3"></i>
-        <h3 class="h6 mb-1">Nenhum sobrinho cadastrado</h3>
+        <h3 class="h6 mb-1">Nenhum encontrista cadastrado</h3>
         <p class="text-body-secondary small mb-0">
-          Cadastre os sobrinhos na Gestão do Evento para iniciar a operação.
+          Cadastre os encontristas na Gestão do Evento para iniciar a operação.
         </p>
       </div>
       } @else {
       <div class="operation-table-toolbar mb-3">
         <div>
-          <div class="fw-semibold small">Lista geral de sobrinhos</div>
+          <div class="fw-semibold small">Lista geral de encontristas</div>
           <div class="text-body-secondary small">
             {{ sobrinhosEventoFiltrados().length }} de {{ sobrinhos().length }} sobrinho(s)
           </div>
@@ -883,7 +883,7 @@
 
         <p class="text-body-secondary small mb-0">
           Clique em <strong>Gerar/atualizar cadernos</strong> para criar os cadernos a partir dos vínculos ativos entre
-          sobrinhos e duplas.
+          encontristas e duplas.
         </p>
       </div>
       } @else {

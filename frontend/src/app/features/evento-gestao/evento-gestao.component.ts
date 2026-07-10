@@ -556,7 +556,7 @@ export class EventoGestaoComponent implements OnInit {
       observacaoMedica: this.normalizarTextoOpcional(valor.observacaoMedica)
     }).subscribe({
       next: () => {
-        this.toastSuccess('Sobrinho cadastrado com sucesso.');
+        this.toastSuccess('Encontrista cadastrado com sucesso.');
         this.salvandoSobrinho.set(false);
         this.sobrinhoForm.reset({
           nome: '',
@@ -572,7 +572,7 @@ export class EventoGestaoComponent implements OnInit {
       },
       error: erro => {
         console.error('Erro ao cadastrar sobrinho', erro);
-        this.toastError(this.mensagemErro(erro, 'Não foi possível cadastrar o sobrinho.'));
+        this.toastError(this.mensagemErro(erro, 'Não foi possível cadastrar o encontrista.'));
         this.salvandoSobrinho.set(false);
       }
     });
@@ -580,18 +580,18 @@ export class EventoGestaoComponent implements OnInit {
 
   vincularSobrinho(): void {
     if (this.opcoesSobrinhos().length === 0) {
-      this.toastWarn('Não há sobrinhos disponíveis para vínculo. Cadastre novos sobrinhos ou revise os vínculos existentes.');
+      this.toastWarn('Não há encontristas disponíveis para vínculo. Cadastre novos encontristas ou revise os vínculos existentes.');
       return;
     }
 
     if (this.opcoesDuplas().length === 0) {
-      this.toastWarn('Não há duplas disponíveis para vínculo. Forme pelo menos uma dupla ativa antes de vincular sobrinhos.');
+      this.toastWarn('Não há duplas disponíveis para vínculo. Forme pelo menos uma dupla ativa antes de vincular encontristas.');
       return;
     }
 
     if (this.vinculoForm.invalid) {
       this.vinculoForm.markAllAsTouched();
-      this.toastWarn('Selecione o sobrinho e a dupla.');
+      this.toastWarn('Selecione o encontrista e a dupla.');
       return;
     }
 
@@ -604,15 +604,15 @@ export class EventoGestaoComponent implements OnInit {
       duplaId: Number(valor.duplaId)
     }).subscribe({
       next: () => {
-        this.toastSuccess('Sobrinho vinculado à dupla com sucesso.');
+        this.toastSuccess('Encontrista vinculado à dupla com sucesso.');
         this.salvandoVinculo.set(false);
         this.vinculoForm.reset({ sobrinhoId: 0, duplaId: 0 });
         this.carregarVinculos();
         this.carregarSobrinhos();
       },
       error: erro => {
-        console.error('Erro ao vincular sobrinho', erro);
-        this.toastError(this.mensagemErro(erro, 'Não foi possível vincular o sobrinho à dupla.'));
+        console.error('Erro ao vincular encontrista', erro);
+        this.toastError(this.mensagemErro(erro, 'Não foi possível vincular o encontrista à dupla.'));
         this.salvandoVinculo.set(false);
       }
     });
@@ -917,13 +917,13 @@ export class EventoGestaoComponent implements OnInit {
       .subscribe({
         next: sobrinhoAtualizado => {
           this.atualizarSobrinhoNaLista(sobrinhoAtualizado);
-          this.toastSuccess('Sobrinho atualizado com sucesso.');
+          this.toastSuccess('Encontrista atualizado com sucesso.');
           this.fecharEdicaoSobrinho();
           this.carregarVinculos();
         },
         error: erro => {
-          console.error('Erro ao atualizar sobrinho', erro);
-          this.toastError(this.mensagemErro(erro, 'Não foi possível atualizar o sobrinho.'));
+          console.error('Erro ao atualizar encontrista', erro);
+          this.toastError(this.mensagemErro(erro, 'Não foi possível atualizar o encontrista.'));
         }
       });
   }
@@ -1171,8 +1171,8 @@ export class EventoGestaoComponent implements OnInit {
     this.service.listarSobrinhos(this.eventoId).subscribe({
       next: sobrinhos => this.sobrinhos.set(sobrinhos),
       error: erro => {
-        console.error('Erro ao carregar sobrinhos', erro);
-        this.toastError('Não foi possível carregar os sobrinhos.');
+        console.error('Erro ao carregar encontristas', erro);
+        this.toastError('Não foi possível carregar os encontristas.');
       }
     });
   }
@@ -1256,7 +1256,7 @@ export class EventoGestaoComponent implements OnInit {
     const campos: string[] = [];
 
     if (formulario.controls.nome.hasError('required')) {
-      campos.push('nome do sobrinho');
+      campos.push('nome do encontrista');
     }
 
     if (formulario.controls.responsavelNome.hasError('required')) {
