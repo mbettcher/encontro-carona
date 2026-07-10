@@ -119,6 +119,12 @@ public class TioCaronaEvento {
         return "TC-E%04d-P%06d".formatted(evento.getId(), pessoa.getId());
     }
 
+    public void atualizarObservacoes(String observacoes) {
+        this.observacoes = observacoes == null || observacoes.isBlank()
+                ? null
+                : observacoes.trim();
+    }
+
     public Long getId() {
         return id;
     }

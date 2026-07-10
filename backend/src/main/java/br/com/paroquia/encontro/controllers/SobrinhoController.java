@@ -33,6 +33,15 @@ public class SobrinhoController {
         return service.criar(eventoId, request);
     }
 
+    @PutMapping("/{sobrinhoId}")
+    public SobrinhoResponse atualizar(
+            @PathVariable Long eventoId,
+            @PathVariable Long sobrinhoId,
+            @RequestBody @Valid SobrinhoRequest request
+    ) {
+        return service.atualizar(eventoId, sobrinhoId, request);
+    }
+
     @PatchMapping("/{sobrinhoId}/presenca")
     public SobrinhoResponse registrarPresenca(
             @PathVariable Long eventoId,

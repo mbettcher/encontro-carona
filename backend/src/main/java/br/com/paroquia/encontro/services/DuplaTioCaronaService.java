@@ -14,6 +14,8 @@ import br.com.paroquia.encontro.repository.DuplaTioCaronaRepository;
 import br.com.paroquia.encontro.repository.EventoRepository;
 import br.com.paroquia.encontro.repository.SobrinhoDuplaRepository;
 import br.com.paroquia.encontro.repository.TioCaronaEventoRepository;
+import br.com.paroquia.encontro.dto.request.AtualizarDuplaTioCaronaRequest;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -105,6 +107,19 @@ public class DuplaTioCaronaService {
         validarTioPodeReativarDupla(eventoId, duplaId, dupla.getTio2(), "Tio carona 2");
 
         dupla.reativar();
+
+        return DuplaTioCaronaResponse.from(dupla);
+    }
+
+    @Transactional
+    public DuplaTioCaronaResponse atualizar(
+            Long eventoId,
+            Long duplaId,
+            AtualizarDuplaTioCaronaRequest request
+    ) {
+        var dupla = buscarDupla(eventoId, duplaId);
+
+        dupla.atualizarApelido(request.apelido());
 
         return DuplaTioCaronaResponse.from(dupla);
     }

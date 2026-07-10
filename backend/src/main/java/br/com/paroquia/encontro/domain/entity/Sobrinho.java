@@ -79,6 +79,26 @@ public class Sobrinho {
         this.observacaoMedica = observacaoMedica;
     }
 
+    public void atualizarDados(
+            String nome,
+            String telefone,
+            String responsavelNome,
+            String responsavelTelefone,
+            String endereco,
+            LocalDate dataNascimento,
+            String restricaoAlimentar,
+            String observacaoMedica
+    ) {
+        this.nome = nome;
+        this.telefone = telefone;
+        this.responsavelNome = responsavelNome;
+        this.responsavelTelefone = responsavelTelefone;
+        this.endereco = endereco;
+        this.dataNascimento = dataNascimento;
+        this.restricaoAlimentar = restricaoAlimentar;
+        this.observacaoMedica = observacaoMedica;
+    }
+
     public Long getId() {
         return id;
     }

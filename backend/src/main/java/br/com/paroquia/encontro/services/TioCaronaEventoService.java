@@ -14,6 +14,8 @@ import br.com.paroquia.encontro.repository.EventoRepository;
 import br.com.paroquia.encontro.repository.PessoaRepository;
 import br.com.paroquia.encontro.repository.TioCaronaEventoOperacaoRepository;
 import br.com.paroquia.encontro.repository.TioCaronaEventoRepository;
+import br.com.paroquia.encontro.dto.request.AtualizarTioCaronaEventoRequest;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -113,6 +115,23 @@ public class TioCaronaEventoService {
     public TioCaronaEventoResponse registrarCheckoutManual(Long eventoId, Long tioCaronaEventoId) {
         var tioCarona = buscarPorIdEvento(eventoId, tioCaronaEventoId);
         return registrarOperacao(tioCarona, TipoOperacaoTioCarona.CHECKOUT, OrigemOperacaoTioCarona.MANUAL, null);
+    }
+
+    @Transactional
+    public TioCaronaEventoResponse atualizar(
+            Long eventoId,
+            Long tioCaronaEventoId,
+            AtualizarTioCaronaEventoRequest request
+    ) {
+        var tioCarona = buscarPorIdEvento(eventoId, tioCaronaEventoId);
+
+        tioCarona.atualizarObservacoes(request.observacoes());
+
+        var ultimaOperacao = operacaoRepository
+                .findFirstByTioCaronaEventoIdOrderByOcorridoEmDesc(tioCarona.getId())
+                .orElse(null);
+
+        return TioCaronaEventoResponse.from(tioCarona, ultimaOperacao);
     }
 
     private TioCaronaEventoResponse registrarOperacao(

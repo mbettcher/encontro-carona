@@ -109,6 +109,32 @@ public class SobrinhoService {
         return registrarPresenca(eventoId, sobrinho.getId(), operacao, observacao);
     }
 
+    @Transactional
+    public SobrinhoResponse atualizar(
+            Long eventoId,
+            Long sobrinhoId,
+            SobrinhoRequest request
+    ) {
+        var sobrinho = buscarPorIdEvento(eventoId, sobrinhoId);
+
+        sobrinho.atualizarDados(
+                request.nome(),
+                request.telefone(),
+                request.responsavelNome(),
+                request.responsavelTelefone(),
+                request.endereco(),
+                request.dataNascimento(),
+                request.restricaoAlimentar(),
+                request.observacaoMedica()
+        );
+
+        var ultimaPresenca = sobrinhoPresencaRepository
+                .findFirstBySobrinhoIdOrderByOcorridoEmDesc(sobrinho.getId())
+                .orElse(null);
+
+        return SobrinhoResponse.from(sobrinho, ultimaPresenca);
+    }
+
     private Sobrinho buscarPorIdEvento(Long eventoId, Long sobrinhoId) {
         return repository.findByIdAndEventoId(sobrinhoId, eventoId)
                 .orElseThrow(() -> new ResourceNotFoundException("Sobrinho não encontrado neste evento."));

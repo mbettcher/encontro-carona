@@ -5,6 +5,8 @@ import br.com.paroquia.encontro.dto.request.TioCaronaOperacaoCodigoRequest;
 import br.com.paroquia.encontro.dto.response.TioCaronaEventoOperacaoResponse;
 import br.com.paroquia.encontro.dto.response.TioCaronaEventoResponse;
 import br.com.paroquia.encontro.services.TioCaronaEventoService;
+import br.com.paroquia.encontro.dto.request.AtualizarTioCaronaEventoRequest;
+
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -32,6 +34,15 @@ public class TioCaronaEventoController {
             @RequestBody @Valid TioCaronaEventoRequest request
     ) {
         return service.adicionar(eventoId, request);
+    }
+
+    @PatchMapping("/{tioCaronaEventoId}")
+    public TioCaronaEventoResponse atualizar(
+            @PathVariable Long eventoId,
+            @PathVariable Long tioCaronaEventoId,
+            @RequestBody @Valid AtualizarTioCaronaEventoRequest request
+    ) {
+        return service.atualizar(eventoId, tioCaronaEventoId, request);
     }
 
     @PostMapping("/operacao/check-in")

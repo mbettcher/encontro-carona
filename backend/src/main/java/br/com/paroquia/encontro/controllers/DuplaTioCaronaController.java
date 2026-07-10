@@ -3,6 +3,8 @@ package br.com.paroquia.encontro.controllers;
 import br.com.paroquia.encontro.dto.request.DuplaTioCaronaRequest;
 import br.com.paroquia.encontro.dto.response.DuplaTioCaronaResponse;
 import br.com.paroquia.encontro.services.DuplaTioCaronaService;
+import br.com.paroquia.encontro.dto.request.AtualizarDuplaTioCaronaRequest;
+
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -30,6 +32,15 @@ public class DuplaTioCaronaController {
             @RequestBody @Valid DuplaTioCaronaRequest request
     ) {
         return service.criar(eventoId, request);
+    }
+
+    @PatchMapping("/{duplaId}")
+    public DuplaTioCaronaResponse atualizar(
+            @PathVariable Long eventoId,
+            @PathVariable Long duplaId,
+            @RequestBody @Valid AtualizarDuplaTioCaronaRequest request
+    ) {
+        return service.atualizar(eventoId, duplaId, request);
     }
 
     @PatchMapping("/{duplaId}/inativar")

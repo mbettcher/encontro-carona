@@ -13,6 +13,8 @@ import br.com.paroquia.encontro.repository.DuplaTioCaronaRepository;
 import br.com.paroquia.encontro.repository.EventoRepository;
 import br.com.paroquia.encontro.repository.SobrinhoDuplaRepository;
 import br.com.paroquia.encontro.repository.SobrinhoRepository;
+import br.com.paroquia.encontro.dto.request.TrocarDuplaVinculoRequest;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -130,6 +132,41 @@ public class SobrinhoDuplaService {
         }
 
         vinculo.reativar();
+
+        return SobrinhoDuplaResponse.from(vinculo);
+    }
+
+    @Transactional
+    public SobrinhoDuplaResponse trocarDupla(
+            Long eventoId,
+            Long vinculoId,
+            TrocarDuplaVinculoRequest request
+    ) {
+        var vinculo = buscarVinculo(eventoId, vinculoId);
+
+        if (vinculo.getStatus() != VinculoStatus.ATIVO) {
+            throw new BusinessException("Somente vínculos ativos podem trocar de dupla.");
+        }
+
+        if (cadernoChoroRepository.existsByEventoIdAndSobrinhoId(
+                eventoId,
+                vinculo.getSobrinho().getId()
+        )) {
+            throw new BusinessException("Não é possível trocar a dupla do vínculo porque já existe Caderno do Choro gerado para este sobrinho.");
+        }
+
+        var novaDupla = duplaRepository.findByIdAndEventoId(request.duplaId(), eventoId)
+                .orElseThrow(() -> new ResourceNotFoundException("Nova dupla não encontrada neste evento."));
+
+        if (novaDupla.getStatus() != DuplaStatus.ATIVA) {
+            throw new BusinessException("Não é possível trocar o vínculo para uma dupla inativa.");
+        }
+
+        if (novaDupla.getId().equals(vinculo.getDupla().getId())) {
+            throw new BusinessException("O sobrinho já está vinculado a esta dupla.");
+        }
+
+        vinculo.trocarDupla(novaDupla);
 
         return SobrinhoDuplaResponse.from(vinculo);
     }

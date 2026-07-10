@@ -57,6 +57,14 @@ public class SobrinhoDupla {
         this.status = VinculoStatus.ATIVO;
     }
 
+    public void trocarDupla(DuplaTioCarona novaDupla) {
+        if (this.status != VinculoStatus.ATIVO) {
+            throw new BusinessException("Somente vínculos ativos podem trocar de dupla.");
+        }
+
+        this.dupla = novaDupla;
+    }
+
     public Long getId() {
         return id;
     }

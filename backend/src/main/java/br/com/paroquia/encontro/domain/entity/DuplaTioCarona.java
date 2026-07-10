@@ -65,6 +65,12 @@ public class DuplaTioCarona {
         this.status = DuplaStatus.ATIVA;
     }
 
+    public void atualizarApelido(String apelido) {
+        this.apelido = apelido == null || apelido.isBlank()
+                ? null
+                : apelido.trim();
+    }
+
     public Long getId() {
         return id;
     }
