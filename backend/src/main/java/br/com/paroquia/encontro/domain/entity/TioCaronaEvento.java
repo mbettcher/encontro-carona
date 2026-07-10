@@ -65,6 +65,9 @@ public class TioCaronaEvento {
         this.evento = evento;
         this.pessoa = pessoa;
         this.observacoes = observacoes;
+        this.status = TioCaronaStatus.ATIVO;
+        this.criadoEm = OffsetDateTime.now();
+        this.codigoIdentificacao = gerarCodigoIdentificacao(evento, pessoa);
     }
 
     @PrePersist
@@ -72,22 +75,19 @@ public class TioCaronaEvento {
         if (this.criadoEm == null) {
             this.criadoEm = OffsetDateTime.now();
         }
-    }
 
-    @PostPersist
-    void postPersist() {
-        if (this.codigoIdentificacao == null || this.codigoIdentificacao.isBlank()) {
-            this.codigoIdentificacao = gerarCodigoIdentificacao(this.id);
-        }
+        garantirCodigoIdentificacao();
     }
 
     public void garantirCodigoIdentificacao() {
         if (this.codigoIdentificacao == null || this.codigoIdentificacao.isBlank()) {
-            this.codigoIdentificacao = gerarCodigoIdentificacao(this.id);
+            this.codigoIdentificacao = gerarCodigoIdentificacao(this.evento, this.pessoa);
         }
     }
 
     public void registrarCheckinResumo(OffsetDateTime ocorridoEm) {
+        validarAtivo();
+
         this.checkinRealizado = true;
         this.checkinEm = ocorridoEm;
         this.checkoutRealizado = false;
@@ -95,6 +95,8 @@ public class TioCaronaEvento {
     }
 
     public void registrarCheckoutResumo(OffsetDateTime ocorridoEm) {
+        validarAtivo();
+
         this.checkoutRealizado = true;
         this.checkoutEm = ocorridoEm;
     }
@@ -105,8 +107,16 @@ public class TioCaronaEvento {
         }
     }
 
-    private String gerarCodigoIdentificacao(Long id) {
-        return "TC-%06d".formatted(id);
+    private String gerarCodigoIdentificacao(Evento evento, Pessoa pessoa) {
+        if (evento == null || evento.getId() == null) {
+            throw new BusinessException("Evento inválido para gerar código de identificação do tio carona.");
+        }
+
+        if (pessoa == null || pessoa.getId() == null) {
+            throw new BusinessException("Pessoa inválida para gerar código de identificação do tio carona.");
+        }
+
+        return "TC-E%04d-P%06d".formatted(evento.getId(), pessoa.getId());
     }
 
     public Long getId() {

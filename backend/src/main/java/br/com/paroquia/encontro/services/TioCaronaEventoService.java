@@ -76,10 +76,9 @@ public class TioCaronaEventoService {
         var pessoa = pessoaRepository.findById(request.pessoaId())
                 .orElseThrow(() -> new ResourceNotFoundException("Pessoa não encontrada."));
 
-        var entity = repository.save(new TioCaronaEvento(evento, pessoa, request.observacoes()));
-        entity.garantirCodigoIdentificacao();
+        var entity = new TioCaronaEvento(evento, pessoa, request.observacoes());
 
-        return TioCaronaEventoResponse.from(entity);
+        return TioCaronaEventoResponse.from(repository.save(entity));
     }
 
     @Transactional
