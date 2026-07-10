@@ -2,14 +2,16 @@ package br.com.paroquia.encontro.services;
 
 import br.com.paroquia.encontro.common.BusinessException;
 import br.com.paroquia.encontro.common.ResourceNotFoundException;
+import br.com.paroquia.encontro.domain.entity.SobrinhoDupla;
+import br.com.paroquia.encontro.domain.enums.DuplaStatus;
+import br.com.paroquia.encontro.domain.enums.SobrinhoStatus;
+import br.com.paroquia.encontro.domain.enums.VinculoStatus;
 import br.com.paroquia.encontro.dto.request.VincularSobrinhoRequest;
 import br.com.paroquia.encontro.dto.response.SobrinhoDuplaResponse;
 import br.com.paroquia.encontro.repository.DuplaTioCaronaRepository;
 import br.com.paroquia.encontro.repository.EventoRepository;
 import br.com.paroquia.encontro.repository.SobrinhoDuplaRepository;
 import br.com.paroquia.encontro.repository.SobrinhoRepository;
-import br.com.paroquia.encontro.domain.entity.SobrinhoDupla;
-import br.com.paroquia.encontro.domain.enums.VinculoStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,7 +24,12 @@ public class SobrinhoDuplaService {
     private final SobrinhoRepository sobrinhoRepository;
     private final DuplaTioCaronaRepository duplaRepository;
 
-    public SobrinhoDuplaService(SobrinhoDuplaRepository repository, EventoRepository eventoRepository, SobrinhoRepository sobrinhoRepository, DuplaTioCaronaRepository duplaRepository) {
+    public SobrinhoDuplaService(
+            SobrinhoDuplaRepository repository,
+            EventoRepository eventoRepository,
+            SobrinhoRepository sobrinhoRepository,
+            DuplaTioCaronaRepository duplaRepository
+    ) {
         this.repository = repository;
         this.eventoRepository = eventoRepository;
         this.sobrinhoRepository = sobrinhoRepository;
@@ -31,16 +38,45 @@ public class SobrinhoDuplaService {
 
     @Transactional(readOnly = true)
     public List<SobrinhoDuplaResponse> listarPorDupla(Long eventoId, Long duplaId) {
-        return repository.findByEventoIdAndDuplaIdAndStatusOrderBySobrinhoNome(eventoId, duplaId, VinculoStatus.ATIVO).stream().map(SobrinhoDuplaResponse::from).toList();
+        return repository.findByEventoIdAndDuplaIdAndStatusOrderBySobrinhoNome(
+                        eventoId,
+                        duplaId,
+                        VinculoStatus.ATIVO
+                )
+                .stream()
+                .map(SobrinhoDuplaResponse::from)
+                .toList();
     }
 
     @Transactional
     public SobrinhoDuplaResponse vincular(Long eventoId, VincularSobrinhoRequest request) {
-        if (repository.existsByEventoIdAndSobrinhoIdAndStatus(eventoId, request.sobrinhoId(), VinculoStatus.ATIVO))
+        if (repository.existsByEventoIdAndSobrinhoIdAndStatus(
+                eventoId,
+                request.sobrinhoId(),
+                VinculoStatus.ATIVO
+        )) {
             throw new BusinessException("Este sobrinho já está vinculado a uma dupla ativa neste evento.");
-        var evento = eventoRepository.findById(eventoId).orElseThrow(() -> new ResourceNotFoundException("Evento não encontrado."));
-        var sobrinho = sobrinhoRepository.findById(request.sobrinhoId()).orElseThrow(() -> new ResourceNotFoundException("Sobrinho não encontrado."));
-        var dupla = duplaRepository.findById(request.duplaId()).orElseThrow(() -> new ResourceNotFoundException("Dupla não encontrada."));
-        return SobrinhoDuplaResponse.from(repository.save(new SobrinhoDupla(evento, sobrinho, dupla)));
+        }
+
+        var evento = eventoRepository.findById(eventoId)
+                .orElseThrow(() -> new ResourceNotFoundException("Evento não encontrado."));
+
+        var sobrinho = sobrinhoRepository.findByIdAndEventoId(request.sobrinhoId(), eventoId)
+                .orElseThrow(() -> new ResourceNotFoundException("Sobrinho não encontrado neste evento."));
+
+        var dupla = duplaRepository.findByIdAndEventoId(request.duplaId(), eventoId)
+                .orElseThrow(() -> new ResourceNotFoundException("Dupla não encontrada neste evento."));
+
+        if (sobrinho.getStatus() == SobrinhoStatus.DESISTENTE) {
+            throw new BusinessException("Sobrinho desistente não pode ser vinculado a uma dupla.");
+        }
+
+        if (dupla.getStatus() != DuplaStatus.ATIVA) {
+            throw new BusinessException("Não é possível vincular sobrinho a uma dupla inativa.");
+        }
+
+        return SobrinhoDuplaResponse.from(
+                repository.save(new SobrinhoDupla(evento, sobrinho, dupla))
+        );
     }
 }

@@ -6,7 +6,7 @@ import jakarta.persistence.*;
 import java.time.OffsetDateTime;
 
 @Entity
-@Table(name = "sobrinho_dupla", uniqueConstraints = @UniqueConstraint(name = "uk_sobrinho_dupla_ativa", columnNames = {"evento_id", "sobrinho_id", "status"}))
+@Table(name = "sobrinho_dupla")
 public class SobrinhoDupla {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
