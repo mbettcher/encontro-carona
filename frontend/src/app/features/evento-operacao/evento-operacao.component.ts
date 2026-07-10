@@ -703,10 +703,7 @@ export class EventoOperacaoComponent implements OnInit {
         next: tioAtualizado => {
           this.atualizarTioCaronaNaLista(tioAtualizado);
 
-          this.codigoForm.reset({
-            codigoIdentificacao: '',
-            tipoOperacao: valor.tipoOperacao
-          });
+          this.limparFormularioCodigoTio(valor.tipoOperacao);
 
           this.toastSuccess(
             valor.tipoOperacao === 'CHECKIN'
@@ -847,10 +844,7 @@ export class EventoOperacaoComponent implements OnInit {
         next: sobrinhoAtualizado => {
           this.atualizarSobrinhoNaLista(sobrinhoAtualizado);
 
-          this.codigoSobrinhoForm.reset({
-            codigoIdentificacao: '',
-            operacao: valor.operacao
-          });
+          this.limparFormularioCodigoSobrinho(valor.operacao);
 
           this.toastSuccess(
             `${sobrinhoAtualizado.nome} marcado como ${this.labelSobrinhoStatus(this.statusPresencaSobrinho(sobrinhoAtualizado)).toLowerCase()}.`
@@ -1161,5 +1155,27 @@ export class EventoOperacaoComponent implements OnInit {
 
   sobrinhoDesistente(sobrinho: Sobrinho): boolean {
     return this.statusPresencaSobrinho(sobrinho) === 'DESISTENTE';
+  }
+
+  private limparFormularioCodigoTio(tipoOperacao: 'CHECKIN' | 'CHECKOUT'): void {
+    this.codigoForm.reset({
+      codigoIdentificacao: '',
+      tipoOperacao
+    });
+
+    this.codigoForm.markAsPristine();
+    this.codigoForm.markAsUntouched();
+    this.codigoForm.updateValueAndValidity();
+  }
+
+  private limparFormularioCodigoSobrinho(operacao: OperacaoPresencaSobrinho): void {
+    this.codigoSobrinhoForm.reset({
+      codigoIdentificacao: '',
+      operacao
+    });
+
+    this.codigoSobrinhoForm.markAsPristine();
+    this.codigoSobrinhoForm.markAsUntouched();
+    this.codigoSobrinhoForm.updateValueAndValidity();
   }
 }

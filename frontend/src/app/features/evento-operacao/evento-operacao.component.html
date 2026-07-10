@@ -211,13 +211,16 @@
             </span>
 
             <input id="codigoIdentificacao" pInputText type="text" class="form-control"
-              formControlName="codigoIdentificacao" placeholder="Aponte o leitor ou digite o código do tio carona" autocomplete="off"
-              (keydown.enter)="aoPressionarEnterCodigo($event)" />
+              formControlName="codigoIdentificacao" placeholder="Aponte o leitor ou digite o código do tio carona"
+              autocomplete="off" (keydown.enter)="aoPressionarEnterCodigo($event)" />
           </div>
 
-          @if (codigoForm.controls.codigoIdentificacao.touched && codigoForm.controls.codigoIdentificacao.invalid) {
+          @if (
+          codigoForm.controls.codigoIdentificacao.invalid &&
+          (codigoForm.controls.codigoIdentificacao.touched || codigoForm.controls.codigoIdentificacao.dirty)
+          ) {
           <div class="form-text text-danger">
-            Informe o código da credencial.
+            Informe o código da credencial do tio carona.
           </div>
           }
         </div>
@@ -275,8 +278,11 @@
               autocomplete="off" (keydown.enter)="aoPressionarEnterCodigoSobrinho($event)" />
           </div>
 
-          @if (codigoSobrinhoForm.controls.codigoIdentificacao.touched &&
-          codigoSobrinhoForm.controls.codigoIdentificacao.invalid) {
+          @if (
+          codigoSobrinhoForm.controls.codigoIdentificacao.invalid &&
+          (codigoSobrinhoForm.controls.codigoIdentificacao.touched ||
+          codigoSobrinhoForm.controls.codigoIdentificacao.dirty)
+          ) {
           <div class="form-text text-danger">
             Informe o código da credencial do sobrinho.
           </div>
