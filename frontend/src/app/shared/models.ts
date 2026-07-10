@@ -163,6 +163,8 @@ export type OrigemPresencaSobrinho =
 export interface Sobrinho {
   id: number;
   eventoId?: number;
+  pessoaId?: number;
+  pessoaNome?: string;
   nome: string;
   telefone?: string;
   responsavelNome?: string;
@@ -183,6 +185,17 @@ export interface SobrinhoRequest {
   responsavelNome?: string;
   responsavelTelefone?: string;
   endereco?: string;
+  dataNascimento?: string;
+  restricaoAlimentar?: string;
+  observacaoMedica?: string;
+}
+
+export interface AdicionarPessoaSobrinhoRequest {
+  pessoaId: number;
+  telefone?: string;
+  responsavelNome: string;
+  responsavelTelefone: string;
+  endereco: string;
   dataNascimento?: string;
   restricaoAlimentar?: string;
   observacaoMedica?: string;

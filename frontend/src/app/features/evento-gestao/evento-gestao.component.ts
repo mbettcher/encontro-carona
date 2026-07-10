@@ -81,6 +81,7 @@ export class EventoGestaoComponent implements OnInit {
   readonly salvandoTio = signal(false);
   readonly salvandoDupla = signal(false);
   readonly salvandoSobrinho = signal(false);
+  readonly salvandoPessoaSobrinho = signal(false);
   readonly salvandoVinculo = signal(false);
   readonly processandoDuplaId = signal<number | null>(null);
   readonly processandoVinculoId = signal<number | null>(null);
@@ -125,6 +126,17 @@ export class EventoGestaoComponent implements OnInit {
 
   readonly sobrinhoForm = this.fb.nonNullable.group({
     nome: ['', [Validators.required, Validators.maxLength(150)]],
+    telefone: ['', [Validators.maxLength(30)]],
+    responsavelNome: ['', [Validators.required, Validators.maxLength(150)]],
+    responsavelTelefone: ['', [Validators.required, Validators.maxLength(30)]],
+    endereco: ['', [Validators.required, Validators.maxLength(180)]],
+    dataNascimento: ['', [Validators.required]],
+    restricaoAlimentar: ['', [Validators.maxLength(500)]],
+    observacaoMedica: ['', [Validators.maxLength(500)]]
+  });
+
+  readonly pessoaSobrinhoForm = this.fb.nonNullable.group({
+    pessoaId: [0, [Validators.required, Validators.min(1)]],
     telefone: ['', [Validators.maxLength(30)]],
     responsavelNome: ['', [Validators.required, Validators.maxLength(150)]],
     responsavelTelefone: ['', [Validators.required, Validators.maxLength(30)]],
@@ -262,6 +274,39 @@ export class EventoGestaoComponent implements OnInit {
         descricao: `${dupla.tio1Nome} e ${dupla.tio2Nome}`,
         value: dupla.id
       }));
+  });
+
+  readonly idsPessoasEncontristasJaAdicionadas = computed<Set<number>>(() => {
+    const ids = new Set<number>();
+
+    this.sobrinhos()
+      .filter(sobrinho => !!sobrinho.pessoaId)
+      .forEach(sobrinho => ids.add(Number(sobrinho.pessoaId)));
+
+    return ids;
+  });
+
+  readonly opcoesPessoasEncontristas = computed<OpcaoNumerica[]>(() => {
+    const idsJaAdicionados = this.idsPessoasEncontristasJaAdicionadas();
+
+    return this.pessoas()
+      .filter(pessoa => pessoa.tipo === 'SOBRINHO')
+      .filter(pessoa => !idsJaAdicionados.has(pessoa.id))
+      .map(pessoa => ({
+        label: pessoa.nome,
+        descricao: pessoa.telefone || pessoa.email || 'Pessoa cadastrada como Encontrista',
+        value: pessoa.id
+      }));
+  });
+
+  readonly pessoaEncontristaSelecionada = computed(() => {
+    const pessoaId = Number(this.pessoaSobrinhoForm.controls.pessoaId.value ?? 0);
+
+    if (pessoaId <= 0) {
+      return null;
+    }
+
+    return this.pessoas().find(pessoa => pessoa.id === pessoaId) ?? null;
   });
 
   readonly idsSobrinhosComVinculoAtivo = computed<Set<number>>(() => {
@@ -436,6 +481,26 @@ export class EventoGestaoComponent implements OnInit {
     ]);
   }
 
+  formatarPessoaSobrinho(): void {
+    this.customFormHelper.formatarCamposComTitleCase(this.pessoaSobrinhoForm, [
+      'responsavelNome',
+      'endereco'
+    ]);
+  }
+
+  aoAlterarPessoaSobrinho(pessoaId: number | null): void {
+    const id = Number(pessoaId ?? 0);
+    const pessoa = this.pessoas().find(item => item.id === id);
+
+    this.pessoaSobrinhoForm.patchValue({
+      telefone: pessoa?.telefone ?? '',
+      dataNascimento: pessoa?.dataNascimento?.substring(0, 10) ?? ''
+    });
+
+    this.pessoaSobrinhoForm.controls.telefone.markAsPristine();
+    this.pessoaSobrinhoForm.controls.dataNascimento.markAsPristine();
+  }
+
   formatarEdicaoDupla(): void {
     this.customFormHelper.formatarCamposComTitleCase(this.duplaEdicaoForm, ['apelido']);
   }
@@ -528,6 +593,48 @@ export class EventoGestaoComponent implements OnInit {
 
         this.toastError(this.mensagemErro(erro, 'Não foi possível criar a dupla. Confira se os tios já não estão em outra dupla ativa.'));
         this.salvandoDupla.set(false);
+      }
+    });
+  }
+
+  adicionarPessoaSobrinho(): void {
+    if (this.opcoesPessoasEncontristas().length === 0) {
+      this.toastWarn('Não há pessoas do tipo Encontrista disponíveis para adicionar ao evento.');
+      return;
+    }
+
+    if (this.pessoaSobrinhoForm.invalid) {
+      this.pessoaSobrinhoForm.markAllAsTouched();
+      this.toastWarn(this.mensagemValidacaoPessoaSobrinho());
+      return;
+    }
+
+    this.formatarPessoaSobrinho();
+
+    const valor = this.pessoaSobrinhoForm.getRawValue();
+
+    this.salvandoPessoaSobrinho.set(true);
+
+    this.service.adicionarPessoaComoSobrinho(this.eventoId, {
+      pessoaId: Number(valor.pessoaId),
+      telefone: this.normalizarTextoOpcional(valor.telefone),
+      responsavelNome: valor.responsavelNome.trim(),
+      responsavelTelefone: valor.responsavelTelefone.trim(),
+      endereco: valor.endereco.trim(),
+      dataNascimento: this.normalizarTextoOpcional(valor.dataNascimento),
+      restricaoAlimentar: this.normalizarTextoOpcional(valor.restricaoAlimentar),
+      observacaoMedica: this.normalizarTextoOpcional(valor.observacaoMedica)
+    }).subscribe({
+      next: () => {
+        this.toastSuccess('Pessoa adicionada como encontrista do evento com sucesso.');
+        this.salvandoPessoaSobrinho.set(false);
+        this.limparFormularioPessoaSobrinho();
+        this.carregarSobrinhos();
+      },
+      error: erro => {
+        console.error('Erro ao adicionar pessoa como encontrista', erro);
+        this.toastError(this.mensagemErro(erro, 'Não foi possível adicionar a pessoa como encontrista do evento.'));
+        this.salvandoPessoaSobrinho.set(false);
       }
     });
   }
@@ -1235,6 +1342,43 @@ export class EventoGestaoComponent implements OnInit {
     return fallback;
   }
 
+  private mensagemValidacaoPessoaSobrinho(): string {
+    const campos: string[] = [];
+
+    if (this.pessoaSobrinhoForm.controls.pessoaId.hasError('required') ||
+      this.pessoaSobrinhoForm.controls.pessoaId.hasError('min')) {
+      campos.push('pessoa encontrista');
+    }
+
+    if (this.pessoaSobrinhoForm.controls.responsavelNome.hasError('required')) {
+      campos.push('nome do responsável');
+    }
+
+    if (this.pessoaSobrinhoForm.controls.responsavelTelefone.hasError('required')) {
+      campos.push('telefone do responsável');
+    }
+
+    if (this.pessoaSobrinhoForm.controls.dataNascimento.hasError('required')) {
+      campos.push('data de nascimento');
+    }
+
+    if (this.pessoaSobrinhoForm.controls.endereco.hasError('required')) {
+      campos.push('endereço');
+    }
+
+    if (campos.length === 0) {
+      return 'Revise os dados do encontrista antes de adicionar ao evento.';
+    }
+
+    if (campos.length === 1) {
+      return `Informe ${campos[0]}.`;
+    }
+
+    const ultimo = campos.pop();
+
+    return `Informe ${campos.join(', ')} e ${ultimo}.`;
+  }
+
   private mensagemValidacaoSobrinho(): string {
     return this.mensagemValidacaoFormularioSobrinho(this.sobrinhoForm);
   }
@@ -1330,6 +1474,19 @@ export class EventoGestaoComponent implements OnInit {
       tio1Id: 0,
       tio2Id: 0,
       apelido: ''
+    });
+  }
+
+  limparFormularioPessoaSobrinho(): void {
+    this.customFormHelper.resetarFormulario(this.pessoaSobrinhoForm, {
+      pessoaId: 0,
+      telefone: '',
+      responsavelNome: '',
+      responsavelTelefone: '',
+      endereco: '',
+      dataNascimento: '',
+      restricaoAlimentar: '',
+      observacaoMedica: ''
     });
   }
 

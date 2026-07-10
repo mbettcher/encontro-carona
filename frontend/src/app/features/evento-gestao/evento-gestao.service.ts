@@ -4,6 +4,7 @@ import { Observable, map } from 'rxjs';
 import { environment } from 'src/environments/environment';
 
 import {
+  AdicionarPessoaSobrinhoRequest,
   AtualizarDuplaTioCaronaRequest,
   AtualizarTioCaronaEventoRequest,
   DuplaTioCarona,
@@ -119,6 +120,16 @@ export class EventoGestaoService {
   criarSobrinho(eventoId: number, request: SobrinhoRequest): Observable<Sobrinho> {
     return this.http.post<Sobrinho>(
       `${this.apiUrl}/eventos/${eventoId}/sobrinhos`,
+      this.limpar(request)
+    );
+  }
+
+  adicionarPessoaComoSobrinho(
+    eventoId: number,
+    request: AdicionarPessoaSobrinhoRequest
+  ): Observable<Sobrinho> {
+    return this.http.post<Sobrinho>(
+      `${this.apiUrl}/eventos/${eventoId}/sobrinhos/adicionar-pessoa`,
       this.limpar(request)
     );
   }
