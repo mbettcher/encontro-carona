@@ -20,6 +20,24 @@ import {
 } from '../../shared/models';
 import { EventoCredenciaisService } from './evento-credenciais.service';
 
+type FiltroRapidoCredencial =
+    | 'TODAS'
+    | 'ATIVAS'
+    | 'TIOS'
+    | 'SOBRINHOS'
+    | 'INATIVAS'
+    | 'CANCELADAS'
+    | 'PERSONALIZADO';
+
+interface CardResumoCredencial {
+    titulo: string;
+    valor: number;
+    subtitulo: string;
+    icone: string;
+    tema: 'total' | 'success' | 'info' | 'primary' | 'warn' | 'danger';
+    filtro: FiltroRapidoCredencial;
+}
+
 @Component({
     selector: 'app-evento-credenciais',
     standalone: true,
@@ -36,7 +54,7 @@ import { EventoCredenciaisService } from './evento-credenciais.service';
         TooltipModule
     ],
     templateUrl: './evento-credenciais.component.html',
-    styleUrls: ['./evento-credenciais.component.scss']
+    styleUrl: './evento-credenciais.component.scss'
 })
 export class EventoCredenciaisComponent implements OnInit {
     private readonly route = inject(ActivatedRoute);
@@ -54,6 +72,7 @@ export class EventoCredenciaisComponent implements OnInit {
     readonly filtroTexto = signal('');
     readonly filtroTipo = signal<TipoCredencial | null>(null);
     readonly filtroStatus = signal<StatusCredencial | null>(null);
+    readonly filtroRapidoAtivo = signal<FiltroRapidoCredencial>('TODAS');
 
     readonly opcoesTipo = [
         { label: 'Todos os tipos', value: null },
@@ -72,6 +91,14 @@ export class EventoCredenciaisComponent implements OnInit {
         this.credenciais().filter(credencial => credencial.status === 'ATIVA')
     );
 
+    readonly credenciaisInativas = computed(() =>
+        this.credenciais().filter(credencial => credencial.status === 'INATIVA')
+    );
+
+    readonly credenciaisCanceladas = computed(() =>
+        this.credenciais().filter(credencial => credencial.status === 'CANCELADA')
+    );
+
     readonly credenciaisTios = computed(() =>
         this.credenciais().filter(credencial => credencial.tipo === 'TIO_CARONA')
     );
@@ -79,6 +106,57 @@ export class EventoCredenciaisComponent implements OnInit {
     readonly credenciaisSobrinhos = computed(() =>
         this.credenciais().filter(credencial => credencial.tipo === 'SOBRINHO')
     );
+
+    readonly cardsResumoCredenciais = computed<CardResumoCredencial[]>(() => [
+        {
+            titulo: 'Total',
+            valor: this.credenciais().length,
+            subtitulo: 'credenciais geradas',
+            icone: 'fa-solid fa-id-card',
+            tema: 'total',
+            filtro: 'TODAS'
+        },
+        {
+            titulo: 'Ativas',
+            valor: this.credenciaisAtivas().length,
+            subtitulo: 'prontas para impressão',
+            icone: 'fa-solid fa-circle-check',
+            tema: 'success',
+            filtro: 'ATIVAS'
+        },
+        {
+            titulo: 'Tios carona',
+            valor: this.credenciaisTios().length,
+            subtitulo: 'credenciais de tios',
+            icone: 'fa-solid fa-car-side',
+            tema: 'info',
+            filtro: 'TIOS'
+        },
+        {
+            titulo: 'Sobrinhos',
+            valor: this.credenciaisSobrinhos().length,
+            subtitulo: 'credenciais de sobrinhos',
+            icone: 'fa-solid fa-child-reaching',
+            tema: 'primary',
+            filtro: 'SOBRINHOS'
+        },
+        {
+            titulo: 'Inativas',
+            valor: this.credenciaisInativas().length,
+            subtitulo: 'temporariamente suspensas',
+            icone: 'fa-solid fa-pause',
+            tema: 'warn',
+            filtro: 'INATIVAS'
+        },
+        {
+            titulo: 'Canceladas',
+            valor: this.credenciaisCanceladas().length,
+            subtitulo: 'fora de uso',
+            icone: 'fa-solid fa-ban',
+            tema: 'danger',
+            filtro: 'CANCELADAS'
+        }
+    ]);
 
     readonly credenciaisFiltradas = computed(() => {
         const filtro = this.normalizarFiltro(this.filtroTexto());
@@ -130,14 +208,53 @@ export class EventoCredenciaisComponent implements OnInit {
 
     alterarFiltroTexto(valor: string): void {
         this.filtroTexto.set(valor);
+        this.filtroRapidoAtivo.set('PERSONALIZADO');
     }
 
     alterarFiltroTipo(valor: TipoCredencial | null): void {
         this.filtroTipo.set(valor);
+        this.filtroRapidoAtivo.set('PERSONALIZADO');
     }
 
     alterarFiltroStatus(valor: StatusCredencial | null): void {
         this.filtroStatus.set(valor);
+        this.filtroRapidoAtivo.set('PERSONALIZADO');
+    }
+
+    aplicarFiltroRapido(filtro: FiltroRapidoCredencial): void {
+        this.filtroRapidoAtivo.set(filtro);
+        this.filtroTexto.set('');
+
+        switch (filtro) {
+            case 'ATIVAS':
+                this.filtroTipo.set(null);
+                this.filtroStatus.set('ATIVA');
+                break;
+            case 'TIOS':
+                this.filtroTipo.set('TIO_CARONA');
+                this.filtroStatus.set(null);
+                break;
+            case 'SOBRINHOS':
+                this.filtroTipo.set('SOBRINHO');
+                this.filtroStatus.set(null);
+                break;
+            case 'INATIVAS':
+                this.filtroTipo.set(null);
+                this.filtroStatus.set('INATIVA');
+                break;
+            case 'CANCELADAS':
+                this.filtroTipo.set(null);
+                this.filtroStatus.set('CANCELADA');
+                break;
+            default:
+                this.filtroTipo.set(null);
+                this.filtroStatus.set(null);
+                break;
+        }
+    }
+
+    limparFiltros(): void {
+        this.aplicarFiltroRapido('TODAS');
     }
 
     gerarTodas(): void {
