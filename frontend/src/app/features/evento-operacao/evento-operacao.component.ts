@@ -74,14 +74,11 @@ export class EventoOperacaoComponent implements OnInit {
   readonly sobrinhos = signal<Sobrinho[]>([]);
   readonly vinculos = signal<SobrinhoDupla[]>([]);
   readonly cadernos = signal<CadernoChoro[]>([]);
-
   readonly carregando = signal(false);
   readonly processandoCodigo = signal(false);
-
   readonly evento = signal<Evento | null>(null);
   readonly processandoManual = signal<number | null>(null);
   readonly processandoPresencaSobrinho = signal<number | null>(null);
-
   readonly filtroTiosOperacao = signal('');
   readonly filtroPresencaSobrinhos = signal('');
   readonly filtroSobrinhosEvento = signal('');
@@ -89,18 +86,15 @@ export class EventoOperacaoComponent implements OnInit {
   readonly duplaCadernoSelecionada = signal<number | null>(null);
   readonly processandoCadernos = signal(false);
   readonly processandoCadernoId = signal<number | null>(null);
-
   readonly cadernoSelecionado = signal<CadernoChoro | null>(null);
   readonly historicoCaderno = signal<CadernoChoroHistorico[]>([]);
-
   readonly historicoCadernoVisivel = signal(false);
   readonly carregandoHistoricoCaderno = signal(false);
-
   readonly operacaoCadernoVisivel = signal(false);
   readonly operacaoCadernoPendente = signal<OperacaoCadernoChoro | null>(null);
   readonly observacaoOperacaoCaderno = signal('');
-
   readonly acoesEspeciaisCadernoVisivel = signal(false);
+  readonly processandoCodigoSobrinho = signal(false);
 
   readonly historicoCadernoTimeline = computed(() =>
     [...this.historicoCaderno()].reverse()
@@ -109,6 +103,11 @@ export class EventoOperacaoComponent implements OnInit {
   readonly codigoForm = this.fb.nonNullable.group({
     codigoIdentificacao: ['', [Validators.required, Validators.maxLength(80)]],
     tipoOperacao: ['CHECKIN' as 'CHECKIN' | 'CHECKOUT', [Validators.required]]
+  });
+
+  readonly codigoSobrinhoForm = this.fb.nonNullable.group({
+    codigoIdentificacao: ['', [Validators.required, Validators.maxLength(80)]],
+    operacao: ['PRESENTE' as OperacaoPresencaSobrinho, [Validators.required]]
   });
 
   readonly tiosAtivos = computed(() =>
@@ -698,28 +697,28 @@ export class EventoOperacaoComponent implements OnInit {
         ? this.service.registrarCheckinPorCodigo(this.eventoId, codigo)
         : this.service.registrarCheckoutPorCodigo(this.eventoId, codigo);
 
-    requisicao.subscribe({
-      next: tioAtualizado => {
-        this.atualizarTioCaronaNaLista(tioAtualizado);
+    requisicao
+      .pipe(finalize(() => this.processandoCodigo.set(false)))
+      .subscribe({
+        next: tioAtualizado => {
+          this.atualizarTioCaronaNaLista(tioAtualizado);
 
-        this.codigoForm.patchValue({
-          codigoIdentificacao: ''
-        });
+          this.codigoForm.reset({
+            codigoIdentificacao: '',
+            tipoOperacao: valor.tipoOperacao
+          });
 
-        this.toastSuccess(
-          valor.tipoOperacao === 'CHECKIN'
-            ? `Check-in registrado para ${tioAtualizado.pessoaNome}.`
-            : `Checkout registrado para ${tioAtualizado.pessoaNome}.`
-        );
-      },
-      error: erro => {
-        console.error('Erro ao registrar operação por código', erro);
-        this.toastError(this.mensagemErro(erro, 'Não foi possível registrar a operação por código.'));
-      },
-      complete: () => {
-        this.processandoCodigo.set(false);
-      }
-    });
+          this.toastSuccess(
+            valor.tipoOperacao === 'CHECKIN'
+              ? `Check-in registrado para ${tioAtualizado.pessoaNome}.`
+              : `Checkout registrado para ${tioAtualizado.pessoaNome}.`
+          );
+        },
+        error: erro => {
+          console.error('Erro ao registrar operação por código', erro);
+          this.toastError(this.mensagemErro(erro, 'Não foi possível registrar a operação por código.'));
+        }
+      });
   }
 
   registrarCheckinManual(tio: TioCaronaEvento): void {
@@ -823,6 +822,50 @@ export class EventoOperacaoComponent implements OnInit {
         this.processandoPresencaSobrinho.set(null);
       }
     });
+  }
+
+  registrarPresencaSobrinhoPorCodigo(): void {
+    if (this.codigoSobrinhoForm.invalid) {
+      this.codigoSobrinhoForm.markAllAsTouched();
+      this.toastWarn('Informe o código da credencial do sobrinho.');
+      return;
+    }
+
+    const valor = this.codigoSobrinhoForm.getRawValue();
+    const codigo = valor.codigoIdentificacao.trim();
+
+    this.processandoCodigoSobrinho.set(true);
+
+    this.service.registrarPresencaSobrinhoPorCodigo(
+      this.eventoId,
+      codigo,
+      valor.operacao,
+      'Leitura via QR Code'
+    )
+      .pipe(finalize(() => this.processandoCodigoSobrinho.set(false)))
+      .subscribe({
+        next: sobrinhoAtualizado => {
+          this.atualizarSobrinhoNaLista(sobrinhoAtualizado);
+
+          this.codigoSobrinhoForm.reset({
+            codigoIdentificacao: '',
+            operacao: valor.operacao
+          });
+
+          this.toastSuccess(
+            `${sobrinhoAtualizado.nome} marcado como ${this.labelSobrinhoStatus(this.statusPresencaSobrinho(sobrinhoAtualizado)).toLowerCase()}.`
+          );
+        },
+        error: erro => {
+          console.error('Erro ao registrar presença por código', erro);
+          this.toastError(this.mensagemErro(erro, 'Não foi possível registrar a presença pela credencial.'));
+        }
+      });
+  }
+
+  aoPressionarEnterCodigoSobrinho(event: Event): void {
+    event.preventDefault();
+    this.registrarPresencaSobrinhoPorCodigo();
   }
 
   labelOperacao(): string {

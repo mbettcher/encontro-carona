@@ -173,7 +173,9 @@
 </div>
 
 <div class="row g-4 mb-4">
+
   <div class="col-12 col-xl-6">
+
     <p-card class="operation-action-card h-100">
       <div class="d-flex align-items-start gap-3 mb-3">
         <div class="action-icon mb-0">
@@ -209,7 +211,7 @@
             </span>
 
             <input id="codigoIdentificacao" pInputText type="text" class="form-control"
-              formControlName="codigoIdentificacao" placeholder="Aponte o leitor ou digite o código" autocomplete="off"
+              formControlName="codigoIdentificacao" placeholder="Aponte o leitor ou digite o código do tio carona" autocomplete="off"
               (keydown.enter)="aoPressionarEnterCodigo($event)" />
           </div>
 
@@ -225,9 +227,72 @@
           Aponte o leitor para o campo de código. Após a leitura, pressione Enter ou clique em Processar leitura.
         </div>
 
-        <p-button type="submit" label="Processar leitura" icon="fa-solid fa-barcode" [loading]="processandoCodigo()" />
+        <p-button type="submit" label="Registrar presença" icon="fa-solid fa-barcode" [loading]="processandoCodigo()" />
       </form>
     </p-card>
+
+  </div>
+
+  <div class="col-12 col-xl-6">
+
+    <p-card class="operation-action-card h-100">
+      <div class="d-flex align-items-start gap-3 mb-3">
+        <div class="action-icon mb-0">
+          <i class="fa-solid fa-child-reaching"></i>
+        </div>
+
+        <div>
+          <h3 class="h6 mb-1">Presença do sobrinho por credencial</h3>
+          <p class="text-body-secondary small mb-0">
+            Use o leitor de QR Code para registrar presença, ausência ou desistência do sobrinho.
+          </p>
+        </div>
+      </div>
+
+      <form [formGroup]="codigoSobrinhoForm" (ngSubmit)="registrarPresencaSobrinhoPorCodigo()" class="d-grid gap-3">
+        <div>
+          <label for="operacaoPresencaSobrinhoCodigo" class="form-label">Operação</label>
+
+          <p-select inputId="operacaoPresencaSobrinhoCodigo" formControlName="operacao" [options]="[
+            { label: 'Marcar presente', value: 'PRESENTE' },
+            { label: 'Marcar ausente', value: 'AUSENTE' },
+            { label: 'Marcar desistente', value: 'DESISTENTE' }
+          ]" optionLabel="label" optionValue="value" class="w-100" />
+        </div>
+
+        <div>
+          <label for="codigoIdentificacaoSobrinho" class="form-label">
+            QR Code ou código da credencial
+          </label>
+
+          <div class="input-group">
+            <span class="input-group-text">
+              <i class="fa-solid fa-qrcode"></i>
+            </span>
+
+            <input id="codigoIdentificacaoSobrinho" pInputText type="text" class="form-control"
+              formControlName="codigoIdentificacao" placeholder="Aponte o leitor ou digite o código do sobrinho"
+              autocomplete="off" (keydown.enter)="aoPressionarEnterCodigoSobrinho($event)" />
+          </div>
+
+          @if (codigoSobrinhoForm.controls.codigoIdentificacao.touched &&
+          codigoSobrinhoForm.controls.codigoIdentificacao.invalid) {
+          <div class="form-text text-danger">
+            Informe o código da credencial do sobrinho.
+          </div>
+          }
+        </div>
+
+        <div class="alert alert-warning py-2 px-3 mb-0 small">
+          <i class="fa-solid fa-circle-info me-2"></i>
+          A leitura aceita credenciais do tipo Sobrinho. Credenciais de tio carona serão recusadas neste campo.
+        </div>
+
+        <p-button type="submit" label="Registrar presença" icon="fa-solid fa-qrcode" severity="success"
+          [loading]="processandoCodigoSobrinho()" />
+      </form>
+    </p-card>
+
   </div>
 
   <div class="col-12 col-md-4 col-xl-2">

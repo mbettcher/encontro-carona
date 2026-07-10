@@ -195,4 +195,15 @@ export class EventoOperacaoService {
       }
     );
   }
+
+  registrarPresencaSobrinhoPorCodigo(eventoId: number, codigoIdentificacao: string, operacao: OperacaoPresencaSobrinho, observacao?: string): Observable<Sobrinho> {
+    return this.http.post<Sobrinho>(
+      `${this.apiUrl}/eventos/${eventoId}/sobrinhos/presenca/credencial`,
+      {
+        codigoIdentificacao: codigoIdentificacao.trim(),
+        operacao,
+        observacao: observacao?.trim() || undefined
+      }
+    );
+  }
 }
