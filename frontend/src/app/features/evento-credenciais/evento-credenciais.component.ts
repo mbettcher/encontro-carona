@@ -36,7 +36,7 @@ import { EventoCredenciaisService } from './evento-credenciais.service';
         TooltipModule
     ],
     templateUrl: './evento-credenciais.component.html',
-    styleUrl: './evento-credenciais.component.scss'
+    styleUrls: ['./evento-credenciais.component.scss']
 })
 export class EventoCredenciaisComponent implements OnInit {
     private readonly route = inject(ActivatedRoute);

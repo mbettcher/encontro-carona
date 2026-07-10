@@ -139,24 +139,40 @@
     .qrcode-print-page {
         background: #fff !important;
         min-height: auto !important;
+        overflow: visible !important;
     }
 
     .qrcode-print-page .print-sheet {
         width: 210mm;
         max-width: 210mm;
-        min-height: 297mm;
+        min-height: auto;
         margin: 0 auto;
         padding: 10mm;
         box-shadow: none;
         background: #fff !important;
+        overflow: visible !important;
     }
 
     .qrcode-print-page .qrcode-grid {
+        display: grid;
         grid-template-columns: repeat(3, 1fr);
         gap: 5mm;
+        align-items: start;
     }
 
     .qrcode-print-page .qrcode-label {
         border: 1px dashed #999;
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+
+    .qrcode-print-page .qrcode-label:nth-child(12n) {
+        break-after: page;
+        page-break-after: always;
+    }
+
+    .qrcode-print-page .qrcode-label:last-child {
+        break-after: auto;
+        page-break-after: auto;
     }
 }

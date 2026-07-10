@@ -34,7 +34,7 @@ interface CredencialCrachaPrint {
         TagModule
     ],
     templateUrl: './evento-cracha-print.component.html',
-    styleUrl: './evento-cracha-print.component.scss'
+    styleUrls: ['./evento-cracha-print.component.scss']
 })
 export class EventoCrachaPrintComponent implements OnInit, OnDestroy {
     private readonly route = inject(ActivatedRoute);

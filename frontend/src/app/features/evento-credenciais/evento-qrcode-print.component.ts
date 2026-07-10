@@ -33,7 +33,7 @@ interface CredencialQrCodePrint {
         TagModule
     ],
     templateUrl: './evento-qrcode-print.component.html',
-    styleUrl: './evento-qrcode-print.component.scss'
+    styleUrls: ['./evento-qrcode-print.component.scss']
 })
 export class EventoQrCodePrintComponent implements OnInit, OnDestroy {
     private readonly route = inject(ActivatedRoute);
