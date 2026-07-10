@@ -994,8 +994,8 @@ export class EventoGestaoComponent implements OnInit {
     this.modalSubstituirDuplaVisivel.set(true);
   }
 
-  fecharModalSubstituirDupla(): void {
-    if (this.salvandoSubstituicaoDupla()) {
+  fecharModalSubstituirDupla(forcar = false): void {
+    if (this.salvandoSubstituicaoDupla() && !forcar) {
       return;
     }
 
@@ -1007,6 +1007,10 @@ export class EventoGestaoComponent implements OnInit {
       motivo: '',
       confirmarCadernoDevolvido: false
     });
+
+    this.vinculoSubstituirDuplaForm.markAsPristine();
+    this.vinculoSubstituirDuplaForm.markAsUntouched();
+    this.vinculoSubstituirDuplaForm.updateValueAndValidity();
   }
 
   salvarSubstituicaoDupla(): void {
@@ -1039,7 +1043,7 @@ export class EventoGestaoComponent implements OnInit {
         next: vinculoAtualizado => {
           this.atualizarVinculoNaLista(vinculoAtualizado);
           this.toastSuccess('Dupla responsável substituída com sucesso.');
-          this.fecharModalSubstituirDupla();
+          this.fecharModalSubstituirDupla(true);
           this.carregarVinculos();
         },
         error: erro => {
