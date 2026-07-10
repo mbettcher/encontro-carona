@@ -10,6 +10,8 @@ import java.time.OffsetDateTime;
 public record SobrinhoResponse(
         Long id,
         Long eventoId,
+        Long pessoaId,
+        String pessoaNome,
         String nome,
         String telefone,
         String responsavelNome,
@@ -31,6 +33,8 @@ public record SobrinhoResponse(
         return new SobrinhoResponse(
                 entity.getId(),
                 entity.getEvento().getId(),
+                entity.getPessoa() == null ? null : entity.getPessoa().getId(),
+                entity.getPessoa() == null ? null : entity.getPessoa().getNome(),
                 entity.getNome(),
                 entity.getTelefone(),
                 entity.getResponsavelNome(),

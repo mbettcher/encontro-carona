@@ -1,5 +1,6 @@
 package br.com.paroquia.encontro.controllers;
 
+import br.com.paroquia.encontro.dto.request.AdicionarPessoaSobrinhoRequest;
 import br.com.paroquia.encontro.dto.request.SobrinhoRequest;
 import br.com.paroquia.encontro.dto.response.SobrinhoPresencaResponse;
 import br.com.paroquia.encontro.dto.response.SobrinhoResponse;
@@ -31,6 +32,15 @@ public class SobrinhoController {
     @ResponseStatus(HttpStatus.CREATED)
     public SobrinhoResponse criar(@PathVariable Long eventoId, @RequestBody @Valid SobrinhoRequest request) {
         return service.criar(eventoId, request);
+    }
+
+    @PostMapping("/adicionar-pessoa")
+    @ResponseStatus(HttpStatus.CREATED)
+    public SobrinhoResponse adicionarPessoa(
+            @PathVariable Long eventoId,
+            @RequestBody @Valid AdicionarPessoaSobrinhoRequest request
+    ) {
+        return service.adicionarPessoa(eventoId, request);
     }
 
     @PutMapping("/{sobrinhoId}")
@@ -76,5 +86,4 @@ public class SobrinhoController {
                 request.observacao()
         );
     }
-
 }

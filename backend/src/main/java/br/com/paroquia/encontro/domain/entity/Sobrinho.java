@@ -19,6 +19,10 @@ public class Sobrinho {
     @JoinColumn(name = "evento_id", nullable = false)
     private Evento evento;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "pessoa_id")
+    private Pessoa pessoa;
+
     @NotBlank(message = "O nome do sobrinho é obrigatório.")
     @Size(max = 150, message = "O nome não pode ter mais de 150 caracteres.")
     @Column(nullable = false, length = 150)
@@ -67,8 +71,34 @@ public class Sobrinho {
     protected Sobrinho() {
     }
 
-    public Sobrinho(Evento evento, String nome, String telefone, String responsavelNome, String responsavelTelefone, String endereco, LocalDate dataNascimento, String restricaoAlimentar, String observacaoMedica) {
+    public Sobrinho(
+            Evento evento,
+            String nome,
+            String telefone,
+            String responsavelNome,
+            String responsavelTelefone,
+            String endereco,
+            LocalDate dataNascimento,
+            String restricaoAlimentar,
+            String observacaoMedica
+    ) {
+        this(evento, null, nome, telefone, responsavelNome, responsavelTelefone, endereco, dataNascimento, restricaoAlimentar, observacaoMedica);
+    }
+
+    public Sobrinho(
+            Evento evento,
+            Pessoa pessoa,
+            String nome,
+            String telefone,
+            String responsavelNome,
+            String responsavelTelefone,
+            String endereco,
+            LocalDate dataNascimento,
+            String restricaoAlimentar,
+            String observacaoMedica
+    ) {
         this.evento = evento;
+        this.pessoa = pessoa;
         this.nome = nome;
         this.telefone = telefone;
         this.responsavelNome = responsavelNome;
@@ -105,6 +135,10 @@ public class Sobrinho {
 
     public Evento getEvento() {
         return evento;
+    }
+
+    public Pessoa getPessoa() {
+        return pessoa;
     }
 
     public String getNome() {
