@@ -15,6 +15,8 @@ public interface CadernoChoroRepository extends JpaRepository<CadernoChoro, Long
 
     Optional<CadernoChoro> findByIdAndEventoId(Long id, Long eventoId);
 
+    Optional<CadernoChoro> findByEventoIdAndSobrinhoId(Long eventoId, Long sobrinhoId);
+
     boolean existsByEventoIdAndSobrinhoId(Long eventoId, Long sobrinhoId);
 
     boolean existsByEventoIdAndDuplaId(Long eventoId, Long duplaId);

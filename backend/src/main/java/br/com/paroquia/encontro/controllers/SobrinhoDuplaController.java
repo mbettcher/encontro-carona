@@ -4,6 +4,7 @@ import br.com.paroquia.encontro.dto.request.TrocarDuplaVinculoRequest;
 import br.com.paroquia.encontro.dto.request.VincularSobrinhoRequest;
 import br.com.paroquia.encontro.dto.response.SobrinhoDuplaResponse;
 import br.com.paroquia.encontro.services.SobrinhoDuplaService;
+import br.com.paroquia.encontro.dto.request.SubstituirDuplaVinculoRequest;
 
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -65,5 +66,14 @@ public class SobrinhoDuplaController {
             @RequestBody @Valid TrocarDuplaVinculoRequest request
     ) {
         return service.trocarDupla(eventoId, vinculoId, request);
+    }
+
+    @PatchMapping("/{vinculoId}/substituir-dupla")
+    public SobrinhoDuplaResponse substituirDupla(
+            @PathVariable Long eventoId,
+            @PathVariable Long vinculoId,
+            @RequestBody @Valid SubstituirDuplaVinculoRequest request
+    ) {
+        return service.substituirDupla(eventoId, vinculoId, request);
     }
 }

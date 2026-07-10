@@ -8,12 +8,13 @@ import br.com.paroquia.encontro.domain.enums.SobrinhoStatus;
 import br.com.paroquia.encontro.domain.enums.VinculoStatus;
 import br.com.paroquia.encontro.dto.request.VincularSobrinhoRequest;
 import br.com.paroquia.encontro.dto.response.SobrinhoDuplaResponse;
-import br.com.paroquia.encontro.repository.CadernoChoroRepository;
-import br.com.paroquia.encontro.repository.DuplaTioCaronaRepository;
-import br.com.paroquia.encontro.repository.EventoRepository;
-import br.com.paroquia.encontro.repository.SobrinhoDuplaRepository;
-import br.com.paroquia.encontro.repository.SobrinhoRepository;
+import br.com.paroquia.encontro.repository.*;
 import br.com.paroquia.encontro.dto.request.TrocarDuplaVinculoRequest;
+import br.com.paroquia.encontro.domain.entity.CadernoChoroHistorico;
+import br.com.paroquia.encontro.domain.enums.DuplaStatus;
+import br.com.paroquia.encontro.domain.enums.StatusCadernoChoro;
+import br.com.paroquia.encontro.domain.enums.VinculoStatus;
+import br.com.paroquia.encontro.dto.request.SubstituirDuplaVinculoRequest;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,19 +28,22 @@ public class SobrinhoDuplaService {
     private final SobrinhoRepository sobrinhoRepository;
     private final DuplaTioCaronaRepository duplaRepository;
     private final CadernoChoroRepository cadernoChoroRepository;
+    private final CadernoChoroHistoricoRepository cadernoChoroHistoricoRepository;
 
     public SobrinhoDuplaService(
             SobrinhoDuplaRepository repository,
             EventoRepository eventoRepository,
             SobrinhoRepository sobrinhoRepository,
             DuplaTioCaronaRepository duplaRepository,
-            CadernoChoroRepository cadernoChoroRepository
+            CadernoChoroRepository cadernoChoroRepository,
+            CadernoChoroHistoricoRepository cadernoChoroHistoricoRepository
     ) {
         this.repository = repository;
         this.eventoRepository = eventoRepository;
         this.sobrinhoRepository = sobrinhoRepository;
         this.duplaRepository = duplaRepository;
         this.cadernoChoroRepository = cadernoChoroRepository;
+        this.cadernoChoroHistoricoRepository = cadernoChoroHistoricoRepository;
     }
 
     @Transactional(readOnly = true)
@@ -171,8 +175,98 @@ public class SobrinhoDuplaService {
         return SobrinhoDuplaResponse.from(vinculo);
     }
 
+    @Transactional
+    public SobrinhoDuplaResponse substituirDupla(
+            Long eventoId,
+            Long vinculoId,
+            SubstituirDuplaVinculoRequest request
+    ) {
+        var vinculo = buscarVinculo(eventoId, vinculoId);
+
+        if (vinculo.getStatus() != VinculoStatus.ATIVO) {
+            throw new BusinessException("Somente vínculos ativos podem substituir a dupla responsável.");
+        }
+
+        var novaDupla = duplaRepository.findByIdAndEventoId(request.novaDuplaId(), eventoId)
+                .orElseThrow(() -> new ResourceNotFoundException("Nova dupla não encontrada neste evento."));
+
+        if (novaDupla.getStatus() != DuplaStatus.ATIVA) {
+            throw new BusinessException("Não é possível substituir para uma dupla inativa.");
+        }
+
+        if (novaDupla.getId().equals(vinculo.getDupla().getId())) {
+            throw new BusinessException("O sobrinho já está vinculado a esta dupla.");
+        }
+
+        var duplaAnterior = vinculo.getDupla();
+        var motivoNormalizado = request.motivo().trim();
+
+        var cadernoOpt = cadernoChoroRepository.findByEventoIdAndSobrinhoId(
+                eventoId,
+                vinculo.getSobrinho().getId()
+        );
+
+        if (cadernoOpt.isEmpty()) {
+            vinculo.trocarDupla(novaDupla);
+            return SobrinhoDuplaResponse.from(vinculo);
+        }
+
+        var caderno = cadernoOpt.get();
+        var statusAnterior = caderno.getStatus();
+
+        if (statusAnterior == StatusCadernoChoro.ENTREGUE_A_DUPLA && !request.cadernoDevolvidoConfirmado()) {
+            throw new BusinessException("Para substituir a dupla, confirme que o Caderno do Choro foi devolvido pela dupla anterior à equipe organizadora.");
+        }
+
+        var observacaoHistorico = montarObservacaoSubstituicaoDupla(
+                duplaAnterior.getCodigo(),
+                novaDupla.getCodigo(),
+                motivoNormalizado,
+                statusAnterior,
+                request.cadernoDevolvidoConfirmado()
+        );
+
+        caderno.substituirDuplaResponsavel(
+                novaDupla,
+                observacaoHistorico,
+                request.cadernoDevolvidoConfirmado()
+        );
+
+        vinculo.trocarDupla(novaDupla);
+
+        cadernoChoroHistoricoRepository.save(
+                new CadernoChoroHistorico(
+                        caderno,
+                        caderno.getStatus(),
+                        observacaoHistorico
+                )
+        );
+
+        return SobrinhoDuplaResponse.from(vinculo);
+    }
+
     private SobrinhoDupla buscarVinculo(Long eventoId, Long vinculoId) {
         return repository.findByIdAndEventoId(vinculoId, eventoId)
                 .orElseThrow(() -> new ResourceNotFoundException("Vínculo não encontrado neste evento."));
+    }
+
+    private String montarObservacaoSubstituicaoDupla(
+            String codigoDuplaAnterior,
+            String codigoNovaDupla,
+            String motivo,
+            StatusCadernoChoro statusAnterior,
+            boolean cadernoDevolvidoConfirmado
+    ) {
+        var observacao = "Dupla responsável substituída. "
+                + "Dupla anterior: " + codigoDuplaAnterior
+                + ". Nova dupla: " + codigoNovaDupla
+                + ". Status anterior do caderno: " + statusAnterior
+                + ". Motivo: " + motivo;
+
+        if (statusAnterior == StatusCadernoChoro.ENTREGUE_A_DUPLA && cadernoDevolvidoConfirmado) {
+            observacao += ". Foi confirmado que o Caderno do Choro foi devolvido pela dupla anterior à equipe organizadora.";
+        }
+
+        return observacao;
     }
 }

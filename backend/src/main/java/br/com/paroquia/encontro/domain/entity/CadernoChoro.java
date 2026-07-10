@@ -154,6 +154,28 @@ public class CadernoChoro {
         }
     }
 
+    public void substituirDuplaResponsavel(
+            DuplaTioCarona novaDupla,
+            String observacao,
+            boolean confirmarCadernoDevolvido
+    ) {
+        if (novaDupla == null) {
+            throw new BusinessException("Nova dupla responsável deve ser informada.");
+        }
+
+        this.dupla = novaDupla;
+        atualizarObservacao(observacao);
+
+        if (this.status == StatusCadernoChoro.ENTREGUE_A_DUPLA) {
+            if (!confirmarCadernoDevolvido) {
+                throw new BusinessException("Para substituir a dupla, confirme que o Caderno do Choro foi devolvido pela dupla anterior à equipe organizadora.");
+            }
+
+            this.status = StatusCadernoChoro.RECEBIDO_DA_DUPLA;
+            this.recebidoDaDuplaEm = OffsetDateTime.now();
+        }
+    }
+
     public Long getId() {
         return id;
     }
