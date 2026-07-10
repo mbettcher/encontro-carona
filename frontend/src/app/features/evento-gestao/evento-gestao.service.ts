@@ -16,6 +16,7 @@ import {
   TioCaronaEvento,
   TioCaronaEventoRequest,
   TrocarDuplaVinculoRequest,
+  SubstituirDuplaVinculoRequest,
   VincularSobrinhoRequest
 } from '../../shared/models';
 
@@ -172,6 +173,17 @@ export class EventoGestaoService {
     return this.http.patch<SobrinhoDupla>(
       `${this.apiUrl}/eventos/${eventoId}/vinculos/${vinculoId}/trocar-dupla`,
       this.limpar(request)
+    );
+  }
+
+  substituirDuplaVinculo(
+    eventoId: number,
+    vinculoId: number,
+    payload: SubstituirDuplaVinculoRequest
+  ): Observable<SobrinhoDupla> {
+    return this.http.patch<SobrinhoDupla>(
+      `${this.apiUrl}/eventos/${eventoId}/vinculos/${vinculoId}/substituir-dupla`,
+      payload
     );
   }
 

@@ -24,6 +24,7 @@ import {
   SobrinhoStatus,
   TioCaronaEvento,
   TioCaronaStatus,
+  SubstituirDuplaVinculoRequest,
   VinculoStatus
 } from '../../shared/models';
 import { CustomFormHelperService } from '../../shared/services/custom-form-helper.service';
@@ -97,6 +98,10 @@ export class EventoGestaoComponent implements OnInit {
   readonly vinculoTrocaDuplaVisivel = signal(false);
   readonly salvandoTrocaDupla = signal(false);
   readonly vinculoEmTroca = signal<SobrinhoDupla | null>(null);
+
+  readonly modalSubstituirDuplaVisivel = signal(false);
+  readonly vinculoEmSubstituicao = signal<SobrinhoDupla | null>(null);
+  readonly salvandoSubstituicaoDupla = signal(false);
 
   readonly tio1Selecionado = signal(0);
   readonly tio2Selecionado = signal(0);
@@ -339,6 +344,25 @@ export class EventoGestaoComponent implements OnInit {
       this.contemFiltro(this.tooltipDuplaVinculo(vinculo), filtro) ||
       this.contemFiltro(vinculo.status, filtro)
     );
+  });
+
+  readonly vinculoSubstituirDuplaForm = this.fb.nonNullable.group({
+    novaDuplaId: [0, [Validators.required, Validators.min(1)]],
+    motivo: ['', [Validators.required, Validators.maxLength(500)]],
+    confirmarCadernoDevolvido: [false]
+  });
+
+  readonly opcoesDuplasParaSubstituicao = computed<OpcaoNumerica[]>(() => {
+    const vinculo = this.vinculoEmSubstituicao();
+
+    return this.duplas()
+      .filter(dupla => dupla.status === 'ATIVA')
+      .filter(dupla => !vinculo || dupla.id !== vinculo.duplaId)
+      .map(dupla => ({
+        label: dupla.apelido || dupla.codigo,
+        descricao: `${dupla.tio1Nome} e ${dupla.tio2Nome}`,
+        value: dupla.id
+      }));
   });
 
   ngOnInit(): void {
@@ -945,6 +969,82 @@ export class EventoGestaoComponent implements OnInit {
         error: erro => {
           console.error('Erro ao trocar dupla do vínculo', erro);
           this.toastError(this.mensagemErro(erro, 'Não foi possível trocar a dupla do vínculo.'));
+        }
+      });
+  }
+
+  abrirModalSubstituirDupla(vinculo: SobrinhoDupla): void {
+    if (vinculo.status !== 'ATIVO') {
+      this.toastWarn('Somente vínculos ativos podem substituir a dupla responsável.');
+      return;
+    }
+
+    this.vinculoEmSubstituicao.set(vinculo);
+
+    this.vinculoSubstituirDuplaForm.reset({
+      novaDuplaId: 0,
+      motivo: '',
+      confirmarCadernoDevolvido: false
+    });
+
+    this.vinculoSubstituirDuplaForm.markAsPristine();
+    this.vinculoSubstituirDuplaForm.markAsUntouched();
+    this.vinculoSubstituirDuplaForm.updateValueAndValidity();
+
+    this.modalSubstituirDuplaVisivel.set(true);
+  }
+
+  fecharModalSubstituirDupla(): void {
+    if (this.salvandoSubstituicaoDupla()) {
+      return;
+    }
+
+    this.modalSubstituirDuplaVisivel.set(false);
+    this.vinculoEmSubstituicao.set(null);
+
+    this.vinculoSubstituirDuplaForm.reset({
+      novaDuplaId: 0,
+      motivo: '',
+      confirmarCadernoDevolvido: false
+    });
+  }
+
+  salvarSubstituicaoDupla(): void {
+    const vinculo = this.vinculoEmSubstituicao();
+
+    if (!vinculo) {
+      this.toastWarn('Nenhum vínculo selecionado para substituição.');
+      return;
+    }
+
+    if (this.vinculoSubstituirDuplaForm.invalid) {
+      this.vinculoSubstituirDuplaForm.markAllAsTouched();
+      this.toastWarn('Informe a nova dupla e o motivo da substituição.');
+      return;
+    }
+
+    const valor = this.vinculoSubstituirDuplaForm.getRawValue();
+
+    const payload: SubstituirDuplaVinculoRequest = {
+      novaDuplaId: Number(valor.novaDuplaId),
+      motivo: valor.motivo.trim(),
+      confirmarCadernoDevolvido: Boolean(valor.confirmarCadernoDevolvido)
+    };
+
+    this.salvandoSubstituicaoDupla.set(true);
+
+    this.service.substituirDuplaVinculo(this.eventoId, vinculo.id, payload)
+      .pipe(finalize(() => this.salvandoSubstituicaoDupla.set(false)))
+      .subscribe({
+        next: vinculoAtualizado => {
+          this.atualizarVinculoNaLista(vinculoAtualizado);
+          this.toastSuccess('Dupla responsável substituída com sucesso.');
+          this.fecharModalSubstituirDupla();
+          this.carregarVinculos();
+        },
+        error: erro => {
+          console.error('Erro ao substituir dupla responsável', erro);
+          this.toastError(this.mensagemErro(erro, 'Não foi possível substituir a dupla responsável.'));
         }
       });
   }

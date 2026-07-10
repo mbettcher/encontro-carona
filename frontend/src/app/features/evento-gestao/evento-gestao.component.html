@@ -700,23 +700,36 @@
                   <p-tag [value]="labelStatusVinculo(vinculo.status)"
                     [severity]="severityStatusVinculo(vinculo.status)" />
                 </td>
+
                 <td class="text-end">
                   <div class="d-flex justify-content-end gap-2">
                     @if (vinculo.status === 'ATIVO') {
                     <p-button icon="fa-solid fa-right-left" size="small" severity="secondary" pTooltip="Trocar dupla"
                       tooltipPosition="top" ariaLabel="Trocar dupla do vínculo"
-                      (onClick)="abrirTrocaDuplaVinculo(vinculo)" />
+                      [disabled]="processandoVinculoId() === vinculo.id" (onClick)="abrirTrocaDuplaVinculo(vinculo)">
+                    </p-button>
+
+                    <p-button icon="fa-solid fa-people-arrows" size="small" severity="help"
+                      pTooltip="Substituir dupla responsável" tooltipPosition="top"
+                      ariaLabel="Substituir dupla responsável" [disabled]="processandoVinculoId() === vinculo.id"
+                      (onClick)="abrirModalSubstituirDupla(vinculo)">
+                    </p-button>
 
                     <p-button icon="fa-solid fa-link-slash" size="small" severity="warn" pTooltip="Remover vínculo"
                       tooltipPosition="top" ariaLabel="Remover vínculo"
-                      [loading]="processandoVinculoId() === vinculo.id" (onClick)="removerVinculo(vinculo)" />
+                      [loading]="processandoVinculoId() === vinculo.id"
+                      [disabled]="processandoVinculoId() === vinculo.id" (onClick)="removerVinculo(vinculo)">
+                    </p-button>
                     } @else {
                     <p-button icon="fa-solid fa-rotate-left" size="small" severity="success" pTooltip="Reativar vínculo"
                       tooltipPosition="top" ariaLabel="Reativar vínculo"
-                      [loading]="processandoVinculoId() === vinculo.id" (onClick)="reativarVinculo(vinculo)" />
+                      [loading]="processandoVinculoId() === vinculo.id"
+                      [disabled]="processandoVinculoId() === vinculo.id" (onClick)="reativarVinculo(vinculo)">
+                    </p-button>
                     }
                   </div>
                 </td>
+                
               </tr>
             </ng-template>
           </p-table>
@@ -726,6 +739,107 @@
     </div>
   </div>
   }
+
+  <p-dialog header="Substituir dupla responsável" [visible]="modalSubstituirDuplaVisivel()" [modal]="true"
+    [draggable]="false" [resizable]="false" styleClass="w-100" [style]="{ maxWidth: '42rem' }"
+    (visibleChange)="modalSubstituirDuplaVisivel.set($event)" (onHide)="fecharModalSubstituirDupla()">
+
+    @if (vinculoEmSubstituicao()) {
+    <div class="alert alert-warning py-2 px-3 small mb-3">
+      <i class="fa-solid fa-circle-info me-2"></i>
+      Esta ação é rastreada e deve ser usada quando a dupla responsável precisou ser substituída.
+      Se o Caderno do Choro estava em posse da dupla anterior, confirme a devolução antes de salvar.
+    </div>
+
+    <div class="mb-3">
+      <div class="small text-body-secondary">Sobrinho</div>
+      <div class="fw-semibold">{{ vinculoEmSubstituicao()?.sobrinhoNome }}</div>
+    </div>
+
+    <div class="mb-3">
+      <div class="small text-body-secondary">Dupla atual</div>
+      <div class="fw-semibold">
+        {{ nomeDuplaVinculo(vinculoEmSubstituicao()!) }}
+      </div>
+      <div class="small text-body-secondary">
+        {{ tooltipDuplaVinculo(vinculoEmSubstituicao()!) }}
+      </div>
+    </div>
+
+    <form [formGroup]="vinculoSubstituirDuplaForm" class="d-grid gap-3">
+      <div>
+        <label for="novaDuplaSubstituicao" class="form-label">
+          Nova dupla <span class="text-danger">*</span>
+        </label>
+
+        <p-select inputId="novaDuplaSubstituicao" [options]="opcoesDuplasParaSubstituicao()" optionLabel="label"
+          optionValue="value" formControlName="novaDuplaId" placeholder="Selecione a nova dupla"
+          styleClass="w-100 vinculo-select" panelStyleClass="vinculo-select-panel" appendTo="body" [filter]="true"
+          filterBy="label,descricao">
+
+          <ng-template pTemplate="selectedItem" let-opcao>
+            @if (opcao) {
+            <div class="select-dupla-selected">
+              <div class="fw-semibold text-truncate">{{ opcao.label }}</div>
+            </div>
+            }
+          </ng-template>
+
+          <ng-template pTemplate="item" let-opcao>
+            <div class="select-dupla-option">
+              <div class="fw-semibold text-truncate">{{ opcao.label }}</div>
+              <div class="small text-body-secondary text-truncate">{{ opcao.descricao }}</div>
+            </div>
+          </ng-template>
+        </p-select>
+
+        @if (vinculoSubstituirDuplaForm.controls.novaDuplaId.touched &&
+        vinculoSubstituirDuplaForm.controls.novaDuplaId.invalid) {
+        <div class="form-text text-danger">Selecione a nova dupla.</div>
+        }
+      </div>
+
+      <div>
+        <label for="motivoSubstituicaoDupla" class="form-label">
+          Motivo <span class="text-danger">*</span>
+        </label>
+
+        <textarea id="motivoSubstituicaoDupla" pTextarea rows="4" formControlName="motivo" class="form-control"
+          placeholder="Ex.: Dupla desistiu do evento.">
+        </textarea>
+
+        @if (vinculoSubstituirDuplaForm.controls.motivo.touched &&
+        vinculoSubstituirDuplaForm.controls.motivo.invalid) {
+        <div class="form-text text-danger">
+          Informe o motivo da substituição com no máximo 500 caracteres.
+        </div>
+        }
+      </div>
+
+      <div class="form-check">
+        <input id="confirmarCadernoDevolvido" type="checkbox" class="form-check-input"
+          formControlName="confirmarCadernoDevolvido">
+
+        <label for="confirmarCadernoDevolvido" class="form-check-label">
+          Confirmo que, caso o Caderno do Choro estivesse em posse da dupla anterior,
+          ele já foi devolvido à equipe organizadora.
+        </label>
+      </div>
+    </form>
+    }
+
+    <ng-template pTemplate="footer">
+      <div class="d-flex justify-content-end gap-2">
+        <p-button label="Cancelar" severity="secondary" outlined [disabled]="salvandoSubstituicaoDupla()"
+          (onClick)="fecharModalSubstituirDupla()">
+        </p-button>
+
+        <p-button label="Substituir dupla" icon="fa-solid fa-people-arrows" severity="help"
+          [loading]="salvandoSubstituicaoDupla()" (onClick)="salvarSubstituicaoDupla()">
+        </p-button>
+      </div>
+    </ng-template>
+  </p-dialog>
 
   <p-dialog header="Editar tio carona" [visible]="tioEdicaoVisivel()" (visibleChange)="tioEdicaoVisivel.set($event)"
     [modal]="true" [style]="{ width: 'min(95vw, 520px)' }" [draggable]="false" [resizable]="false"

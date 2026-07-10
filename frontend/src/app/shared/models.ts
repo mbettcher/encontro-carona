@@ -297,3 +297,9 @@ export interface CredencialGeracaoResponse {
   existentes: number;
   total: number;
 }
+
+export interface SubstituirDuplaVinculoRequest {
+  novaDuplaId: number;
+  motivo: string;
+  confirmarCadernoDevolvido?: boolean;
+}
