@@ -1,8 +1,9 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
+import { finalize } from 'rxjs';
 
-import { MessageService } from 'primeng/api';
+import { ConfirmationService, MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { InputTextModule } from 'primeng/inputtext';
@@ -58,6 +59,7 @@ export class EventoGestaoComponent implements OnInit {
   private readonly service = inject(EventoGestaoService);
   private readonly fb = inject(FormBuilder);
   private readonly messageService = inject(MessageService);
+  private readonly confirmationService = inject(ConfirmationService);
   private readonly customFormHelper = inject(CustomFormHelperService);
 
   readonly eventoId = Number(this.route.snapshot.paramMap.get('eventoId'));
@@ -527,83 +529,133 @@ export class EventoGestaoComponent implements OnInit {
   }
 
   inativarDupla(dupla: DuplaTioCarona): void {
-    if (!window.confirm(`Deseja inativar a dupla ${dupla.apelido || dupla.codigo}?`)) {
-      return;
-    }
+    this.confirmationService.confirm({
+      header: 'Inativar dupla',
+      message: `Deseja realmente inativar a dupla ${this.nomeDupla(dupla)}?`,
+      icon: 'fa-solid fa-triangle-exclamation',
+      acceptLabel: 'Inativar',
+      rejectLabel: 'Cancelar',
+      acceptButtonStyleClass: 'p-button-danger',
+      rejectButtonStyleClass: 'p-button-secondary p-button-outlined',
+      accept: () => {
+        this.processandoDuplaId.set(dupla.id);
 
-    this.processandoDuplaId.set(dupla.id);
-
-    this.service.inativarDupla(this.eventoId, dupla.id).subscribe({
-      next: duplaAtualizada => {
-        this.atualizarDuplaNaLista(duplaAtualizada);
-        this.toastSuccess('Dupla inativada com sucesso.');
-      },
-      error: erro => {
-        console.error('Erro ao inativar dupla', erro);
-        this.toastError(this.mensagemErro(erro, 'Não foi possível inativar a dupla.'));
-      },
-      complete: () => this.processandoDuplaId.set(null)
+        this.service.inativarDupla(this.eventoId, dupla.id)
+          .pipe(finalize(() => this.processandoDuplaId.set(null)))
+          .subscribe({
+            next: duplaAtualizada => {
+              this.atualizarDuplaNaLista(duplaAtualizada);
+              this.toastSuccess('Dupla inativada com sucesso.');
+            },
+            error: erro => {
+              console.error('Erro ao inativar dupla', erro);
+              this.toastError(this.mensagemErro(erro, 'Não foi possível inativar a dupla.'));
+            }
+          });
+      }
     });
   }
 
   reativarDupla(dupla: DuplaTioCarona): void {
-    if (!window.confirm(`Deseja reativar a dupla ${dupla.apelido || dupla.codigo}?`)) {
-      return;
-    }
+    this.confirmationService.confirm({
+      header: 'Reativar dupla',
+      message: `Deseja realmente reativar a dupla ${this.nomeDupla(dupla)}?`,
+      icon: 'fa-solid fa-circle-question',
+      acceptLabel: 'Reativar',
+      rejectLabel: 'Cancelar',
+      acceptButtonStyleClass: 'p-button-success',
+      rejectButtonStyleClass: 'p-button-secondary p-button-outlined',
+      accept: () => {
+        this.processandoDuplaId.set(dupla.id);
 
-    this.processandoDuplaId.set(dupla.id);
-
-    this.service.reativarDupla(this.eventoId, dupla.id).subscribe({
-      next: duplaAtualizada => {
-        this.atualizarDuplaNaLista(duplaAtualizada);
-        this.toastSuccess('Dupla reativada com sucesso.');
-      },
-      error: erro => {
-        console.error('Erro ao reativar dupla', erro);
-        this.toastError(this.mensagemErro(erro, 'Não foi possível reativar a dupla.'));
-      },
-      complete: () => this.processandoDuplaId.set(null)
+        this.service.reativarDupla(this.eventoId, dupla.id)
+          .pipe(finalize(() => this.processandoDuplaId.set(null)))
+          .subscribe({
+            next: duplaAtualizada => {
+              this.atualizarDuplaNaLista(duplaAtualizada);
+              this.toastSuccess('Dupla reativada com sucesso.');
+            },
+            error: erro => {
+              console.error('Erro ao reativar dupla', erro);
+              this.toastError(this.mensagemErro(erro, 'Não foi possível reativar a dupla.'));
+            }
+          });
+      }
     });
   }
 
   removerVinculo(vinculo: SobrinhoDupla): void {
-    if (!window.confirm(`Deseja remover o vínculo de ${vinculo.sobrinhoNome}?`)) {
-      return;
-    }
+    this.confirmationService.confirm({
+      header: 'Remover vínculo',
+      message: `Deseja realmente remover o vínculo de ${vinculo.sobrinhoNome} com a dupla ${this.nomeDuplaVinculo(vinculo)}?`,
+      icon: 'fa-solid fa-triangle-exclamation',
+      acceptLabel: 'Remover',
+      rejectLabel: 'Cancelar',
+      acceptButtonStyleClass: 'p-button-danger',
+      rejectButtonStyleClass: 'p-button-secondary p-button-outlined',
+      accept: () => {
+        this.processandoVinculoId.set(vinculo.id);
 
-    this.processandoVinculoId.set(vinculo.id);
-
-    this.service.removerVinculo(this.eventoId, vinculo.id).subscribe({
-      next: vinculoAtualizado => {
-        this.atualizarVinculoNaLista(vinculoAtualizado);
-        this.toastSuccess('Vínculo removido com sucesso.');
-      },
-      error: erro => {
-        console.error('Erro ao remover vínculo', erro);
-        this.toastError(this.mensagemErro(erro, 'Não foi possível remover o vínculo.'));
-      },
-      complete: () => this.processandoVinculoId.set(null)
+        this.service.removerVinculo(this.eventoId, vinculo.id)
+          .pipe(finalize(() => this.processandoVinculoId.set(null)))
+          .subscribe({
+            next: vinculoAtualizado => {
+              this.atualizarVinculoNaLista(vinculoAtualizado);
+              this.toastSuccess('Vínculo removido com sucesso.');
+              this.carregarSobrinhos();
+            },
+            error: erro => {
+              console.error('Erro ao remover vínculo', erro);
+              this.toastError(this.mensagemErro(erro, 'Não foi possível remover o vínculo.'));
+            }
+          });
+      }
     });
   }
 
   reativarVinculo(vinculo: SobrinhoDupla): void {
-    if (!window.confirm(`Deseja reativar o vínculo de ${vinculo.sobrinhoNome}?`)) {
-      return;
+    this.confirmationService.confirm({
+      header: 'Reativar vínculo',
+      message: `Deseja realmente reativar o vínculo de ${vinculo.sobrinhoNome} com a dupla ${this.nomeDuplaVinculo(vinculo)}?`,
+      icon: 'fa-solid fa-circle-question',
+      acceptLabel: 'Reativar',
+      rejectLabel: 'Cancelar',
+      acceptButtonStyleClass: 'p-button-success',
+      rejectButtonStyleClass: 'p-button-secondary p-button-outlined',
+      accept: () => {
+        this.processandoVinculoId.set(vinculo.id);
+
+        this.service.reativarVinculo(this.eventoId, vinculo.id)
+          .pipe(finalize(() => this.processandoVinculoId.set(null)))
+          .subscribe({
+            next: vinculoAtualizado => {
+              this.atualizarVinculoNaLista(vinculoAtualizado);
+              this.toastSuccess('Vínculo reativado com sucesso.');
+              this.carregarSobrinhos();
+            },
+            error: erro => {
+              console.error('Erro ao reativar vínculo', erro);
+              this.toastError(this.mensagemErro(erro, 'Não foi possível reativar o vínculo.'));
+            }
+          });
+      }
+    });
+  }
+
+  nomeDupla(dupla: DuplaTioCarona): string {
+    if (dupla.apelido?.trim()) {
+      return dupla.apelido.trim();
     }
 
-    this.processandoVinculoId.set(vinculo.id);
+    return `${dupla.codigo} - ${dupla.tio1Nome} e ${dupla.tio2Nome}`;
+  }
 
-    this.service.reativarVinculo(this.eventoId, vinculo.id).subscribe({
-      next: vinculoAtualizado => {
-        this.atualizarVinculoNaLista(vinculoAtualizado);
-        this.toastSuccess('Vínculo reativado com sucesso.');
-      },
-      error: erro => {
-        console.error('Erro ao reativar vínculo', erro);
-        this.toastError(this.mensagemErro(erro, 'Não foi possível reativar o vínculo.'));
-      },
-      complete: () => this.processandoVinculoId.set(null)
-    });
+  nomeDuplaVinculo(vinculo: SobrinhoDupla): string {
+    if (vinculo.duplaCodigo?.trim()) {
+      return vinculo.duplaCodigo.trim();
+    }
+
+    return vinculo.duplaCodigo || `Dupla #${vinculo.duplaId}`;
   }
 
   labelStatusTio(status: TioCaronaStatus): string {
