@@ -25,7 +25,26 @@ public class DuplaTioCaronaController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public DuplaTioCaronaResponse criar(@PathVariable Long eventoId, @RequestBody @Valid DuplaTioCaronaRequest request) {
+    public DuplaTioCaronaResponse criar(
+            @PathVariable Long eventoId,
+            @RequestBody @Valid DuplaTioCaronaRequest request
+    ) {
         return service.criar(eventoId, request);
+    }
+
+    @PatchMapping("/{duplaId}/inativar")
+    public DuplaTioCaronaResponse inativar(
+            @PathVariable Long eventoId,
+            @PathVariable Long duplaId
+    ) {
+        return service.inativar(eventoId, duplaId);
+    }
+
+    @PatchMapping("/{duplaId}/reativar")
+    public DuplaTioCaronaResponse reativar(
+            @PathVariable Long eventoId,
+            @PathVariable Long duplaId
+    ) {
+        return service.reativar(eventoId, duplaId);
     }
 }

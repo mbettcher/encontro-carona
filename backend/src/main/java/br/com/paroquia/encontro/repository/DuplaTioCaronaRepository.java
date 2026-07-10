@@ -28,4 +28,22 @@ public interface DuplaTioCaronaRepository extends JpaRepository<DuplaTioCarona, 
             Long tioCaronaEventoId,
             DuplaStatus status
     );
+
+    @Query("""
+            select count(d) > 0
+            from DuplaTioCarona d
+            where d.evento.id = :eventoId
+              and d.status = :status
+              and d.id <> :duplaIdIgnorada
+              and (
+                d.tio1.id = :tioCaronaEventoId
+                or d.tio2.id = :tioCaronaEventoId
+              )
+            """)
+    boolean existsTioEmOutraDuplaComStatus(
+            Long eventoId,
+            Long tioCaronaEventoId,
+            Long duplaIdIgnorada,
+            DuplaStatus status
+    );
 }

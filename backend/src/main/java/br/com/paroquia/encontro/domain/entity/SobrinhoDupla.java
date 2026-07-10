@@ -1,5 +1,6 @@
 package br.com.paroquia.encontro.domain.entity;
 
+import br.com.paroquia.encontro.common.BusinessException;
 import br.com.paroquia.encontro.domain.enums.VinculoStatus;
 import jakarta.persistence.*;
 
@@ -38,6 +39,22 @@ public class SobrinhoDupla {
         this.evento = evento;
         this.sobrinho = sobrinho;
         this.dupla = dupla;
+    }
+
+    public void remover() {
+        if (this.status == VinculoStatus.REMOVIDO) {
+            throw new BusinessException("O vínculo já está removido.");
+        }
+
+        this.status = VinculoStatus.REMOVIDO;
+    }
+
+    public void reativar() {
+        if (this.status == VinculoStatus.ATIVO) {
+            throw new BusinessException("O vínculo já está ativo.");
+        }
+
+        this.status = VinculoStatus.ATIVO;
     }
 
     public Long getId() {

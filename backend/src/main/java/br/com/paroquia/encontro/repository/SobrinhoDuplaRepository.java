@@ -19,11 +19,26 @@ public interface SobrinhoDuplaRepository extends JpaRepository<SobrinhoDupla, Lo
             VinculoStatus status
     );
 
+    List<SobrinhoDupla> findByEventoIdOrderByDuplaCodigoAscSobrinhoNomeAsc(Long eventoId);
+
     Optional<SobrinhoDupla> findByIdAndEventoId(Long id, Long eventoId);
 
     boolean existsByEventoIdAndSobrinhoIdAndStatus(
             Long eventoId,
             Long sobrinhoId,
+            VinculoStatus status
+    );
+
+    boolean existsByEventoIdAndSobrinhoIdAndStatusAndIdNot(
+            Long eventoId,
+            Long sobrinhoId,
+            VinculoStatus status,
+            Long id
+    );
+
+    boolean existsByEventoIdAndDuplaIdAndStatus(
+            Long eventoId,
+            Long duplaId,
             VinculoStatus status
     );
 }

@@ -8,6 +8,7 @@ import br.com.paroquia.encontro.domain.enums.SobrinhoStatus;
 import br.com.paroquia.encontro.domain.enums.VinculoStatus;
 import br.com.paroquia.encontro.dto.request.VincularSobrinhoRequest;
 import br.com.paroquia.encontro.dto.response.SobrinhoDuplaResponse;
+import br.com.paroquia.encontro.repository.CadernoChoroRepository;
 import br.com.paroquia.encontro.repository.DuplaTioCaronaRepository;
 import br.com.paroquia.encontro.repository.EventoRepository;
 import br.com.paroquia.encontro.repository.SobrinhoDuplaRepository;
@@ -23,17 +24,28 @@ public class SobrinhoDuplaService {
     private final EventoRepository eventoRepository;
     private final SobrinhoRepository sobrinhoRepository;
     private final DuplaTioCaronaRepository duplaRepository;
+    private final CadernoChoroRepository cadernoChoroRepository;
 
     public SobrinhoDuplaService(
             SobrinhoDuplaRepository repository,
             EventoRepository eventoRepository,
             SobrinhoRepository sobrinhoRepository,
-            DuplaTioCaronaRepository duplaRepository
+            DuplaTioCaronaRepository duplaRepository,
+            CadernoChoroRepository cadernoChoroRepository
     ) {
         this.repository = repository;
         this.eventoRepository = eventoRepository;
         this.sobrinhoRepository = sobrinhoRepository;
         this.duplaRepository = duplaRepository;
+        this.cadernoChoroRepository = cadernoChoroRepository;
+    }
+
+    @Transactional(readOnly = true)
+    public List<SobrinhoDuplaResponse> listar(Long eventoId) {
+        return repository.findByEventoIdOrderByDuplaCodigoAscSobrinhoNomeAsc(eventoId)
+                .stream()
+                .map(SobrinhoDuplaResponse::from)
+                .toList();
     }
 
     @Transactional(readOnly = true)
@@ -78,5 +90,52 @@ public class SobrinhoDuplaService {
         return SobrinhoDuplaResponse.from(
                 repository.save(new SobrinhoDupla(evento, sobrinho, dupla))
         );
+    }
+
+    @Transactional
+    public SobrinhoDuplaResponse remover(Long eventoId, Long vinculoId) {
+        var vinculo = buscarVinculo(eventoId, vinculoId);
+
+        if (cadernoChoroRepository.existsByEventoIdAndSobrinhoId(
+                eventoId,
+                vinculo.getSobrinho().getId()
+        )) {
+            throw new BusinessException("Não é possível remover o vínculo porque já existe Caderno do Choro gerado para este sobrinho.");
+        }
+
+        vinculo.remover();
+
+        return SobrinhoDuplaResponse.from(vinculo);
+    }
+
+    @Transactional
+    public SobrinhoDuplaResponse reativar(Long eventoId, Long vinculoId) {
+        var vinculo = buscarVinculo(eventoId, vinculoId);
+
+        if (vinculo.getDupla().getStatus() != DuplaStatus.ATIVA) {
+            throw new BusinessException("Não é possível reativar vínculo de uma dupla inativa.");
+        }
+
+        if (vinculo.getSobrinho().getStatus() == SobrinhoStatus.DESISTENTE) {
+            throw new BusinessException("Não é possível reativar vínculo de sobrinho desistente.");
+        }
+
+        if (repository.existsByEventoIdAndSobrinhoIdAndStatusAndIdNot(
+                eventoId,
+                vinculo.getSobrinho().getId(),
+                VinculoStatus.ATIVO,
+                vinculo.getId()
+        )) {
+            throw new BusinessException("Este sobrinho já possui outro vínculo ativo neste evento.");
+        }
+
+        vinculo.reativar();
+
+        return SobrinhoDuplaResponse.from(vinculo);
+    }
+
+    private SobrinhoDupla buscarVinculo(Long eventoId, Long vinculoId) {
+        return repository.findByIdAndEventoId(vinculoId, eventoId)
+                .orElseThrow(() -> new ResourceNotFoundException("Vínculo não encontrado neste evento."));
     }
 }
