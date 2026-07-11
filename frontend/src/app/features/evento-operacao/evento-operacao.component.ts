@@ -1029,16 +1029,7 @@ export class EventoOperacaoComponent implements OnInit {
   }
 
   credencialPermiteOperacao(tio: TioCaronaEvento): boolean {
-    /*
-     * Compatibilidade: quando o backend ainda não envia credencialStatus,
-     * mantemos o tio na operação. Quando envia, somente credencial ATIVA
-     * deve contar como operacional.
-     */
-    if (!tio.credencialStatus) {
-      return true;
-    }
-
-    return tio.credencialStatus === 'ATIVA';
+    return tio.credencialStatus === 'ATIVA' || tio.credencialAtiva === true;
   }
 
   labelCredencialOperacionalTio(tio: TioCaronaEvento): string {
@@ -1092,11 +1083,22 @@ export class EventoOperacaoComponent implements OnInit {
   }
 
   podeCheckinManual(tio: TioCaronaEvento): boolean {
-    return tio.statusOperacional !== 'COM_CHECKIN';
+    return this.credencialPermiteOperacao(tio) && tio.statusOperacional !== 'COM_CHECKIN';
   }
 
   podeCheckoutManual(tio: TioCaronaEvento): boolean {
-    return tio.statusOperacional === 'COM_CHECKIN';
+    return this.credencialPermiteOperacao(tio) && tio.statusOperacional === 'COM_CHECKIN';
+  }
+
+  motivoBloqueioOperacaoTio(tio: TioCaronaEvento): string {
+    switch (tio.credencialStatus) {
+      case 'INATIVA':
+        return 'Credencial inativa. Reative ou reemita a credencial na tela de Credenciais.';
+      case 'CANCELADA':
+        return 'Credencial cancelada. Reative ou reemita a credencial na tela de Credenciais.';
+      default:
+        return 'Gere uma credencial ativa para habilitar check-in e checkout.';
+    }
   }
 
 

@@ -1,4 +1,5 @@
 
+
 export type EventoStatus = 'PLANEJADO' | 'EM_ANDAMENTO' | 'ENCERRADO' | 'CANCELADO';
 export type PessoaTipo = 'TIO_CARONA' | 'SOBRINHO' | 'RESPONSAVEL' | 'EQUIPE';
 export type TioCaronaStatus = 'ATIVO' | 'INATIVO';
@@ -183,6 +184,17 @@ export interface Sobrinho {
 
   statusAtualPresenca?: SobrinhoStatus;
   ultimaPresencaEm?: string;
+}
+
+export interface SobrinhoPresenca {
+  id: number;
+  eventoId: number;
+  sobrinhoId: number;
+  sobrinhoNome: string;
+  status: SobrinhoStatus;
+  origem: OrigemPresencaSobrinho;
+  observacao?: string;
+  ocorridoEm: string;
 }
 
 export interface SobrinhoRequest {

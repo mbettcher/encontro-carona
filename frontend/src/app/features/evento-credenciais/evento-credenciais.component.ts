@@ -15,6 +15,7 @@ import { TooltipModule } from 'primeng/tooltip';
 
 import {
     CredencialEvento,
+    Evento,
     StatusCredencial,
     TipoCredencial
 } from '../../shared/models';
@@ -64,6 +65,7 @@ export class EventoCredenciaisComponent implements OnInit {
 
     readonly eventoId = Number(this.route.snapshot.paramMap.get('eventoId'));
 
+    readonly evento = signal<Evento | null>(null);
     readonly credenciais = signal<CredencialEvento[]>([]);
     readonly carregando = signal(false);
     readonly gerando = signal(false);
@@ -213,6 +215,7 @@ export class EventoCredenciaisComponent implements OnInit {
     );
 
     ngOnInit(): void {
+        this.carregarEvento();
         this.carregar();
     }
 
@@ -228,6 +231,16 @@ export class EventoCredenciaisComponent implements OnInit {
                     this.toastError(this.mensagemErro(erro, 'Não foi possível carregar as credenciais.'));
                 }
             });
+    }
+
+    private carregarEvento(): void {
+        this.service.buscarEvento(this.eventoId).subscribe({
+            next: evento => this.evento.set(evento),
+            error: erro => {
+                console.error('Erro ao carregar evento das credenciais', erro);
+                this.evento.set(null);
+            }
+        });
     }
 
     alterarFiltroTexto(valor: string): void {
@@ -581,6 +594,37 @@ export class EventoCredenciaisComponent implements OnInit {
         }
 
         return this.normalizarFiltro(String(valor)).includes(filtro);
+    }
+
+
+    labelStatusEvento(status?: string): string {
+        switch (status) {
+            case 'PLANEJADO':
+                return 'Planejado';
+            case 'EM_ANDAMENTO':
+                return 'Em andamento';
+            case 'ENCERRADO':
+                return 'Encerrado';
+            case 'CANCELADO':
+                return 'Cancelado';
+            default:
+                return 'Evento';
+        }
+    }
+
+    severityStatusEvento(status?: string): 'info' | 'success' | 'warn' | 'danger' | 'secondary' {
+        switch (status) {
+            case 'PLANEJADO':
+                return 'info';
+            case 'EM_ANDAMENTO':
+                return 'success';
+            case 'ENCERRADO':
+                return 'secondary';
+            case 'CANCELADO':
+                return 'danger';
+            default:
+                return 'secondary';
+        }
     }
 
     private mensagemErro(erro: unknown, fallback: string): string {

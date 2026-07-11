@@ -41,6 +41,14 @@ interface DashboardAction {
   tema: DashboardCardTheme;
 }
 
+interface FrequenciaDia {
+  data: string;
+  label: string;
+  presentes: number;
+  total: number;
+  percentual: number;
+}
+
 @Component({
   standalone: true,
   selector: 'app-dashboard',
@@ -205,16 +213,51 @@ export class DashboardComponent implements OnInit {
     return Math.min(100, Math.round((ativas / totalEsperado) * 100));
   });
 
-  readonly progressoPresenca = computed(() => {
+  readonly frequenciaPorDia = computed<FrequenciaDia[]>(() => {
     const resumo = this.resumoEvento();
+    const evento = this.eventoSelecionado();
 
-    if (!resumo || resumo.encontristas.length === 0) {
+    if (!resumo || !evento) {
+      return [];
+    }
+
+    const dias = this.diasDoEvento(evento);
+    const totalEncontristas = resumo.encontristas
+      .filter(encontrista => this.statusEncontrista(encontrista) !== 'DESISTENTE')
+      .length;
+
+    if (dias.length === 0 || totalEncontristas === 0) {
+      return [];
+    }
+
+    return dias.map(data => {
+      const idsPresentes = new Set<number>();
+
+      resumo.presencas
+        .filter(presenca => presenca.status === 'PRESENTE')
+        .filter(presenca => String(presenca.ocorridoEm ?? '').substring(0, 10) === data)
+        .forEach(presenca => idsPresentes.add(Number(presenca.sobrinhoId)));
+
+      const presentes = idsPresentes.size;
+
+      return {
+        data,
+        label: this.formatarDataCurta(data),
+        presentes,
+        total: totalEncontristas,
+        percentual: Math.round((presentes / totalEncontristas) * 100)
+      };
+    });
+  });
+
+  readonly progressoPresenca = computed(() => {
+    const frequencias = this.frequenciaPorDia();
+
+    if (frequencias.length === 0) {
       return 0;
     }
 
-    const presentes = resumo.encontristas.filter(encontrista => this.statusEncontrista(encontrista) === 'PRESENTE').length;
-
-    return Math.round((presentes / resumo.encontristas.length) * 100);
+    return Math.max(...frequencias.map(item => item.percentual));
   });
 
   readonly operacaoPronta = computed(() => {
@@ -351,6 +394,33 @@ export class DashboardComponent implements OnInit {
       (evento as { dataInicio?: string; inicio?: string; data?: string }).inicio ??
       (evento as { dataInicio?: string; inicio?: string; data?: string }).data ??
       '');
+  }
+
+  private diasDoEvento(evento: Evento): string[] {
+    const inicio = String(evento.dataInicio ?? '').substring(0, 10);
+    const fim = String(evento.dataFim ?? evento.dataInicio ?? '').substring(0, 10);
+
+    if (!inicio) {
+      return [];
+    }
+
+    const dataInicio = new Date(`${inicio}T00:00:00`);
+    const dataFim = fim ? new Date(`${fim}T00:00:00`) : new Date(`${inicio}T00:00:00`);
+
+    if (Number.isNaN(dataInicio.getTime()) || Number.isNaN(dataFim.getTime())) {
+      return [inicio];
+    }
+
+    const dias: string[] = [];
+    const cursor = new Date(dataInicio);
+    const limite = dataFim >= dataInicio ? dataFim : dataInicio;
+
+    while (cursor <= limite) {
+      dias.push(cursor.toISOString().substring(0, 10));
+      cursor.setDate(cursor.getDate() + 1);
+    }
+
+    return dias;
   }
 
   private formatarDataCurta(valor: string): string {

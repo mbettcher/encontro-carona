@@ -5,6 +5,7 @@ import { Observable } from 'rxjs';
 import {
     CredencialEvento,
     CredencialGeracaoResponse,
+    Evento,
     TipoCredencial
 } from '../../shared/models';
 import { environment } from '../../../environments/environment';
@@ -15,6 +16,29 @@ import { environment } from '../../../environments/environment';
 export class EventoCredenciaisService {
     private readonly http = inject(HttpClient);
     private readonly apiUrl = environment.apiUrl;
+
+    listarEventos(): Observable<Evento[]> {
+        return this.http.get<Evento[]>(`${this.apiUrl}/eventos`);
+    }
+
+    buscarEvento(eventoId: number): Observable<Evento> {
+        return new Observable<Evento>(subscriber => {
+            this.listarEventos().subscribe({
+                next: eventos => {
+                    const evento = eventos.find(item => item.id === eventoId);
+
+                    if (!evento) {
+                        subscriber.error(new Error(`Evento ${eventoId} não encontrado.`));
+                        return;
+                    }
+
+                    subscriber.next(evento);
+                    subscriber.complete();
+                },
+                error: erro => subscriber.error(erro)
+            });
+        });
+    }
 
     listar(eventoId: number, tipo?: TipoCredencial | null): Observable<CredencialEvento[]> {
         let params = new HttpParams();

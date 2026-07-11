@@ -11,6 +11,7 @@ import {
   Pessoa,
   Sobrinho,
   SobrinhoDupla,
+  SobrinhoPresenca,
   TioCaronaEvento
 } from '../../shared/models';
 
@@ -27,6 +28,7 @@ export interface DashboardEventoResumo {
   vinculos: SobrinhoDupla[];
   cadernos: CadernoChoro[];
   credenciais: CredencialEvento[];
+  presencas: SobrinhoPresenca[];
 }
 
 @Injectable({ providedIn: 'root' })
@@ -60,6 +62,9 @@ export class DashboardService {
       ),
       credenciais: this.safeArray<CredencialEvento>(
         this.http.get<CredencialEvento[]>(`${this.apiUrl}/eventos/${eventoId}/credenciais`)
+      ),
+      presencas: this.safeArray<SobrinhoPresenca>(
+        this.http.get<SobrinhoPresenca[]>(`${this.apiUrl}/eventos/${eventoId}/sobrinhos/presencas`)
       )
     }).pipe(
       map(resultado => ({

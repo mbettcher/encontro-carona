@@ -143,15 +143,32 @@
 
                     <div class="metric-row mb-3">
                         <div>
-                            <div class="metric-label">Presença registrada</div>
-                            <div class="metric-help">Percentual de encontristas marcados como presentes.</div>
+                            <div class="metric-label">Frequência por dia</div>
+                            <div class="metric-help">Presenças registradas em cada dia do evento.</div>
                         </div>
-                        <strong>{{ progressoPresenca() }}%</strong>
                     </div>
 
-                    <div class="progress-track">
-                        <div class="progress-fill presence" [style.width.%]="progressoPresenca()"></div>
+                    @if (frequenciaPorDia().length === 0) {
+                    <div class="small text-body-secondary">
+                        Ainda não há dados suficientes para montar a frequência.
                     </div>
+                    } @else {
+                    <div class="frequency-chart">
+                        @for (dia of frequenciaPorDia(); track dia.data) {
+                        <div class="frequency-row">
+                            <div class="frequency-label">{{ dia.label }}</div>
+
+                            <div class="frequency-bar-track">
+                                <div class="frequency-bar-fill" [style.width.%]="dia.percentual"></div>
+                            </div>
+
+                            <div class="frequency-value">
+                                {{ dia.presentes }}/{{ dia.total }}
+                            </div>
+                        </div>
+                        }
+                    </div>
+                    }
                 </div>
             </div>
 

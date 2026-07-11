@@ -1,3 +1,4 @@
+
 package br.com.paroquia.encontro.controllers;
 
 import br.com.paroquia.encontro.dto.request.AdicionarPessoaSobrinhoRequest;
@@ -64,6 +65,11 @@ public class SobrinhoController {
                 request.operacao(),
                 request.observacao()
         );
+    }
+
+    @GetMapping("/presencas")
+    public List<SobrinhoPresencaResponse> listarPresencasEvento(@PathVariable Long eventoId) {
+        return service.listarPresencasEvento(eventoId);
     }
 
     @GetMapping("/{sobrinhoId}/presencas")

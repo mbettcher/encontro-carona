@@ -1,3 +1,4 @@
+
 package br.com.paroquia.encontro.services;
 
 import br.com.paroquia.encontro.common.BusinessException;
@@ -56,6 +57,14 @@ public class SobrinhoService {
                                 .findFirstBySobrinhoIdOrderByOcorridoEmDesc(sobrinho.getId())
                                 .orElse(null)
                 ))
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<SobrinhoPresencaResponse> listarPresencasEvento(Long eventoId) {
+        return sobrinhoPresencaRepository.findByEventoIdOrderByOcorridoEmDesc(eventoId)
+                .stream()
+                .map(SobrinhoPresencaResponse::from)
                 .toList();
     }
 
