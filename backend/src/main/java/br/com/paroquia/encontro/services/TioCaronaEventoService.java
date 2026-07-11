@@ -51,7 +51,8 @@ public class TioCaronaEventoService {
                         tio,
                         operacaoRepository
                                 .findFirstByTioCaronaEventoIdOrderByOcorridoEmDesc(tio.getId())
-                                .orElse(null)
+                                .orElse(null),
+                        credencialOperacionalService.buscarCredencialTioCarona(eventoId, tio.getId()).orElse(null)
                 ))
                 .toList();
     }
@@ -131,7 +132,7 @@ public class TioCaronaEventoService {
                 .findFirstByTioCaronaEventoIdOrderByOcorridoEmDesc(tioCarona.getId())
                 .orElse(null);
 
-        return TioCaronaEventoResponse.from(tioCarona, ultimaOperacao);
+        return TioCaronaEventoResponse.from(tioCarona, ultimaOperacao, credencialOperacionalService.buscarCredencialTioCarona(eventoId, tioCarona.getId()).orElse(null));
     }
 
     private TioCaronaEventoResponse registrarOperacao(
@@ -166,7 +167,7 @@ public class TioCaronaEventoService {
             tioCarona.registrarCheckoutResumo(operacao.getOcorridoEm());
         }
 
-        return TioCaronaEventoResponse.from(tioCarona, operacao);
+        return TioCaronaEventoResponse.from(tioCarona, operacao, credencialOperacionalService.buscarCredencialTioCarona(tioCarona.getEvento().getId(), tioCarona.getId()).orElse(null));
     }
 
     private void validarSequencia(

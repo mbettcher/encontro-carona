@@ -1,7 +1,10 @@
+
 package br.com.paroquia.encontro.dto.response;
 
+import br.com.paroquia.encontro.domain.entity.CredencialEvento;
 import br.com.paroquia.encontro.domain.entity.TioCaronaEvento;
 import br.com.paroquia.encontro.domain.entity.TioCaronaEventoOperacao;
+import br.com.paroquia.encontro.domain.enums.StatusCredencial;
 import br.com.paroquia.encontro.domain.enums.TioCaronaStatus;
 import br.com.paroquia.encontro.domain.enums.TipoOperacaoTioCarona;
 
@@ -21,21 +24,35 @@ public record TioCaronaEventoResponse(
         boolean checkoutRealizado,
         OffsetDateTime checkoutEm,
 
+        Long credencialId,
+        String credencialCodigo,
+        StatusCredencial credencialStatus,
+        boolean credencialAtiva,
+
         String statusOperacional,
         TipoOperacaoTioCarona ultimaOperacao,
         OffsetDateTime ultimaOperacaoEm
 ) {
     public static TioCaronaEventoResponse from(TioCaronaEvento entity) {
-        return from(entity, null);
+        return from(entity, null, null);
     }
 
     public static TioCaronaEventoResponse from(
             TioCaronaEvento entity,
             TioCaronaEventoOperacao ultimaOperacao
     ) {
+        return from(entity, ultimaOperacao, null);
+    }
+
+    public static TioCaronaEventoResponse from(
+            TioCaronaEvento entity,
+            TioCaronaEventoOperacao ultimaOperacao,
+            CredencialEvento credencial
+    ) {
         var ultima = ultimaOperacao == null ? null : ultimaOperacao.getTipo();
 
         var statusOperacional = calcularStatusOperacional(ultima);
+        var credencialStatus = credencial == null ? null : credencial.getStatus();
 
         return new TioCaronaEventoResponse(
                 entity.getId(),
@@ -50,6 +67,11 @@ public record TioCaronaEventoResponse(
                 entity.getCheckinEm(),
                 entity.isCheckoutRealizado(),
                 entity.getCheckoutEm(),
+
+                credencial == null ? null : credencial.getId(),
+                credencial == null ? null : credencial.getCodigo(),
+                credencialStatus,
+                credencialStatus == StatusCredencial.ATIVA,
 
                 statusOperacional,
                 ultima,

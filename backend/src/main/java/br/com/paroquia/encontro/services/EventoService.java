@@ -33,7 +33,7 @@ public class EventoService {
         validarDatas(request);
         var paroquia = paroquiaRepository.findById(request.paroquiaId()).orElseThrow(() -> new ResourceNotFoundException("Paróquia não encontrada."));
         var evento = new Evento(paroquia, request.nome(), request.tema(), request.dataInicio(), request.dataFim(), request.local(), request.monitoramentoInicio(), request.monitoramentoFim());
-        evento.atualizar(request.nome(), request.tema(), request.dataInicio(), request.dataFim(), request.local(), request.monitoramentoInicio(), request.monitoramentoFim(), request.monitoramentoAtivo());
+        evento.atualizar(request.nome(), request.tema(), request.dataInicio(), request.dataFim(), request.local(), request.status(), request.monitoramentoInicio(), request.monitoramentoFim(), request.monitoramentoAtivo());
         return EventoResponse.from(repository.save(evento));
     }
 
@@ -41,7 +41,7 @@ public class EventoService {
     public EventoResponse atualizar(Long id, EventoRequest request) {
         validarDatas(request);
         var evento = repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Evento não encontrado."));
-        evento.atualizar(request.nome(), request.tema(), request.dataInicio(), request.dataFim(), request.local(), request.monitoramentoInicio(), request.monitoramentoFim(), request.monitoramentoAtivo());
+        evento.atualizar(request.nome(), request.tema(), request.dataInicio(), request.dataFim(), request.local(), request.status(), request.monitoramentoInicio(), request.monitoramentoFim(), request.monitoramentoAtivo());
         return EventoResponse.from(evento);
     }
 

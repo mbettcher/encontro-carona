@@ -16,6 +16,8 @@ public interface CredencialEventoRepository extends JpaRepository<CredencialEven
 
     Optional<CredencialEvento> findByCodigo(String codigo);
 
+    Optional<CredencialEvento> findByEventoIdAndTioCaronaEventoId(Long eventoId, Long tioCaronaEventoId);
+
     boolean existsByCodigo(String codigo);
 
     boolean existsByEventoIdAndTioCaronaEventoId(Long eventoId, Long tioCaronaEventoId);

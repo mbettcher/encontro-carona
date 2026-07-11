@@ -212,6 +212,7 @@
             <div class="status-mini-card h-100">
               <div class="small text-body-secondary">Tios aguardando check-in</div>
               <strong>{{ tiosAguardandoCheckin().length }}</strong>
+              <div class="small text-body-secondary">com credencial ativa</div>
             </div>
           </div>
 
@@ -406,27 +407,44 @@
       </div>
       } @else {
       <div class="row g-3 mb-3">
-        <div class="col-12 col-md-4">
+        <div class="col-12 col-md-3">
           <div class="status-mini-card">
             <div class="small text-body-secondary">Aguardando check-in</div>
             <strong>{{ tiosAguardandoCheckin().length }}</strong>
           </div>
         </div>
 
-        <div class="col-12 col-md-4">
+        <div class="col-12 col-md-3">
           <div class="status-mini-card">
             <div class="small text-body-secondary">Com check-in</div>
             <strong>{{ tiosComCheckin().length }}</strong>
           </div>
         </div>
 
-        <div class="col-12 col-md-4">
+        <div class="col-12 col-md-3">
           <div class="status-mini-card">
             <div class="small text-body-secondary">Com checkout</div>
             <strong>{{ tiosComCheckout().length }}</strong>
           </div>
         </div>
+
+        <div class="col-12 col-md-3">
+          <div class="status-mini-card">
+            <div class="small text-body-secondary">Sem credencial ativa</div>
+            <strong>{{ tiosSemCredencialOperacional().length }}</strong>
+          </div>
+        </div>
       </div>
+
+
+
+      @if (tiosSemCredencialOperacional().length > 0) {
+      <div class="alert alert-warning py-2 px-3 mb-3 small">
+        <i class="fa-solid fa-circle-info me-2"></i>
+        Há {{ tiosSemCredencialOperacional().length }} tio(s) carona sem credencial ativa. Eles não entram nos
+        contadores operacionais de check-in até a credencial ser reativada ou reemitida.
+      </div>
+      }
 
       <div class="operation-table-toolbar mb-3">
         <div>
@@ -454,6 +472,7 @@
             <tr>
               <th>Tio carona</th>
               <th>Código</th>
+              <th>Credencial</th>
               <th>Status operacional</th>
               <th>Último Check-in</th>
               <th>Último Checkout</th>
@@ -469,6 +488,11 @@
                 <span class="small font-monospace">
                   {{ codigoIdentificacaoTio(tio) }}
                 </span>
+              </td>
+
+              <td>
+                <p-tag [value]="labelCredencialOperacionalTio(tio)"
+                  [severity]="severityCredencialOperacionalTio(tio)" />
               </td>
 
               <td>
@@ -571,6 +595,16 @@
           </div>
         </div>
       </div>
+
+
+
+      @if (tiosSemCredencialOperacional().length > 0) {
+      <div class="alert alert-warning py-2 px-3 mb-3 small">
+        <i class="fa-solid fa-circle-info me-2"></i>
+        Há {{ tiosSemCredencialOperacional().length }} tio(s) carona sem credencial ativa. Eles não entram nos
+        contadores operacionais de check-in até a credencial ser reativada ou reemitida.
+      </div>
+      }
 
       <div class="operation-table-toolbar mb-3">
         <div>
@@ -683,6 +717,16 @@
         </p>
       </div>
       } @else {
+
+
+      @if (tiosSemCredencialOperacional().length > 0) {
+      <div class="alert alert-warning py-2 px-3 mb-3 small">
+        <i class="fa-solid fa-circle-info me-2"></i>
+        Há {{ tiosSemCredencialOperacional().length }} tio(s) carona sem credencial ativa. Eles não entram nos
+        contadores operacionais de check-in até a credencial ser reativada ou reemitida.
+      </div>
+      }
+
       <div class="operation-table-toolbar mb-3">
         <div>
           <div class="fw-semibold small">Lista geral de encontristas</div>
@@ -887,6 +931,16 @@
         </p>
       </div>
       } @else {
+
+
+      @if (tiosSemCredencialOperacional().length > 0) {
+      <div class="alert alert-warning py-2 px-3 mb-3 small">
+        <i class="fa-solid fa-circle-info me-2"></i>
+        Há {{ tiosSemCredencialOperacional().length }} tio(s) carona sem credencial ativa. Eles não entram nos
+        contadores operacionais de check-in até a credencial ser reativada ou reemitida.
+      </div>
+      }
+
       <div class="operation-table-toolbar mb-3">
         <div>
           <div class="fw-semibold small">Lista de cadernos</div>

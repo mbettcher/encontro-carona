@@ -124,18 +124,26 @@ export class EventoOperacaoComponent implements OnInit {
     this.tiosCarona().filter(tio => tio.status === 'ATIVO')
   );
 
+  readonly tiosComCredencialOperacional = computed(() =>
+    this.tiosAtivos().filter(tio => this.credencialPermiteOperacao(tio))
+  );
+
+  readonly tiosSemCredencialOperacional = computed(() =>
+    this.tiosAtivos().filter(tio => !this.credencialPermiteOperacao(tio))
+  );
+
   readonly tiosAguardandoCheckin = computed(() =>
-    this.tiosAtivos().filter(tio =>
+    this.tiosComCredencialOperacional().filter(tio =>
       !tio.statusOperacional || tio.statusOperacional === 'AGUARDANDO_CHECKIN'
     )
   );
 
   readonly tiosComCheckin = computed(() =>
-    this.tiosAtivos().filter(tio => tio.statusOperacional === 'COM_CHECKIN')
+    this.tiosComCredencialOperacional().filter(tio => tio.statusOperacional === 'COM_CHECKIN')
   );
 
   readonly tiosComCheckout = computed(() =>
-    this.tiosAtivos().filter(tio => tio.statusOperacional === 'COM_CHECKOUT')
+    this.tiosComCredencialOperacional().filter(tio => tio.statusOperacional === 'COM_CHECKOUT')
   );
 
   readonly duplasAtivas = computed(() =>
@@ -765,45 +773,39 @@ export class EventoOperacaoComponent implements OnInit {
   }
 
   registrarCheckinManual(tio: TioCaronaEvento): void {
-    if (this.processandoManual()) {
-      return;
-    }
-
     this.processandoManual.set(tio.id);
 
-    this.service.registrarCheckinManual(this.eventoId, tio.id)
-      .pipe(finalize(() => this.processandoManual.set(null)))
-      .subscribe({
-        next: tioAtualizado => {
-          this.atualizarTioCaronaNaLista(tioAtualizado);
-          this.toastSuccess(`Check-in manual registrado para ${tioAtualizado.pessoaNome}.`);
-        },
-        error: erro => {
-          console.error('Erro ao registrar check-in manual', erro);
-          this.toastError(this.mensagemErro(erro, 'Não foi possível registrar o check-in manual.'));
-        }
-      });
+    this.service.registrarCheckinManual(this.eventoId, tio.id).subscribe({
+      next: tioAtualizado => {
+        this.atualizarTioCaronaNaLista(tioAtualizado);
+        this.toastSuccess(`Check-in manual registrado para ${tioAtualizado.pessoaNome}.`);
+      },
+      error: erro => {
+        console.error('Erro ao registrar check-in manual', erro);
+        this.toastError(this.mensagemErro(erro, 'Não foi possível registrar o check-in manual.'));
+      },
+      complete: () => {
+        this.processandoManual.set(null);
+      }
+    });
   }
 
   registrarCheckoutManual(tio: TioCaronaEvento): void {
-    if (this.processandoManual()) {
-      return;
-    }
-
     this.processandoManual.set(tio.id);
 
-    this.service.registrarCheckoutManual(this.eventoId, tio.id)
-      .pipe(finalize(() => this.processandoManual.set(null)))
-      .subscribe({
-        next: tioAtualizado => {
-          this.atualizarTioCaronaNaLista(tioAtualizado);
-          this.toastSuccess(`Checkout manual registrado para ${tioAtualizado.pessoaNome}.`);
-        },
-        error: erro => {
-          console.error('Erro ao registrar checkout manual', erro);
-          this.toastError(this.mensagemErro(erro, 'Não foi possível registrar o checkout manual.'));
-        }
-      });
+    this.service.registrarCheckoutManual(this.eventoId, tio.id).subscribe({
+      next: tioAtualizado => {
+        this.atualizarTioCaronaNaLista(tioAtualizado);
+        this.toastSuccess(`Checkout manual registrado para ${tioAtualizado.pessoaNome}.`);
+      },
+      error: erro => {
+        console.error('Erro ao registrar checkout manual', erro);
+        this.toastError(this.mensagemErro(erro, 'Não foi possível registrar o checkout manual.'));
+      },
+      complete: () => {
+        this.processandoManual.set(null);
+      }
+    });
   }
 
   private atualizarCadernoNaLista(cadernoAtualizado: CadernoChoro): void {
@@ -1020,6 +1022,45 @@ export class EventoOperacaoComponent implements OnInit {
       case 'AUSENTE':
         return 'warn';
       case 'DESISTENTE':
+        return 'danger';
+      default:
+        return 'secondary';
+    }
+  }
+
+  credencialPermiteOperacao(tio: TioCaronaEvento): boolean {
+    /*
+     * Compatibilidade: quando o backend ainda não envia credencialStatus,
+     * mantemos o tio na operação. Quando envia, somente credencial ATIVA
+     * deve contar como operacional.
+     */
+    if (!tio.credencialStatus) {
+      return true;
+    }
+
+    return tio.credencialStatus === 'ATIVA';
+  }
+
+  labelCredencialOperacionalTio(tio: TioCaronaEvento): string {
+    switch (tio.credencialStatus) {
+      case 'ATIVA':
+        return 'Credencial ativa';
+      case 'INATIVA':
+        return 'Credencial inativa';
+      case 'CANCELADA':
+        return 'Credencial cancelada';
+      default:
+        return 'Credencial não gerada';
+    }
+  }
+
+  severityCredencialOperacionalTio(tio: TioCaronaEvento): 'success' | 'warn' | 'danger' | 'secondary' {
+    switch (tio.credencialStatus) {
+      case 'ATIVA':
+        return 'success';
+      case 'INATIVA':
+        return 'warn';
+      case 'CANCELADA':
         return 'danger';
       default:
         return 'secondary';

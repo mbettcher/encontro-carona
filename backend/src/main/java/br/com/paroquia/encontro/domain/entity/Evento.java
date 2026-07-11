@@ -1,3 +1,4 @@
+
 package br.com.paroquia.encontro.domain.entity;
 
 import br.com.paroquia.encontro.domain.enums.EventoStatus;
@@ -109,12 +110,13 @@ public class Evento {
         return monitoramentoAtivo;
     }
 
-    public void atualizar(String nome, String tema, LocalDate dataInicio, LocalDate dataFim, String local, LocalTime monitoramentoInicio, LocalTime monitoramentoFim, boolean monitoramentoAtivo) {
+    public void atualizar(String nome, String tema, LocalDate dataInicio, LocalDate dataFim, String local, EventoStatus status, LocalTime monitoramentoInicio, LocalTime monitoramentoFim, boolean monitoramentoAtivo) {
         this.nome = nome;
         this.tema = tema;
         this.dataInicio = dataInicio;
         this.dataFim = dataFim;
         this.local = local;
+        this.status = status == null ? EventoStatus.PLANEJADO : status;
         this.monitoramentoInicio = monitoramentoInicio;
         this.monitoramentoFim = monitoramentoFim;
         this.monitoramentoAtivo = monitoramentoAtivo;

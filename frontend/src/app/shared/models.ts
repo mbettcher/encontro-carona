@@ -1,3 +1,4 @@
+
 export type EventoStatus = 'PLANEJADO' | 'EM_ANDAMENTO' | 'ENCERRADO' | 'CANCELADO';
 export type PessoaTipo = 'TIO_CARONA' | 'SOBRINHO' | 'RESPONSAVEL' | 'EQUIPE';
 export type TioCaronaStatus = 'ATIVO' | 'INATIVO';
@@ -113,6 +114,11 @@ export interface TioCaronaEvento {
 
   checkoutRealizado?: boolean;
   checkoutEm?: string;
+
+  credencialId?: number;
+  credencialCodigo?: string;
+  credencialStatus?: StatusCredencial;
+  credencialAtiva?: boolean;
 
   statusOperacional?: StatusOperacionalTioCarona;
   ultimaOperacao?: TipoOperacaoTioCarona;

@@ -1,3 +1,4 @@
+
 package br.com.paroquia.encontro.domain.entity;
 
 import br.com.paroquia.encontro.common.BusinessException;
@@ -100,6 +101,11 @@ public class CredencialEvento {
         this.atualizadoEm = OffsetDateTime.now();
     }
 
+    public void cancelar() {
+        this.status = StatusCredencial.CANCELADA;
+        this.atualizadoEm = OffsetDateTime.now();
+    }
+
     public void reemitir(String novoCodigo) {
         if (novoCodigo == null || novoCodigo.isBlank()) {
             throw new BusinessException("Novo código da credencial deve ser informado.");
@@ -107,11 +113,6 @@ public class CredencialEvento {
 
         this.codigo = novoCodigo.trim();
         this.status = StatusCredencial.ATIVA;
-        this.atualizadoEm = OffsetDateTime.now();
-    }
-
-    public void cancelar() {
-        this.status = StatusCredencial.CANCELADA;
         this.atualizadoEm = OffsetDateTime.now();
     }
 

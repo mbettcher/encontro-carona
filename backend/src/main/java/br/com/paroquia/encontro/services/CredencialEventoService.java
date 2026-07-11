@@ -4,7 +4,6 @@ import br.com.paroquia.encontro.common.BusinessException;
 import br.com.paroquia.encontro.common.ResourceNotFoundException;
 import br.com.paroquia.encontro.domain.entity.CredencialEvento;
 import br.com.paroquia.encontro.domain.enums.SobrinhoStatus;
-import br.com.paroquia.encontro.domain.enums.StatusCredencial;
 import br.com.paroquia.encontro.domain.enums.TipoCredencial;
 import br.com.paroquia.encontro.dto.response.CredencialEventoResponse;
 import br.com.paroquia.encontro.dto.response.CredencialGeracaoResponse;

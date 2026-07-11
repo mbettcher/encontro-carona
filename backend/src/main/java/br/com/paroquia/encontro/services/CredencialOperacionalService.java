@@ -11,12 +11,20 @@ import br.com.paroquia.encontro.repository.CredencialEventoRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
+
 @Service
 public class CredencialOperacionalService {
     private final CredencialEventoRepository credencialRepository;
 
     public CredencialOperacionalService(CredencialEventoRepository credencialRepository) {
         this.credencialRepository = credencialRepository;
+    }
+
+
+    @Transactional(readOnly = true)
+    public Optional<CredencialEvento> buscarCredencialTioCarona(Long eventoId, Long tioCaronaEventoId) {
+        return credencialRepository.findByEventoIdAndTioCaronaEventoId(eventoId, tioCaronaEventoId);
     }
 
     @Transactional(readOnly = true)
