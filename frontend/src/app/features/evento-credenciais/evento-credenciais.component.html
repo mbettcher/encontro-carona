@@ -373,11 +373,19 @@
                                 }
 
                                 @if (credencial.status === 'CANCELADA') {
-                                <span class="small text-body-secondary"
-                                    pTooltip="Credencial cancelada definitivamente. Gere novas credenciais se necessário."
-                                    tooltipPosition="top">
-                                    Sem ações
-                                </span>
+                                <p-button icon="fa-solid fa-play" size="small" severity="success"
+                                    styleClass="credencial-icon-button me-1" pTooltip="Reativar credencial encontrada"
+                                    tooltipPosition="top" ariaLabel="Reativar credencial encontrada"
+                                    [loading]="processandoCredencialId() === credencial.id"
+                                    [disabled]="processandoCredencialId() === credencial.id"
+                                    (onClick)="reativar(credencial)" />
+
+                                <p-button icon="fa-solid fa-rotate" size="small" severity="help"
+                                    styleClass="credencial-icon-button" pTooltip="Reemitir com novo código"
+                                    tooltipPosition="top" ariaLabel="Reemitir credencial com novo código"
+                                    [loading]="processandoCredencialId() === credencial.id"
+                                    [disabled]="processandoCredencialId() === credencial.id"
+                                    (onClick)="reemitir(credencial)" />
                                 }
                             </div>
                         </td>

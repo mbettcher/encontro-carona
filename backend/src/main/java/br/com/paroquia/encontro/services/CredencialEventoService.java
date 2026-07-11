@@ -165,6 +165,22 @@ public class CredencialEventoService {
         return CredencialEventoResponse.from(credencial);
     }
 
+    @Transactional
+    public CredencialEventoResponse reemitir(Long eventoId, Long credencialId) {
+        var credencial = buscarEntidade(eventoId, credencialId);
+
+        var referenciaId = credencial.getTipo() == TipoCredencial.TIO_CARONA
+                ? credencial.getTioCaronaEvento().getId()
+                : credencial.getSobrinho().getId();
+
+        var prefixo = credencial.getTipo() == TipoCredencial.TIO_CARONA ? "TC" : "SB";
+        var novoCodigo = gerarCodigoReemitido(prefixo, eventoId, referenciaId);
+
+        credencial.reemitir(novoCodigo);
+
+        return CredencialEventoResponse.from(credencial);
+    }
+
     private CredencialEvento buscarEntidade(Long eventoId, Long credencialId) {
         return repository.findByIdAndEventoId(credencialId, eventoId)
                 .orElseThrow(() -> new ResourceNotFoundException("Credencial não encontrada neste evento."));
@@ -186,5 +202,19 @@ public class CredencialEventoService {
         }
 
         throw new BusinessException("Não foi possível gerar código único para a credencial.");
+    }
+
+    private String gerarCodigoReemitido(String prefixo, Long eventoId, Long referenciaId) {
+        var codigoBase = "%s-E%04d-%06d".formatted(prefixo, eventoId, referenciaId);
+
+        for (int tentativa = 1; tentativa <= 99; tentativa++) {
+            var codigo = "%s-R%02d".formatted(codigoBase, tentativa);
+
+            if (!repository.existsByCodigo(codigo)) {
+                return codigo;
+            }
+        }
+
+        throw new BusinessException("Não foi possível gerar novo código para reemissão da credencial.");
     }
 }

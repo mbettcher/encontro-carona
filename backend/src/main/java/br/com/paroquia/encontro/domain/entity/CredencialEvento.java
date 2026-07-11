@@ -96,10 +96,16 @@ public class CredencialEvento {
     }
 
     public void reativar() {
-        if (this.status == StatusCredencial.CANCELADA) {
-            throw new BusinessException("Não é possível reativar uma credencial cancelada.");
+        this.status = StatusCredencial.ATIVA;
+        this.atualizadoEm = OffsetDateTime.now();
+    }
+
+    public void reemitir(String novoCodigo) {
+        if (novoCodigo == null || novoCodigo.isBlank()) {
+            throw new BusinessException("Novo código da credencial deve ser informado.");
         }
 
+        this.codigo = novoCodigo.trim();
         this.status = StatusCredencial.ATIVA;
         this.atualizadoEm = OffsetDateTime.now();
     }

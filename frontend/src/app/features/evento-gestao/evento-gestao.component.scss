@@ -57,12 +57,10 @@
 
         .modo-cadastro-switch-wrapper {
             flex: 0 0 auto;
-            width: 3.5rem;
-            min-width: 3.5rem;
-            max-width: 3.5rem;
-            display: flex;
+            display: inline-flex;
             align-items: center;
-            justify-content: flex-start;
+            justify-content: center;
+            min-width: max-content;
             padding-top: 0.15rem;
         }
 
@@ -112,13 +110,6 @@
     }
 
     :host ::ng-deep {
-        .modo-cadastro-encontrista .p-toggleswitch {
-            flex: 0 0 auto;
-            width: 3.25rem;
-            min-width: 3.25rem;
-            max-width: 3.25rem;
-        }
-
         .p-card {
             border-radius: 1rem;
         }
@@ -149,14 +140,6 @@
 }
 
 :host ::ng-deep {
-    .modo-cadastro-encontrista .p-toggleswitch {
-        display: inline-flex !important;
-        flex: 0 0 auto !important;
-        width: 3.25rem !important;
-        min-width: 3.25rem !important;
-        max-width: 3.25rem !important;
-    }
-
     .vinculo-select {
         width: 100%;
         max-width: 100%;

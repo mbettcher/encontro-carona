@@ -68,4 +68,12 @@ public class CredencialEventoController {
     ) {
         return service.cancelar(eventoId, credencialId);
     }
+
+    @PatchMapping("/{credencialId}/reemitir")
+    public CredencialEventoResponse reemitir(
+            @PathVariable Long eventoId,
+            @PathVariable Long credencialId
+    ) {
+        return service.reemitir(eventoId, credencialId);
+    }
 }

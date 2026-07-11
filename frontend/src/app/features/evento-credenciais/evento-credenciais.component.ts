@@ -360,6 +360,23 @@ export class EventoCredenciaisComponent implements OnInit {
             });
     }
 
+    reemitir(credencial: CredencialEvento): void {
+        this.processandoCredencialId.set(credencial.id);
+
+        this.service.reemitir(this.eventoId, credencial.id)
+            .pipe(finalize(() => this.processandoCredencialId.set(null)))
+            .subscribe({
+                next: atualizada => {
+                    this.atualizarCredencialNaLista(atualizada);
+                    this.toastSuccess('Credencial reemitida com novo código.');
+                },
+                error: erro => {
+                    console.error('Erro ao reemitir credencial', erro);
+                    this.toastError(this.mensagemErro(erro, 'Não foi possível reemitir a credencial.'));
+                }
+            });
+    }
+
     imprimirQrCodes(tipo?: TipoCredencial): void {
         const queryParams = tipo ? { tipo } : {};
 
@@ -451,7 +468,11 @@ export class EventoCredenciaisComponent implements OnInit {
     }
 
     podeReativar(credencial: CredencialEvento): boolean {
-        return credencial.status === 'INATIVA';
+        return credencial.status === 'INATIVA' || credencial.status === 'CANCELADA';
+    }
+
+    podeReemitir(credencial: CredencialEvento): boolean {
+        return credencial.status === 'CANCELADA';
     }
 
     podeCancelar(credencial: CredencialEvento): boolean {

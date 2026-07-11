@@ -70,4 +70,11 @@ export class EventoCredenciaisService {
             {}
         );
     }
+
+    reemitir(eventoId: number, credencialId: number): Observable<CredencialEvento> {
+        return this.http.patch<CredencialEvento>(
+            `${this.apiUrl}/eventos/${eventoId}/credenciais/${credencialId}/reemitir`,
+            {}
+        );
+    }
 }
