@@ -24,7 +24,7 @@
           <div>
             <label for="nome" class="form-label">Nome da paróquia *</label>
             <input id="nome" pInputText type="text" class="w-100" formControlName="nome"
-              placeholder="Ex.: Paróquia São José" (blur)="formatarCamposTexto()" />
+              placeholder="Ex.: Paróquia São Pedro" (blur)="formatarCamposTexto()" />
 
             @if (form.controls.nome.touched && form.controls.nome.invalid) {
             <div class="form-text text-danger">
@@ -43,13 +43,13 @@
             <div class="col-12 col-md-8">
               <label for="cidade" class="form-label">Cidade</label>
               <input id="cidade" pInputText type="text" class="w-100" formControlName="cidade"
-                placeholder="Ex.: Juiz de Fora" (blur)="formatarCamposTexto()" />
+                placeholder="Ex.: Vitória" (blur)="formatarCamposTexto()" />
             </div>
 
             <div class="col-12 col-md-4">
               <label for="uf" class="form-label">UF</label>
               <input id="uf" pInputText type="text" class="w-100 text-uppercase" formControlName="uf" maxlength="2"
-                placeholder="MG" />
+                placeholder="ES" />
 
               @if (form.controls.uf.touched && form.controls.uf.invalid) {
               <div class="form-text text-danger">
@@ -69,7 +69,7 @@
             <div class="col-12 col-md-6">
               <label for="telefone" class="form-label">Telefone</label>
               <input id="telefone" pInputText type="text" class="w-100" formControlName="telefone"
-                placeholder="(00) 00000-0000" />
+                placeholder="(00) 00000-0000" appTelefoneMask/>
             </div>
 
             <div class="col-12 col-md-6">

@@ -403,13 +403,15 @@
         </ng-template>
 
         <div class="modo-cadastro-encontrista mb-4">
-          <div class="d-flex align-items-center gap-3">
-            <p-toggleswitch inputId="modoCadastroEncontrista" [ngModel]="usarPessoaCadastradaEncontrista()"
-              (ngModelChange)="alterarModoCadastroEncontrista($event)" [ngModelOptions]="{ standalone: true }"
-              ariaLabel="Alternar modo de cadastro do encontrista">
-            </p-toggleswitch>
+          <div class="d-flex align-items-start gap-3">
+            <div class="modo-cadastro-switch-wrapper">
+              <p-toggleswitch inputId="modoCadastroEncontrista" [ngModel]="usarPessoaCadastradaEncontrista()"
+                (ngModelChange)="alterarModoCadastroEncontrista($event)" [ngModelOptions]="{ standalone: true }"
+                ariaLabel="Alternar modo de cadastro do encontrista">
+              </p-toggleswitch>
+            </div>
 
-            <div class="min-width-0">
+            <div class="modo-cadastro-texto">
               <label for="modoCadastroEncontrista" class="form-label fw-semibold mb-1">
                 {{ labelModoCadastroEncontrista() }}
               </label>

@@ -179,11 +179,11 @@ export class EventoOperacaoService {
   }
 
   registrarCheckinManual(eventoId: number, tioCaronaEventoId: number): Observable<TioCaronaEvento> {
-    return this.http.post<TioCaronaEvento>(`${this.apiUrl}/eventos/${eventoId}/tios-carona/${tioCaronaEventoId}/operacao/check-in`, {});
+    return this.http.post<TioCaronaEvento>(`${this.apiUrl}/eventos/${eventoId}/tios-carona/${tioCaronaEventoId}/operacao/manual/check-in`, {});
   }
 
   registrarCheckoutManual(eventoId: number, tioCaronaEventoId: number): Observable<TioCaronaEvento> {
-    return this.http.post<TioCaronaEvento>(`${this.apiUrl}/eventos/${eventoId}/tios-carona/${tioCaronaEventoId}/operacao/checkout`, {});
+    return this.http.post<TioCaronaEvento>(`${this.apiUrl}/eventos/${eventoId}/tios-carona/${tioCaronaEventoId}/operacao/manual/checkout`, {});
   }
 
   registrarPresencaSobrinho(eventoId: number, sobrinhoId: number, operacao: OperacaoPresencaSobrinho, observacao?: string): Observable<Sobrinho> {

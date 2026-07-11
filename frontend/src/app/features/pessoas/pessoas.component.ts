@@ -57,6 +57,7 @@ export class PessoasComponent implements OnInit {
   readonly salvando = signal(false);
   readonly pessoaEmEdicao = signal<Pessoa | null>(null);
   readonly tipoFiltro = signal<TipoFiltro>('TODOS');
+  readonly filtroBusca = signal('');
 
   readonly tiposPessoa: TipoOpcao[] = [
     { label: 'Tio Carona', value: 'TIO_CARONA' },
@@ -74,13 +75,23 @@ export class PessoasComponent implements OnInit {
   ];
 
   readonly pessoasFiltradas = computed(() => {
-    const filtro = this.tipoFiltro();
+    const tipo = this.tipoFiltro();
+    const busca = this.normalizarFiltro(this.filtroBusca());
 
-    if (filtro === 'TODOS') {
-      return this.pessoas();
-    }
+    return this.pessoas()
+      .filter(pessoa => tipo === 'TODOS' || pessoa.tipo === tipo)
+      .filter(pessoa => {
+        if (!busca) {
+          return true;
+        }
 
-    return this.pessoas().filter(pessoa => pessoa.tipo === filtro);
+        return this.contemFiltro(pessoa.nome, busca) ||
+          this.contemFiltro(this.labelTipo(pessoa.tipo), busca) ||
+          this.contemFiltro(pessoa.telefone, busca) ||
+          this.contemFiltro(pessoa.email, busca) ||
+          this.contemFiltro(pessoa.observacoes, busca) ||
+          this.contemFiltro(this.formatarData(pessoa.dataNascimento), busca);
+      });
   });
 
   readonly tituloFormulario = computed(() =>
@@ -203,6 +214,24 @@ export class PessoasComponent implements OnInit {
     this.tipoFiltro.set(tipo);
   }
 
+  alterarBusca(valor: string): void {
+    this.filtroBusca.set(valor);
+  }
+
+  formatarData(data?: string): string {
+    if (!data) {
+      return '';
+    }
+
+    const [ano, mes, dia] = data.substring(0, 10).split('-');
+
+    if (!ano || !mes || !dia) {
+      return data;
+    }
+
+    return `${dia}/${mes}/${ano}`;
+  }
+
   labelTipo(tipo: PessoaTipo): string {
     return this.tiposPessoa.find(opcao => opcao.value === tipo)?.label ?? tipo;
   }
@@ -249,5 +278,21 @@ export class PessoasComponent implements OnInit {
   private normalizarTextoOpcional(valor: string): string | undefined {
     const texto = valor?.trim();
     return texto ? texto : undefined;
+  }
+
+  private normalizarFiltro(valor: string): string {
+    return String(valor ?? '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .trim();
+  }
+
+  private contemFiltro(valor: string | undefined, filtro: string): boolean {
+    if (!valor) {
+      return false;
+    }
+
+    return this.normalizarFiltro(valor).includes(filtro);
   }
 }

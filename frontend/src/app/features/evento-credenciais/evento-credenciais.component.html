@@ -145,8 +145,8 @@
                     <p-button label="Gerar tios carona" icon="fa-solid fa-car-side" severity="info" size="small"
                         [loading]="gerando()" (onClick)="gerarTiosCarona()" />
 
-                    <p-button label="Gerar Encontrista" icon="fa-solid fa-child-reaching" severity="success" size="small"
-                        [loading]="gerando()" (onClick)="gerarSobrinhos()" />
+                    <p-button label="Gerar Encontrista" icon="fa-solid fa-child-reaching" severity="success"
+                        size="small" [loading]="gerando()" (onClick)="gerarSobrinhos()" />
                 </div>
             </div>
         </ng-template>
@@ -340,23 +340,45 @@
                                     [disabled]="credencial.status !== 'ATIVA'"
                                     (onClick)="imprimirCrachaIndividual(credencial)" />
 
+                                @if (credencial.status === 'ATIVA') {
                                 <p-button icon="fa-solid fa-pause" size="small" severity="warn"
                                     styleClass="credencial-icon-button me-1" pTooltip="Inativar credencial"
                                     tooltipPosition="top" ariaLabel="Inativar credencial"
                                     [loading]="processandoCredencialId() === credencial.id"
-                                    [disabled]="!podeInativar(credencial)" (onClick)="inativar(credencial)" />
+                                    [disabled]="processandoCredencialId() === credencial.id"
+                                    (onClick)="inativar(credencial)" />
 
+                                <p-button icon="fa-solid fa-ban" size="small" severity="danger"
+                                    styleClass="credencial-icon-button" pTooltip="Cancelar credencial definitivamente"
+                                    tooltipPosition="top" ariaLabel="Cancelar credencial"
+                                    [loading]="processandoCredencialId() === credencial.id"
+                                    [disabled]="processandoCredencialId() === credencial.id"
+                                    (onClick)="cancelar(credencial)" />
+                                }
+
+                                @if (credencial.status === 'INATIVA') {
                                 <p-button icon="fa-solid fa-play" size="small" severity="success"
                                     styleClass="credencial-icon-button me-1" pTooltip="Reativar credencial"
                                     tooltipPosition="top" ariaLabel="Reativar credencial"
                                     [loading]="processandoCredencialId() === credencial.id"
-                                    [disabled]="!podeReativar(credencial)" (onClick)="reativar(credencial)" />
+                                    [disabled]="processandoCredencialId() === credencial.id"
+                                    (onClick)="reativar(credencial)" />
 
                                 <p-button icon="fa-solid fa-ban" size="small" severity="danger"
-                                    styleClass="credencial-icon-button" pTooltip="Cancelar credencial"
+                                    styleClass="credencial-icon-button" pTooltip="Cancelar credencial definitivamente"
                                     tooltipPosition="top" ariaLabel="Cancelar credencial"
                                     [loading]="processandoCredencialId() === credencial.id"
-                                    [disabled]="!podeCancelar(credencial)" (onClick)="cancelar(credencial)" />
+                                    [disabled]="processandoCredencialId() === credencial.id"
+                                    (onClick)="cancelar(credencial)" />
+                                }
+
+                                @if (credencial.status === 'CANCELADA') {
+                                <span class="small text-body-secondary"
+                                    pTooltip="Credencial cancelada definitivamente. Gere novas credenciais se necessário."
+                                    tooltipPosition="top">
+                                    Sem ações
+                                </span>
+                                }
                             </div>
                         </td>
                     </tr>

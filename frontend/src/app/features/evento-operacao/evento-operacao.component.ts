@@ -765,39 +765,45 @@ export class EventoOperacaoComponent implements OnInit {
   }
 
   registrarCheckinManual(tio: TioCaronaEvento): void {
+    if (this.processandoManual()) {
+      return;
+    }
+
     this.processandoManual.set(tio.id);
 
-    this.service.registrarCheckinManual(this.eventoId, tio.id).subscribe({
-      next: tioAtualizado => {
-        this.atualizarTioCaronaNaLista(tioAtualizado);
-        this.toastSuccess(`Check-in manual registrado para ${tioAtualizado.pessoaNome}.`);
-      },
-      error: erro => {
-        console.error('Erro ao registrar check-in manual', erro);
-        this.toastError(this.mensagemErro(erro, 'Não foi possível registrar o check-in manual.'));
-      },
-      complete: () => {
-        this.processandoManual.set(null);
-      }
-    });
+    this.service.registrarCheckinManual(this.eventoId, tio.id)
+      .pipe(finalize(() => this.processandoManual.set(null)))
+      .subscribe({
+        next: tioAtualizado => {
+          this.atualizarTioCaronaNaLista(tioAtualizado);
+          this.toastSuccess(`Check-in manual registrado para ${tioAtualizado.pessoaNome}.`);
+        },
+        error: erro => {
+          console.error('Erro ao registrar check-in manual', erro);
+          this.toastError(this.mensagemErro(erro, 'Não foi possível registrar o check-in manual.'));
+        }
+      });
   }
 
   registrarCheckoutManual(tio: TioCaronaEvento): void {
+    if (this.processandoManual()) {
+      return;
+    }
+
     this.processandoManual.set(tio.id);
 
-    this.service.registrarCheckoutManual(this.eventoId, tio.id).subscribe({
-      next: tioAtualizado => {
-        this.atualizarTioCaronaNaLista(tioAtualizado);
-        this.toastSuccess(`Checkout manual registrado para ${tioAtualizado.pessoaNome}.`);
-      },
-      error: erro => {
-        console.error('Erro ao registrar checkout manual', erro);
-        this.toastError(this.mensagemErro(erro, 'Não foi possível registrar o checkout manual.'));
-      },
-      complete: () => {
-        this.processandoManual.set(null);
-      }
-    });
+    this.service.registrarCheckoutManual(this.eventoId, tio.id)
+      .pipe(finalize(() => this.processandoManual.set(null)))
+      .subscribe({
+        next: tioAtualizado => {
+          this.atualizarTioCaronaNaLista(tioAtualizado);
+          this.toastSuccess(`Checkout manual registrado para ${tioAtualizado.pessoaNome}.`);
+        },
+        error: erro => {
+          console.error('Erro ao registrar checkout manual', erro);
+          this.toastError(this.mensagemErro(erro, 'Não foi possível registrar o checkout manual.'));
+        }
+      });
   }
 
   private atualizarCadernoNaLista(cadernoAtualizado: CadernoChoro): void {

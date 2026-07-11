@@ -13,6 +13,38 @@
         max-width: 22rem;
     }
 
+    .filtros-pessoas {
+        min-width: min(100%, 34rem);
+    }
+
+    .tipo-filter {
+        width: 100%;
+        min-width: 12rem;
+    }
+
+    .table-search {
+        width: 100%;
+        min-width: 16rem;
+
+        .p-input-icon-left {
+            position: relative;
+            display: block;
+
+            i {
+                position: absolute;
+                top: 50%;
+                left: 0.75rem;
+                transform: translateY(-50%);
+                color: var(--bs-secondary-color);
+                z-index: 1;
+            }
+
+            input {
+                padding-left: 2.25rem;
+            }
+        }
+    }
+
     :host ::ng-deep {
         .p-card {
             border-radius: 1rem;
