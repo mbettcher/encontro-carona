@@ -106,7 +106,7 @@ public class SobrinhoDuplaService {
                 eventoId,
                 vinculo.getSobrinho().getId()
         )) {
-            throw new BusinessException("Não é possível remover o vínculo porque já existe Caderno do Choro gerado para este sobrinho.");
+            throw new BusinessException("Não é possível remover o vínculo porque já existe Caderno de Mensagens gerado para este encontrista.");
         }
 
         vinculo.remover();
@@ -156,7 +156,7 @@ public class SobrinhoDuplaService {
                 eventoId,
                 vinculo.getSobrinho().getId()
         )) {
-            throw new BusinessException("Não é possível trocar a dupla do vínculo porque já existe Caderno do Choro gerado para este sobrinho.");
+            throw new BusinessException("Não é possível trocar a dupla do vínculo porque já existe Caderno de Mensagens gerado para este encontrista.");
         }
 
         var novaDupla = duplaRepository.findByIdAndEventoId(request.duplaId(), eventoId)
@@ -215,7 +215,7 @@ public class SobrinhoDuplaService {
         var statusAnterior = caderno.getStatus();
 
         if (statusAnterior == StatusCadernoChoro.ENTREGUE_A_DUPLA && !request.cadernoDevolvidoConfirmado()) {
-            throw new BusinessException("Para substituir a dupla, confirme que o Caderno do Choro foi devolvido pela dupla anterior à equipe organizadora.");
+            throw new BusinessException("Para substituir a dupla, confirme que o Caderno de Mensagens foi devolvido pela dupla anterior à equipe organizadora.");
         }
 
         var observacaoHistorico = montarObservacaoSubstituicaoDupla(
@@ -264,7 +264,7 @@ public class SobrinhoDuplaService {
                 + ". Motivo: " + motivo;
 
         if (statusAnterior == StatusCadernoChoro.ENTREGUE_A_DUPLA && cadernoDevolvidoConfirmado) {
-            observacao += ". Foi confirmado que o Caderno do Choro foi devolvido pela dupla anterior à equipe organizadora.";
+            observacao += ". Foi confirmado que o Caderno de Mensagens foi devolvido pela dupla anterior à equipe organizadora.";
         }
 
         return observacao;

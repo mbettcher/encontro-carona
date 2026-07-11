@@ -140,46 +140,80 @@
   .historico-caderno-scroll {
     width: 100%;
     overflow-x: auto;
-    padding: 1rem 0.5rem 0.5rem;
+    padding: 1rem 0.5rem 0.75rem;
   }
 
-  .historico-item {
-    min-width: 9rem;
-    max-width: 12rem;
+  .historico-caderno-linha {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    min-width: max-content;
+    padding: 0.25rem 0.5rem 0;
+  }
+
+  .historico-caderno-etapa {
+    position: relative;
+    width: 11rem;
+    min-width: 11rem;
     text-align: center;
+
+    &:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      top: 1.25rem;
+      left: calc(50% + 1.45rem);
+      width: calc(100% - 2.9rem);
+      height: 2px;
+      background: var(--bs-border-color);
+      z-index: 0;
+    }
+  }
+
+  .historico-caderno-marker-row {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    justify-content: center;
+    min-height: 2.75rem;
   }
 
   .historico-marker {
-    width: 2.25rem;
-    height: 2.25rem;
+    width: 2.5rem;
+    height: 2.5rem;
     border-radius: 999px;
     background: var(--bs-primary-bg-subtle);
     color: var(--bs-primary);
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    border: 1px solid var(--bs-border-color);
+    border: 2px solid #fff;
+    box-shadow: 0 0 0 1px var(--bs-border-color), 0 0.35rem 0.75rem rgba(15, 23, 42, 0.08);
 
     i {
-      font-size: 0.95rem;
+      font-size: 1rem;
+    }
+
+    &.problematico {
+      background: var(--bs-danger-bg-subtle);
+      color: var(--bs-danger);
     }
   }
 
-  :host ::ng-deep {
-    .historico-caderno-timeline {
-      min-width: 44rem;
+  .historico-caderno-conteudo {
+    padding: 0.35rem 0.45rem 0;
+    min-height: 5rem;
+  }
 
-      .p-timeline-event-content {
-        padding: 0.75rem 0.5rem 0;
-      }
+  .historico-info-button {
+    border: 0;
+    background: transparent;
+    color: var(--bs-secondary-color);
+    padding: 0;
+    line-height: 1;
+    cursor: help;
 
-      .p-timeline-event-opposite {
-        display: none;
-      }
-
-      .p-timeline-event-separator {
-        min-width: 3rem;
-      }
+    &:hover {
+      color: var(--bs-primary);
     }
   }
 

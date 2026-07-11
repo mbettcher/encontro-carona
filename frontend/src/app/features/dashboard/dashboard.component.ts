@@ -286,7 +286,7 @@ export class DashboardComponent implements OnInit {
       },
       {
         titulo: 'Operação',
-        descricao: 'Check-in, presença e Caderno do Choro.',
+        descricao: 'Check-in, presença e Caderno de Mensagens.',
         icone: 'fa-solid fa-qrcode',
         routerLink: eventoId ? ['/eventos', eventoId, 'operacao'] : '/eventos',
         tema: 'green'

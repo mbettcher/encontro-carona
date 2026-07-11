@@ -109,11 +109,11 @@ public class CadernoChoro {
 
     public void marcarPerdido(String observacao) {
         if (this.status == StatusCadernoChoro.ENTREGUE_AO_SOBRINHO) {
-            throw new BusinessException("Não é possível marcar como perdido um caderno já entregue ao sobrinho.");
+            throw new BusinessException("Não é possível marcar como perdido um Caderno de Mensagens já entregue ao encontrista.");
         }
 
         if (this.status == StatusCadernoChoro.CANCELADO) {
-            throw new BusinessException("Não é possível marcar como perdido um caderno cancelado.");
+            throw new BusinessException("Não é possível marcar como perdido um Caderno de Mensagens cancelado.");
         }
 
         this.status = StatusCadernoChoro.PERDIDO;
@@ -122,11 +122,11 @@ public class CadernoChoro {
 
     public void marcarSubstituido(String observacao) {
         if (this.status == StatusCadernoChoro.ENTREGUE_AO_SOBRINHO) {
-            throw new BusinessException("Não é possível substituir um caderno já entregue ao sobrinho.");
+            throw new BusinessException("Não é possível substituir um Caderno de Mensagens já entregue ao encontrista.");
         }
 
         if (this.status == StatusCadernoChoro.CANCELADO) {
-            throw new BusinessException("Não é possível substituir um caderno cancelado.");
+            throw new BusinessException("Não é possível substituir um Caderno de Mensagens cancelado.");
         }
 
         this.status = StatusCadernoChoro.SUBSTITUIDO;
@@ -135,7 +135,7 @@ public class CadernoChoro {
 
     public void cancelar(String observacao) {
         if (this.status == StatusCadernoChoro.ENTREGUE_AO_SOBRINHO) {
-            throw new BusinessException("Não é possível cancelar um caderno já entregue ao sobrinho.");
+            throw new BusinessException("Não é possível cancelar um Caderno de Mensagens já entregue ao encontrista.");
         }
 
         this.status = StatusCadernoChoro.CANCELADO;
@@ -168,7 +168,7 @@ public class CadernoChoro {
 
         if (this.status == StatusCadernoChoro.ENTREGUE_A_DUPLA) {
             if (!confirmarCadernoDevolvido) {
-                throw new BusinessException("Para substituir a dupla, confirme que o Caderno do Choro foi devolvido pela dupla anterior à equipe organizadora.");
+                throw new BusinessException("Para substituir a dupla, confirme que o Caderno de Mensagens foi devolvido pela dupla anterior à equipe organizadora.");
             }
 
             this.status = StatusCadernoChoro.RECEBIDO_DA_DUPLA;

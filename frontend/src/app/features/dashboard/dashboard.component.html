@@ -38,32 +38,6 @@
         <div class="text-body-secondary mt-3">Carregando indicadores...</div>
     </div>
     } @else {
-    <section class="mb-4">
-        <div class="section-heading mb-3">
-            <div>
-                <h2 class="h5 mb-1">Visão geral do sistema</h2>
-                <p class="text-body-secondary small mb-0">
-                    Indicadores globais de cadastros e preparação.
-                </p>
-            </div>
-        </div>
-
-        <div class="dashboard-summary-grid">
-            @for (card of cardsGerais(); track card.titulo) {
-            <article class="dashboard-stat-card" [class]="classeTemaCard(card.tema)">
-                <div class="stat-icon">
-                    <i [class]="card.icone"></i>
-                </div>
-
-                <div class="stat-content">
-                    <div class="stat-title">{{ card.titulo }}</div>
-                    <div class="stat-value">{{ card.valor }}</div>
-                    <div class="stat-subtitle">{{ card.subtitulo }}</div>
-                </div>
-            </article>
-            }
-        </div>
-    </section>
 
     <section class="mb-4">
         <div class="section-heading mb-3">
@@ -201,6 +175,33 @@
             </div>
         </div>
         }
+    </section>
+
+    <section class="mb-4">
+        <div class="section-heading mb-3">
+            <div>
+                <h2 class="h5 mb-1">Visão geral do sistema</h2>
+                <p class="text-body-secondary small mb-0">
+                    Indicadores globais de cadastros e preparação.
+                </p>
+            </div>
+        </div>
+
+        <div class="dashboard-summary-grid">
+            @for (card of cardsGerais(); track card.titulo) {
+            <article class="dashboard-stat-card" [class]="classeTemaCard(card.tema)">
+                <div class="stat-icon">
+                    <i [class]="card.icone"></i>
+                </div>
+
+                <div class="stat-content">
+                    <div class="stat-title">{{ card.titulo }}</div>
+                    <div class="stat-value">{{ card.valor }}</div>
+                    <div class="stat-subtitle">{{ card.subtitulo }}</div>
+                </div>
+            </article>
+            }
+        </div>
     </section>
     }
 </div>

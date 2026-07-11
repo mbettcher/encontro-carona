@@ -68,7 +68,7 @@
 
       <p-tab value="CADERNO_CHORO">
         <i class="fa-solid fa-book-bible me-2"></i>
-        Caderno do Choro
+        Caderno de Mensagens
       </p-tab>
     </p-tablist>
 
@@ -527,8 +527,9 @@
                     (onClick)="registrarCheckoutManual(tio)" />
                 </div>
                 } @else {
-                <span class="small text-body-secondary" [pTooltip]="motivoBloqueioOperacaoTio(tio)"
-                  tooltipPosition="top">
+                <span class="small text-body-secondary"
+                  pTooltip="Reative ou reemita a credencial para liberar check-in e checkout manual."
+                  tooltipPosition="left">
                   <i class="fa-solid fa-lock me-1"></i>
                   Sem ações
                 </span>
@@ -639,7 +640,7 @@
           currentPageReportTemplate="Exibindo {first} a {last} de {totalRecords} registros">
           <ng-template pTemplate="header">
             <tr>
-              <th>Sobrinho</th>
+              <th>Encontrista</th>
               <th>Responsável</th>
               <th>Status presença</th>
               <th>Última presença</th>
@@ -817,9 +818,9 @@
       <ng-template pTemplate="header">
         <div class="px-4 pt-4 d-flex flex-column flex-xl-row justify-content-between gap-3">
           <div>
-            <h2 class="h5 mb-1">Caderno do Choro</h2>
+            <h2 class="h5 mb-1">Caderno de Mensagens</h2>
             <p class="text-body-secondary small mb-0">
-              Controle dos cadernos secretos por dupla, conferência da equipe e kit de encerramento.
+              Controle dos cadernos de mensagens por dupla, conferência da equipe e kit de encerramento.
             </p>
           </div>
 
@@ -920,8 +921,9 @@
             <span class="p-input-icon-left w-100">
               <i class="fa-solid fa-magnifying-glass"></i>
 
-              <input pInputText type="text" class="w-100" placeholder="Pesquisar caderno, sobrinho, dupla ou status..."
-                [value]="filtroCadernos()" (input)="alterarFiltroCadernos($any($event.target).value)" />
+              <input pInputText type="text" class="w-100"
+                placeholder="Pesquisar caderno, encontrista, dupla ou status..." [value]="filtroCadernos()"
+                (input)="alterarFiltroCadernos($any($event.target).value)" />
             </span>
           </div>
         </div>
@@ -965,7 +967,7 @@
           paginatorDropdownAppendTo="body">
           <ng-template pTemplate="header">
             <tr>
-              <th>Sobrinho</th>
+              <th>Encontrista</th>
               <th>Dupla</th>
               <th>Status</th>
               <th>Entregue à dupla</th>
@@ -1043,7 +1045,7 @@
                     (onClick)="anexarCadernoAoKit(caderno)" />
 
                   <p-button icon="fa-solid fa-gift" size="small" severity="success" styleClass="caderno-icon-button"
-                    pTooltip="Entregar ao sobrinho" tooltipPosition="top" ariaLabel="Entregar ao sobrinho"
+                    pTooltip="Entregar ao encontrista" tooltipPosition="top" ariaLabel="Entregar ao encontrista"
                     [loading]="processandoCadernoId() === caderno.id"
                     [disabled]="!podeEntregarCadernoAoSobrinho(caderno)"
                     (onClick)="entregarCadernoAoSobrinho(caderno)" />
@@ -1069,7 +1071,7 @@
 </p-tabpanels>
 </p-tabs>
 
-<p-dialog header="Histórico do Caderno do Choro" [visible]="historicoCadernoVisivel()"
+<p-dialog header="Histórico do Caderno de Mensagens" [visible]="historicoCadernoVisivel()"
   (visibleChange)="historicoCadernoVisivel.set($event)" [modal]="true" [style]="{ width: 'min(95vw, 980px)' }"
   [dismissableMask]="true" (onHide)="fecharHistoricoCaderno()">
   @if (cadernoSelecionado()) {
@@ -1096,35 +1098,38 @@
     <i class="fa-solid fa-clock-rotate-left text-body-secondary mb-3"></i>
     <h3 class="h6 mb-1">Nenhum histórico encontrado</h3>
     <p class="text-body-secondary small mb-0">
-      Ainda não há movimentações registradas para este caderno.
+      Ainda não há movimentações registradas para este caderno de mensagens.
     </p>
   </div>
   } @else {
   <div class="historico-caderno-scroll">
-    <p-timeline [value]="historicoCadernoTimeline()" layout="horizontal" align="top"
-      styleClass="historico-caderno-timeline">
-      <ng-template pTemplate="marker" let-item>
-        <span class="historico-marker">
-          <i [class]="iconeHistoricoCaderno(item.status)"></i>
-        </span>
-      </ng-template>
+    <div class="historico-caderno-linha" role="list" aria-label="Histórico do caderno de mensagens">
+      @for (item of historicoCadernoTimeline(); track item.id) {
+      <div class="historico-caderno-etapa" role="listitem">
+        <div class="historico-caderno-marker-row">
+          <span class="historico-marker"
+            [class.problematico]="item.status === 'PERDIDO' || item.status === 'CANCELADO'">
+            <i [class]="iconeHistoricoCaderno(item.status)"></i>
+          </span>
+        </div>
 
-      <ng-template pTemplate="content" let-item>
-        <div class="historico-item">
-          <p-tag [value]="labelStatusCaderno(item.status)" [severity]="severityStatusCaderno(item.status)" />
+        <div class="historico-caderno-conteudo">
+          <div class="fw-semibold small">
+            {{ labelStatusCaderno(item.status) }}
+          </div>
 
-          <div class="small fw-semibold mt-2">
+          <div class="small text-body-secondary mt-1">
             {{ item.ocorridoEm | date:'dd/MM/yyyy HH:mm' }}
           </div>
 
-          @if (item.observacao) {
-          <div class="small text-body-secondary mt-1">
-            {{ item.observacao }}
-          </div>
-          }
+          <button type="button" class="historico-info-button mt-2" [pTooltip]="detalhamentoHistoricoCaderno(item)"
+            tooltipPosition="top" ariaLabel="Ver detalhe da movimentação">
+            <i class="fa-solid fa-circle-info"></i>
+          </button>
         </div>
-      </ng-template>
-    </p-timeline>
+      </div>
+      }
+    </div>
   </div>
   }
 
@@ -1144,7 +1149,7 @@
   </div>
 
   <div class="mb-3">
-    <div class="small text-body-secondary">Sobrinho</div>
+    <div class="small text-body-secondary">Encontrista</div>
     <div class="fw-semibold">{{ cadernoSelecionado()?.sobrinhoNome }}</div>
   </div>
 
@@ -1185,12 +1190,12 @@
   </ng-template>
 </p-dialog>
 
-<p-dialog header="Ações especiais do caderno" [visible]="acoesEspeciaisCadernoVisivel()"
+<p-dialog header="Ações especiais do Caderno de Mensagens" [visible]="acoesEspeciaisCadernoVisivel()"
   (visibleChange)="acoesEspeciaisCadernoVisivel.set($event)" [modal]="true" [style]="{ width: 'min(95vw, 560px)' }"
   [dismissableMask]="true" (onHide)="fecharAcoesEspeciaisCaderno()">
   @if (cadernoSelecionado()) {
   <div class="mb-3">
-    <div class="small text-body-secondary">Sobrinho</div>
+    <div class="small text-body-secondary">Encontrista</div>
     <div class="fw-semibold">{{ cadernoSelecionado()?.sobrinhoNome }}</div>
   </div>
 

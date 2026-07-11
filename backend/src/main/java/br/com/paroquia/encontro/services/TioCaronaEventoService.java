@@ -5,6 +5,7 @@ import br.com.paroquia.encontro.common.ResourceNotFoundException;
 import br.com.paroquia.encontro.domain.entity.TioCaronaEvento;
 import br.com.paroquia.encontro.domain.entity.TioCaronaEventoOperacao;
 import br.com.paroquia.encontro.domain.enums.OrigemOperacaoTioCarona;
+import br.com.paroquia.encontro.domain.enums.StatusCredencial;
 import br.com.paroquia.encontro.domain.enums.TipoOperacaoTioCarona;
 import br.com.paroquia.encontro.domain.enums.TioCaronaStatus;
 import br.com.paroquia.encontro.dto.request.TioCaronaEventoRequest;
@@ -109,12 +110,16 @@ public class TioCaronaEventoService {
     @Transactional
     public TioCaronaEventoResponse registrarCheckinManual(Long eventoId, Long tioCaronaEventoId) {
         var tioCarona = buscarPorIdEvento(eventoId, tioCaronaEventoId);
+        validarCredencialAtivaParaOperacaoManual(eventoId, tioCaronaEventoId);
+
         return registrarOperacao(tioCarona, TipoOperacaoTioCarona.CHECKIN, OrigemOperacaoTioCarona.MANUAL, null);
     }
 
     @Transactional
     public TioCaronaEventoResponse registrarCheckoutManual(Long eventoId, Long tioCaronaEventoId) {
         var tioCarona = buscarPorIdEvento(eventoId, tioCaronaEventoId);
+        validarCredencialAtivaParaOperacaoManual(eventoId, tioCaronaEventoId);
+
         return registrarOperacao(tioCarona, TipoOperacaoTioCarona.CHECKOUT, OrigemOperacaoTioCarona.MANUAL, null);
     }
 
@@ -194,6 +199,16 @@ public class TioCaronaEventoService {
     private void validarAtivo(TioCaronaEvento tioCarona) {
         if (tioCarona.getStatus() != TioCaronaStatus.ATIVO) {
             throw new BusinessException("Tio carona inativo não pode realizar operação.");
+        }
+    }
+
+    private void validarCredencialAtivaParaOperacaoManual(Long eventoId, Long tioCaronaEventoId) {
+        var credencial = credencialOperacionalService
+                .buscarCredencialTioCarona(eventoId, tioCaronaEventoId)
+                .orElseThrow(() -> new BusinessException("Não é possível registrar operação manual: tio carona sem credencial ativa."));
+
+        if (credencial.getStatus() != StatusCredencial.ATIVA) {
+            throw new BusinessException("Não é possível registrar operação manual: a credencial do tio carona não está ativa.");
         }
     }
 

@@ -13,7 +13,6 @@ import { SelectModule } from 'primeng/select';
 import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
 import { DialogModule } from 'primeng/dialog';
-import { TimelineModule } from 'primeng/timeline';
 import { TextareaModule } from 'primeng/textarea';
 import { TooltipModule } from 'primeng/tooltip';
 import { TabsModule } from 'primeng/tabs';
@@ -61,7 +60,6 @@ type AbaOperacao =
     SelectModule,
     TableModule,
     DialogModule,
-    TimelineModule,
     TextareaModule,
     TooltipModule,
     TagModule,
@@ -352,8 +350,8 @@ export class EventoOperacaoComponent implements OnInit {
     this.service.listarCadernos(this.eventoId).subscribe({
       next: cadernos => this.cadernos.set(cadernos),
       error: erro => {
-        console.error('Erro ao carregar cadernos do choro', erro);
-        this.toastError('Não foi possível carregar os cadernos do choro.');
+        console.error('Erro ao carregar cadernos de mensagens', erro);
+        this.toastError('Não foi possível carregar os cadernos de mensagens.');
       }
     });
   }
@@ -397,7 +395,7 @@ export class EventoOperacaoComponent implements OnInit {
         },
         error: erro => {
           console.error('Erro ao gerar cadernos', erro);
-          this.toastError(this.mensagemErro(erro, 'Não foi possível gerar os cadernos do choro.'));
+          this.toastError(this.mensagemErro(erro, 'Não foi possível gerar os cadernos de mensagens.'));
         }
       });
   }
@@ -616,12 +614,12 @@ export class EventoOperacaoComponent implements OnInit {
           this.fecharOperacaoCaderno();
 
           this.toastSuccess(
-            `Caderno de ${cadernoAtualizado.sobrinhoNome}: ${this.labelStatusCaderno(cadernoAtualizado.status)}.`
+            `Caderno de mensagens de ${cadernoAtualizado.sobrinhoNome}: ${this.labelStatusCaderno(cadernoAtualizado.status)}.`
           );
         },
         error: erro => {
           console.error('Erro ao operar caderno', erro);
-          this.toastError(this.mensagemErro(erro, 'Não foi possível atualizar o caderno do choro.'));
+          this.toastError(this.mensagemErro(erro, 'Não foi possível atualizar o caderno de mensagens.'));
         }
       });
   }
@@ -652,19 +650,19 @@ export class EventoOperacaoComponent implements OnInit {
 
     switch (operacao) {
       case 'CONFERIDO':
-        return 'Confirme que a equipe conferiu o conteúdo do caderno recebido da dupla.';
+        return 'Confirme que a equipe conferiu o conteúdo do caderno de mensagens recebido da dupla.';
       case 'ANEXADO_AO_KIT':
-        return 'Confirme que o caderno foi anexado ao saco do choro / kit de encerramento.';
+        return 'Confirme que o caderno de mensagens foi anexado ao kit de encerramento.';
       case 'ENTREGUE_AO_SOBRINHO':
         return 'Confirme que o kit final foi entregue ao encontrista no encerramento.';
       case 'PERDIDO':
-        return 'Registre a ocorrência de perda do caderno. Informe detalhes na observação.';
+        return 'Registre a ocorrência de perda do caderno de mensagens. Informe detalhes na observação.';
       case 'SUBSTITUIDO':
-        return 'Registre que o caderno precisou ser substituído. Informe detalhes na observação.';
+        return 'Registre que o caderno de mensagens precisou ser substituído. Informe detalhes na observação.';
       case 'CANCELADO':
-        return 'Registre o cancelamento do caderno. Use apenas quando ele não deverá seguir no fluxo.';
+        return 'Registre o cancelamento do caderno de mensagens. Use apenas quando ele não deverá seguir no fluxo.';
       default:
-        return 'Confirme a operação desejada para o caderno.';
+        return 'Confirme a operação desejada para o caderno de mensagens.';
     }
   }
 
@@ -731,6 +729,35 @@ export class EventoOperacaoComponent implements OnInit {
         return 'fa-solid fa-ban';
       default:
         return 'fa-solid fa-circle';
+    }
+  }
+
+  detalhamentoHistoricoCaderno(item: CadernoChoroHistorico): string {
+    if (item.observacao?.trim()) {
+      return item.observacao.trim();
+    }
+
+    switch (item.status) {
+      case 'PENDENTE':
+        return 'Caderno de mensagens gerado automaticamente a partir do vínculo ativo com a dupla.';
+      case 'ENTREGUE_A_DUPLA':
+        return 'Caderno de mensagens entregue à dupla responsável pelo encontrista.';
+      case 'RECEBIDO_DA_DUPLA':
+        return 'Caderno de mensagens recebido de volta pela equipe organizadora.';
+      case 'CONFERIDO':
+        return 'Equipe conferiu o conteúdo recebido antes da montagem do kit.';
+      case 'ANEXADO_AO_KIT':
+        return 'Caderno de mensagens anexado ao kit de encerramento do encontrista.';
+      case 'ENTREGUE_AO_SOBRINHO':
+        return 'Kit final entregue ao encontrista no encerramento.';
+      case 'PERDIDO':
+        return 'Registro de perda do caderno de mensagens.';
+      case 'SUBSTITUIDO':
+        return 'Registro de substituição do caderno de mensagens.';
+      case 'CANCELADO':
+        return 'Registro de cancelamento do caderno de mensagens.';
+      default:
+        return 'Movimentação registrada no histórico do caderno de mensagens.';
     }
   }
 
@@ -1029,7 +1056,16 @@ export class EventoOperacaoComponent implements OnInit {
   }
 
   credencialPermiteOperacao(tio: TioCaronaEvento): boolean {
-    return tio.credencialStatus === 'ATIVA' || tio.credencialAtiva === true;
+    /*
+     * Compatibilidade: quando o backend ainda não envia credencialStatus,
+     * mantemos o tio na operação. Quando envia, somente credencial ATIVA
+     * deve contar como operacional.
+     */
+    if (!tio.credencialStatus) {
+      return true;
+    }
+
+    return tio.credencialStatus === 'ATIVA';
   }
 
   labelCredencialOperacionalTio(tio: TioCaronaEvento): string {
@@ -1088,17 +1124,6 @@ export class EventoOperacaoComponent implements OnInit {
 
   podeCheckoutManual(tio: TioCaronaEvento): boolean {
     return this.credencialPermiteOperacao(tio) && tio.statusOperacional === 'COM_CHECKIN';
-  }
-
-  motivoBloqueioOperacaoTio(tio: TioCaronaEvento): string {
-    switch (tio.credencialStatus) {
-      case 'INATIVA':
-        return 'Credencial inativa. Reative ou reemita a credencial na tela de Credenciais.';
-      case 'CANCELADA':
-        return 'Credencial cancelada. Reative ou reemita a credencial na tela de Credenciais.';
-      default:
-        return 'Gere uma credencial ativa para habilitar check-in e checkout.';
-    }
   }
 
 
