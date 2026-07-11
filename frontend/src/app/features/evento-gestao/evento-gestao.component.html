@@ -166,8 +166,8 @@
               <div class="table-search">
                 <span class="p-input-icon-left w-100">
                   <i class="fa-solid fa-magnifying-glass"></i>
-                  <input pInputText type="text" class="w-100" placeholder="Pesquisar tio..." [value]="filtroTios()"
-                    (input)="alterarFiltroTios($any($event.target).value)" />
+                  <input pInputText type="text" class="w-100" placeholder="Pesquisar por nome, status ou observações..."
+                    [value]="filtroTios()" (input)="alterarFiltroTios($any($event.target).value)" />
                 </span>
               </div>
             </div>
@@ -186,7 +186,9 @@
         } @else {
 
         <div class="table-responsive-wrapper">
-          <p-table [value]="tiosCaronaFiltrados()" class="p-datatable-sm min-width-table">
+          <p-table [value]="tiosCaronaFiltrados()" styleClass="p-datatable-sm min-width-table" [paginator]="true"
+            [rows]="10" [rowsPerPageOptions]="[5, 10, 20, 50]" [showCurrentPageReport]="true"
+            currentPageReportTemplate="{first} a {last} de {totalRecords} tio(s)">
             <ng-template pTemplate="header">
               <tr>
                 <th>Nome</th>
@@ -309,7 +311,8 @@
               <div class="table-search">
                 <span class="p-input-icon-left w-100">
                   <i class="fa-solid fa-magnifying-glass"></i>
-                  <input pInputText type="text" class="w-100" placeholder="Pesquisar dupla..." [value]="filtroDuplas()"
+                  <input pInputText type="text" class="w-100"
+                    placeholder="Pesquisar por código, dupla, apelido ou status..." [value]="filtroDuplas()"
                     (input)="alterarFiltroDuplas($any($event.target).value)" />
                 </span>
               </div>
@@ -329,7 +332,9 @@
         } @else {
 
         <div class="table-responsive-wrapper">
-          <p-table [value]="duplasFiltradas()" class="p-datatable-sm min-width-table">
+          <p-table [value]="duplasFiltradas()" styleClass="p-datatable-sm min-width-table" [paginator]="true"
+            [rows]="10" [rowsPerPageOptions]="[5, 10, 20, 50]" [showCurrentPageReport]="true"
+            currentPageReportTemplate="{first} a {last} de {totalRecords} dupla(s)">
             <ng-template pTemplate="header">
               <tr>
                 <th>Código</th>
@@ -397,16 +402,14 @@
           </div>
         </ng-template>
 
-        <div class="modo-cadastro-encontrista mb-3">
+        <div class="modo-cadastro-encontrista mb-4">
           <div class="d-flex align-items-center gap-3">
-            <div class="modo-cadastro-switch-wrapper">
-              <p-toggleswitch inputId="modoCadastroEncontrista" [ngModel]="usarPessoaCadastradaEncontrista()"
-                (ngModelChange)="alterarModoCadastroEncontrista($event)" [ngModelOptions]="{ standalone: true }"
-                ariaLabel="Alternar modo de cadastro do encontrista">
-              </p-toggleswitch>
-            </div>
+            <p-toggleswitch inputId="modoCadastroEncontrista" [ngModel]="usarPessoaCadastradaEncontrista()"
+              (ngModelChange)="alterarModoCadastroEncontrista($event)" [ngModelOptions]="{ standalone: true }"
+              ariaLabel="Alternar modo de cadastro do encontrista">
+            </p-toggleswitch>
 
-            <div class="modo-cadastro-texto">
+            <div class="min-width-0">
               <label for="modoCadastroEncontrista" class="form-label fw-semibold mb-1">
                 {{ labelModoCadastroEncontrista() }}
               </label>
@@ -656,8 +659,9 @@
               <div class="table-search">
                 <span class="p-input-icon-left w-100">
                   <i class="fa-solid fa-magnifying-glass"></i>
-                  <input pInputText type="text" class="w-100" placeholder="Pesquisar encontrista..."
-                    [value]="filtroSobrinhos()" (input)="alterarFiltroSobrinhos($any($event.target).value)" />
+                  <input pInputText type="text" class="w-100"
+                    placeholder="Pesquisar por nome, responsável, contato ou status..." [value]="filtroSobrinhos()"
+                    (input)="alterarFiltroSobrinhos($any($event.target).value)" />
                 </span>
               </div>
             </div>
@@ -676,7 +680,9 @@
         } @else {
 
         <div class="table-responsive-wrapper">
-          <p-table [value]="sobrinhosFiltrados()" class="p-datatable-sm min-width-table">
+          <p-table [value]="sobrinhosFiltrados()" styleClass="p-datatable-sm min-width-table" [paginator]="true"
+            [rows]="10" [rowsPerPageOptions]="[5, 10, 20, 50]" [showCurrentPageReport]="true"
+            currentPageReportTemplate="{first} a {last} de {totalRecords} encontrista(s)">
             <ng-template pTemplate="header">
               <tr>
                 <th>Nome</th>
@@ -822,8 +828,9 @@
               <div class="table-search">
                 <span class="p-input-icon-left w-100">
                   <i class="fa-solid fa-magnifying-glass"></i>
-                  <input pInputText type="text" class="w-100" placeholder="Pesquisar vínculo..."
-                    [value]="filtroVinculos()" (input)="alterarFiltroVinculos($any($event.target).value)" />
+                  <input pInputText type="text" class="w-100"
+                    placeholder="Pesquisar por encontrista, dupla ou status..." [value]="filtroVinculos()"
+                    (input)="alterarFiltroVinculos($any($event.target).value)" />
                 </span>
               </div>
             </div>
@@ -841,7 +848,9 @@
         </div>
         } @else {
         <div class="table-responsive-wrapper">
-          <p-table [value]="vinculosFiltrados()" class="p-datatable-sm min-width-table">
+          <p-table [value]="vinculosFiltrados()" styleClass="p-datatable-sm min-width-table" [paginator]="true"
+            [rows]="10" [rowsPerPageOptions]="[5, 10, 20, 50]" [showCurrentPageReport]="true"
+            currentPageReportTemplate="{first} a {last} de {totalRecords} vínculo(s)">
             <ng-template pTemplate="header">
               <tr>
                 <th>Encontrista</th>

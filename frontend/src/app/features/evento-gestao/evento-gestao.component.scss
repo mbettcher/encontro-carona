@@ -54,28 +54,6 @@
         .form-label {
             color: var(--bs-body-color);
         }
-
-        .modo-cadastro-switch-wrapper {
-            flex: 0 0 auto;
-            min-width: 3.25rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modo-cadastro-texto {
-            min-width: 0;
-            flex: 1;
-        }
-
-        :host ::ng-deep {
-            .p-toggleswitch {
-                flex: 0 0 auto;
-                width: 3.25rem;
-                min-width: 3.25rem;
-                max-width: 3.25rem;
-            }
-        }
     }
 
     .empty-state {
