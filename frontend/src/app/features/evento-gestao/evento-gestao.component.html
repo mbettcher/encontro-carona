@@ -390,17 +390,40 @@
       <p-card class="shadow-sm border-0 h-100">
         <ng-template pTemplate="header">
           <div class="px-4 pt-4">
-            <h2 class="h5 mb-1">Cadastrar encontrista</h2>
+            <h2 class="h5 mb-1">Adicionar encontrista ao evento</h2>
             <p class="text-body-secondary small mb-0">
-              Dados básicos do jovem/adolescente participante.
+              Use uma pessoa já cadastrada ou cadastre um encontrista somente para este evento.
             </p>
           </div>
         </ng-template>
 
-        <form [formGroup]="pessoaSobrinhoForm" (ngSubmit)="adicionarPessoaSobrinho()" class="d-grid gap-3 mb-4">
+        <div class="modo-cadastro-encontrista mb-3">
+          <div class="d-flex align-items-center gap-3">
+            <div class="modo-cadastro-switch-wrapper">
+              <p-toggleswitch inputId="modoCadastroEncontrista" [ngModel]="usarPessoaCadastradaEncontrista()"
+                (ngModelChange)="alterarModoCadastroEncontrista($event)" [ngModelOptions]="{ standalone: true }"
+                ariaLabel="Alternar modo de cadastro do encontrista">
+              </p-toggleswitch>
+            </div>
+
+            <div class="modo-cadastro-texto">
+              <label for="modoCadastroEncontrista" class="form-label fw-semibold mb-1">
+                {{ labelModoCadastroEncontrista() }}
+              </label>
+
+              <div class="small text-body-secondary">
+                {{ descricaoModoCadastroEncontrista() }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        @if (usarPessoaCadastradaEncontrista()) {
+        <form [formGroup]="pessoaSobrinhoForm" (ngSubmit)="adicionarPessoaSobrinho()" class="d-grid gap-3">
           <div class="alert alert-warning py-2 px-3 mb-0 small">
             <i class="fa-solid fa-circle-info me-2"></i>
-            Use esta opção quando o encontrista já estiver cadastrado em Pessoas. O nome será puxado do cadastro geral.
+            O nome será puxado do cadastro geral. Telefone e data de nascimento são preenchidos automaticamente quando
+            existirem na pessoa cadastrada.
           </div>
 
           <div>
@@ -502,21 +525,21 @@
           </div>
 
           <div class="d-flex flex-column flex-sm-row gap-2">
-            <p-button type="submit" label="Adicionar pessoa ao evento" icon="fa-solid fa-user-plus"
+            <p-button type="submit" label="Adicionar ao evento" icon="fa-solid fa-user-plus"
               [loading]="salvandoPessoaSobrinho()" [disabled]="opcoesPessoasEncontristas().length === 0" />
 
             <p-button type="button" label="Limpar" icon="fa-solid fa-eraser" severity="secondary" [outlined]="true"
               [disabled]="salvandoPessoaSobrinho()" (onClick)="limparFormularioPessoaSobrinho()" />
           </div>
         </form>
-
-        <div class="d-flex align-items-center gap-2 my-4">
-          <hr class="flex-grow-1 m-0" />
-          <span class="small text-body-secondary">ou cadastre manualmente</span>
-          <hr class="flex-grow-1 m-0" />
-        </div>
-
+        } @else {
         <form [formGroup]="sobrinhoForm" (ngSubmit)="criarSobrinho()" class="d-grid gap-3">
+          <div class="alert alert-warning py-2 px-3 mb-0 small">
+            <i class="fa-solid fa-circle-info me-2"></i>
+            Este cadastro cria o encontrista somente dentro deste evento. Futuramente ele poderá ser consolidado com o
+            cadastro geral de Pessoas.
+          </div>
+
           <div>
             <label for="nomeSobrinho" class="form-label">Nome <span class="text-danger">*</span></label>
 
@@ -582,7 +605,7 @@
             <label for="enderecoSobrinho" class="form-label">Endereço <span class="text-danger">*</span></label>
 
             <input id="enderecoSobrinho" pInputText type="text" class="w-100" formControlName="endereco"
-              placeholder="Endereço do encontrista" />
+              placeholder="Endereço do encontrista" (blur)="formatarSobrinho()" />
             @if (sobrinhoForm.controls.endereco.touched &&
             sobrinhoForm.controls.endereco.hasError('required')) {
             <div class="form-text text-danger">
@@ -606,13 +629,14 @@
           </div>
 
           <div class="d-flex flex-column flex-sm-row gap-2">
-            <p-button type="submit" label="Cadastrar encontrista" icon="fa-solid fa-child-reaching"
+            <p-button type="submit" label="Cadastrar no evento" icon="fa-solid fa-child-reaching"
               [loading]="salvandoSobrinho()" />
 
             <p-button type="button" label="Limpar" icon="fa-solid fa-eraser" severity="secondary" [outlined]="true"
               [disabled]="salvandoSobrinho()" (onClick)="limparFormularioSobrinho()" />
           </div>
         </form>
+        }
       </p-card>
     </div>
 

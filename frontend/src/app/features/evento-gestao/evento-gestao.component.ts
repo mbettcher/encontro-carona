@@ -1,5 +1,5 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 
@@ -13,6 +13,7 @@ import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
 import { TextareaModule } from 'primeng/textarea';
 import { TooltipModule } from 'primeng/tooltip';
+import { ToggleSwitchModule } from 'primeng/toggleswitch';
 
 import {
   DuplaStatus,
@@ -43,6 +44,7 @@ interface OpcaoNumerica {
   selector: 'app-evento-gestao',
   standalone: true,
   imports: [
+    FormsModule,
     ReactiveFormsModule,
     RouterLink,
     ButtonModule,
@@ -54,6 +56,7 @@ interface OpcaoNumerica {
     TagModule,
     TextareaModule,
     TooltipModule,
+    ToggleSwitchModule,
     TelefoneMaskDirective
   ],
   templateUrl: './evento-gestao.component.html',
@@ -77,6 +80,7 @@ export class EventoGestaoComponent implements OnInit {
   readonly vinculos = signal<SobrinhoDupla[]>([]);
 
   readonly abaAtiva = signal<AbaGestao>('TIOS');
+  readonly usarPessoaCadastradaEncontrista = signal(true);
   readonly carregando = signal(false);
   readonly salvandoTio = signal(false);
   readonly salvandoDupla = signal(false);
@@ -431,6 +435,17 @@ export class EventoGestaoComponent implements OnInit {
 
   alterarAba(aba: AbaGestao): void {
     this.abaAtiva.set(aba);
+  }
+
+  alterarModoCadastroEncontrista(usarPessoaCadastrada: boolean): void {
+    this.usarPessoaCadastradaEncontrista.set(usarPessoaCadastrada);
+
+    if (usarPessoaCadastrada) {
+      this.limparFormularioSobrinho();
+      return;
+    }
+
+    this.limparFormularioPessoaSobrinho();
   }
 
   aoAlterarTio1(tioId: number | null): void {
@@ -1508,5 +1523,17 @@ export class EventoGestaoComponent implements OnInit {
       sobrinhoId: 0,
       duplaId: 0
     });
+  }
+
+  labelModoCadastroEncontrista(): string {
+    return this.usarPessoaCadastradaEncontrista()
+      ? 'Pessoa cadastrada'
+      : 'Cadastro direto no evento';
+  }
+
+  descricaoModoCadastroEncontrista(): string {
+    return this.usarPessoaCadastradaEncontrista()
+      ? 'Selecione uma pessoa já cadastrada como encontrista.'
+      : 'Cadastre o encontrista diretamente neste evento, sem usar o cadastro geral de Pessoas.';
   }
 }
