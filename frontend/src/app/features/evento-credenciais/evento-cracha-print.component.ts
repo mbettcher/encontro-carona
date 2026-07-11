@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { finalize } from 'rxjs';
+import { finalize, forkJoin } from 'rxjs';
 
 import { MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
@@ -9,6 +9,7 @@ import { TagModule } from 'primeng/tag';
 
 import {
     CredencialEvento,
+    Evento,
     TipoCredencial
 } from '../../shared/models';
 import { EventoCredenciaisService } from './evento-credenciais.service';
@@ -52,6 +53,7 @@ export class EventoCrachaPrintComponent implements OnInit, OnDestroy {
     readonly credencialIds = signal<number[]>([]);
 
     readonly itens = signal<CredencialCrachaPrint[]>([]);
+    readonly evento = signal<Evento | null>(null);
 
     private readonly aoFinalizarImpressao = (): void => {
         this.imprimindo.set(false);
@@ -171,11 +173,16 @@ export class EventoCrachaPrintComponent implements OnInit, OnDestroy {
     private carregar(): void {
         this.carregando.set(true);
 
-        this.credenciaisService.listar(this.eventoId, this.tipo())
+        forkJoin({
+            evento: this.credenciaisService.buscarEvento(this.eventoId),
+            credenciais: this.credenciaisService.listar(this.eventoId, this.tipo())
+        })
             .pipe(finalize(() => this.carregando.set(false)))
             .subscribe({
-                next: async credenciais => {
+                next: async ({ evento, credenciais }) => {
                     try {
+                        this.evento.set(evento);
+
                         const filtradas = this.filtrarCredenciais(credenciais);
                         const itens = await this.montarItens(filtradas);
 
@@ -186,8 +193,8 @@ export class EventoCrachaPrintComponent implements OnInit, OnDestroy {
                     }
                 },
                 error: erro => {
-                    console.error('Erro ao carregar credenciais para impressão de crachás', erro);
-                    this.toastError(this.mensagemErro(erro, 'Não foi possível carregar as credenciais.'));
+                    console.error('Erro ao carregar dados para impressão de crachás', erro);
+                    this.toastError(this.mensagemErro(erro, 'Não foi possível carregar os dados para impressão.'));
                 }
             });
     }
@@ -205,13 +212,17 @@ export class EventoCrachaPrintComponent implements OnInit, OnDestroy {
     }
 
     private async montarItens(credenciais: CredencialEvento[]): Promise<CredencialCrachaPrint[]> {
+        const evento = this.evento();
+        const eventoNome = evento?.nome || credenciais[0]?.eventoNome || 'Encontro Paroquial';
+        const paroquiaNome = evento?.paroquiaNome || 'Paróquia do evento';
+
         const itens = await Promise.all(
             credenciais.map(async credencial => ({
                 credencial,
                 nome: this.nomePrincipal(credencial),
                 tipoLabel: this.labelTipo(credencial.tipo),
-                eventoNome: credencial.eventoNome || 'Encontro Paroquial',
-                paroquiaNome: 'Nome da Paróquia',
+                eventoNome,
+                paroquiaNome,
                 logoUrl: null,
                 qrCodeDataUrl: await this.qrCodeService.gerarDataUrl(credencial.codigo)
             }))

@@ -9,6 +9,7 @@ import { PessoasComponent } from './features/pessoas/pessoas.component';
 import { EventoCredenciaisComponent } from './features/evento-credenciais/evento-credenciais.component';
 import { EventoQrCodePrintComponent } from './features/evento-credenciais/evento-qrcode-print.component';
 import { EventoCrachaPrintComponent } from './features/evento-credenciais/evento-cracha-print.component';
+import { EventoListaPresencaPrintComponent } from './features/evento-operacao/evento-lista-presenca-print.component';
 
 export const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
@@ -17,6 +18,7 @@ export const routes: Routes = [
   { path: 'eventos', component: EventosComponent },
   { path: 'eventos/:eventoId/gestao', component: EventoGestaoComponent },
   { path: 'eventos/:eventoId/operacao', component: EventoOperacaoComponent },
+  { path: 'eventos/:eventoId/operacao/impressao-presenca', component: EventoListaPresencaPrintComponent },
   { path: 'eventos/:eventoId/credenciais', component: EventoCredenciaisComponent},
   { path: 'eventos/:eventoId/credenciais/impressao-qrcode', component: EventoQrCodePrintComponent},
   { path: 'eventos/:eventoId/credenciais/impressao-crachas', component: EventoCrachaPrintComponent},

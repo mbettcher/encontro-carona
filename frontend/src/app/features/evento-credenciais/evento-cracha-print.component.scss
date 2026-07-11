@@ -40,8 +40,13 @@
         color: #0f172a;
         border: 1px solid #dbe4f0;
         box-shadow: 0 0.2rem 0.8rem rgba(15, 23, 42, 0.08);
+        break-inside: avoid;
+        page-break-inside: avoid;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
 
-        &.sobrinho {
+        &.sobrinho,
+        &.encontrista {
             .cracha-header {
                 background: linear-gradient(135deg, #7c3aed 0%, #9333ea 45%, #0ea5e9 100%);
             }
@@ -217,11 +222,16 @@
 @media print {
     @page {
         size: A4 portrait;
-        margin: 0;
+        margin: 8mm;
     }
 
     :host {
         display: block;
+    }
+
+    * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
     }
 
     .print-toolbar {
@@ -235,11 +245,11 @@
     }
 
     .cracha-print-page .print-sheet {
-        width: 210mm;
-        max-width: 210mm;
+        width: auto;
+        max-width: none;
         min-height: auto;
-        margin: 0 auto;
-        padding: 10mm;
+        margin: 0;
+        padding: 0;
         box-shadow: none;
         background: #fff !important;
         overflow: visible !important;
@@ -247,9 +257,9 @@
 
     .cracha-print-page .cracha-grid {
         display: grid;
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(2, 88mm);
         gap: 8mm;
-        justify-items: center;
+        justify-content: center;
         align-items: start;
     }
 
@@ -257,18 +267,15 @@
         width: 88mm;
         min-height: 128mm;
         box-shadow: none;
-        break-inside: avoid;
-        page-break-inside: avoid;
+        break-inside: avoid !important;
+        page-break-inside: avoid !important;
     }
 
-    .cracha-print-page .cracha-card:nth-child(4n) {
-        break-after: page;
-        page-break-after: always;
+    .cracha-print-page .cracha-header,
+    .cracha-print-page .cracha-card.sobrinho .cracha-header,
+    .cracha-print-page .cracha-card.encontrista .cracha-header,
+    .cracha-print-page .cracha-card.tio .cracha-header {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
     }
-
-    .cracha-print-page .cracha-card:last-child {
-        break-after: auto;
-        page-break-after: auto;
-    }
-
 }

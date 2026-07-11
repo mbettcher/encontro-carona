@@ -87,6 +87,10 @@
     .p-select {
       width: 100%;
     }
+
+    .print-list-button .p-button {
+      white-space: nowrap;
+    }
   }
 
   .form-label {
@@ -108,6 +112,10 @@
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
+  }
+
+  .print-list-button {
+    flex-shrink: 0;
   }
 
   .table-search {
