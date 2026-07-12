@@ -9,11 +9,12 @@ import { ConfirmationService, MessageService } from 'primeng/api';
 import { AppComponent } from './app/app.component';
 import { routes } from './app/app.routes';
 import { apiErrorInterceptor } from './app/core/api-error.interceptor';
+import { authTokenInterceptor } from './app/core/auth/auth-token.interceptor';
 
 bootstrapApplication(AppComponent, {
   providers: [
     provideRouter(routes),
-    provideHttpClient(withInterceptors([apiErrorInterceptor])),
+    provideHttpClient(withInterceptors([authTokenInterceptor, apiErrorInterceptor])),
 
     providePrimeNG({
       theme: {

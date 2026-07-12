@@ -1,0 +1,64 @@
+<div class="login-page">
+  <div class="login-card">
+    <div class="login-brand mb-4">
+      <div class="login-icon">
+        <i class="fa-solid fa-van-shuttle"></i>
+      </div>
+
+      <div>
+        <h1 class="h4 mb-1">EAC - Tio Carona</h1>
+        <p class="text-body-secondary mb-0">
+          Acesse para gerenciar o encontro.
+        </p>
+      </div>
+    </div>
+
+    @if (mensagemErro()) {
+    <div class="alert alert-danger py-2 px-3 small">
+      <i class="fa-solid fa-triangle-exclamation me-2"></i>
+      {{ mensagemErro() }}
+    </div>
+    }
+
+    <form (ngSubmit)="entrar()" class="d-grid gap-3">
+      <div>
+        <label for="username" class="form-label">Usuário</label>
+        <input
+          id="username"
+          pInputText
+          type="text"
+          class="w-100"
+          name="username"
+          autocomplete="username"
+          [(ngModel)]="username"
+          [disabled]="carregando()" />
+      </div>
+
+      <div>
+        <label for="password" class="form-label">Senha</label>
+        <input
+          id="password"
+          pInputText
+          type="password"
+          class="w-100"
+          name="password"
+          autocomplete="current-password"
+          [(ngModel)]="password"
+          [disabled]="carregando()" />
+      </div>
+
+      <button
+        pButton
+        type="submit"
+        label="Entrar"
+        icon="fa-solid fa-right-to-bracket"
+        [loading]="carregando()">
+      </button>
+    </form>
+
+    <div class="small text-body-secondary mt-4">
+      Usuário inicial em ambiente local: <strong>admin</strong>.
+      Altere a senha/variáveis antes de produção.
+    </div>
+  </div>
+</div>

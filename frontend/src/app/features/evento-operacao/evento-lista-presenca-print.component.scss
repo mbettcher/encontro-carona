@@ -1,0 +1,205 @@
+.lista-presenca-print-page {
+  min-height: 100vh;
+  background: var(--bs-tertiary-bg);
+
+  .print-toolbar {
+    background: var(--bs-body-bg);
+    border-bottom: 1px solid var(--bs-border-color);
+  }
+
+  .empty-state i {
+    font-size: 2.5rem;
+  }
+
+  .print-sheet {
+    width: 210mm;
+    max-width: 210mm;
+    min-height: 297mm;
+    margin: 0 auto;
+    padding: 14mm;
+    background: #fff;
+    color: #111827;
+  }
+
+  .lista-cabecalho {
+    display: grid;
+    grid-template-columns: 22mm 1fr;
+    gap: 8mm;
+    align-items: center;
+    padding-bottom: 8mm;
+    border-bottom: 1px solid #111827;
+    margin-bottom: 8mm;
+  }
+
+  .lista-logo-box {
+    width: 22mm;
+    height: 22mm;
+    border: 1.5px solid #111827;
+    border-radius: 5mm;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #111827;
+
+    i {
+      font-size: 16pt;
+    }
+  }
+
+  .lista-identificacao {
+    text-align: center;
+    line-height: 1.2;
+  }
+
+  .lista-paroquia {
+    font-size: 13pt;
+    font-weight: 800;
+    text-transform: uppercase;
+  }
+
+  .lista-evento {
+    margin-top: 1.5mm;
+    font-size: 12pt;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+
+  .lista-periodo,
+  .lista-data {
+    margin-top: 1mm;
+    font-size: 9.5pt;
+    color: #374151;
+  }
+
+  .lista-titulo-bloco {
+    display: flex;
+    justify-content: space-between;
+    gap: 8mm;
+    align-items: end;
+    margin-bottom: 5mm;
+
+    h2 {
+      font-size: 13pt;
+      font-weight: 800;
+      margin: 0;
+    }
+
+    p {
+      font-size: 9pt;
+      margin: 0;
+      color: #4b5563;
+      text-align: right;
+    }
+  }
+
+  .lista-tabela {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 10pt;
+
+    th,
+    td {
+      border: 1px solid #111827;
+      padding: 2.6mm 2mm;
+      vertical-align: middle;
+    }
+
+    th {
+      background: #f3f4f6;
+      text-transform: uppercase;
+      font-size: 8.5pt;
+      letter-spacing: 0.02em;
+    }
+
+    tbody tr {
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+
+    .col-numero {
+      width: 10mm;
+      text-align: center;
+      font-weight: 700;
+    }
+
+    .col-nome {
+      font-weight: 700;
+    }
+
+    .col-papel {
+      width: 34mm;
+    }
+
+    .col-assinatura {
+      width: 58mm;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .lista-presenca-print-page {
+    .print-sheet {
+      width: auto;
+      min-height: auto;
+      padding: 1rem;
+    }
+
+    .lista-cabecalho {
+      grid-template-columns: 1fr;
+      justify-items: center;
+      text-align: center;
+    }
+
+    .lista-titulo-bloco {
+      flex-direction: column;
+      align-items: start;
+
+      p {
+        text-align: left;
+      }
+    }
+  }
+}
+
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 10mm;
+  }
+
+  :host {
+    display: block;
+  }
+
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .print-toolbar {
+    display: none !important;
+  }
+
+  .lista-presenca-print-page {
+    background: #fff !important;
+    min-height: auto !important;
+  }
+
+  .lista-presenca-print-page .print-sheet {
+    width: auto;
+    max-width: none;
+    min-height: auto;
+    margin: 0;
+    padding: 0;
+    background: #fff !important;
+  }
+
+  .lista-presenca-print-page .lista-tabela thead {
+    display: table-header-group;
+  }
+
+  .lista-presenca-print-page .lista-tabela tbody tr {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+}

@@ -10,19 +10,25 @@ import { EventoCredenciaisComponent } from './features/evento-credenciais/evento
 import { EventoQrCodePrintComponent } from './features/evento-credenciais/evento-qrcode-print.component';
 import { EventoCrachaPrintComponent } from './features/evento-credenciais/evento-cracha-print.component';
 import { EventoListaPresencaPrintComponent } from './features/evento-operacao/evento-lista-presenca-print.component';
+import { LoginComponent } from './features/auth/login.component';
+import { authGuard } from './core/auth/auth.guard';
+import { TODOS_PERFIS } from './core/auth/auth.models';
 
 export const routes: Routes = [
+  { path: 'login', component: LoginComponent },
+
   { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
-  { path: 'dashboard', component: DashboardComponent },
-  { path: 'paroquias', component: ParoquiasComponent },
-  { path: 'eventos', component: EventosComponent },
-  { path: 'eventos/:eventoId/gestao', component: EventoGestaoComponent },
-  { path: 'eventos/:eventoId/operacao', component: EventoOperacaoComponent },
-  { path: 'eventos/:eventoId/operacao/impressao-presenca', component: EventoListaPresencaPrintComponent },
-  { path: 'eventos/:eventoId/credenciais', component: EventoCredenciaisComponent},
-  { path: 'eventos/:eventoId/credenciais/impressao-qrcode', component: EventoQrCodePrintComponent},
-  { path: 'eventos/:eventoId/credenciais/impressao-crachas', component: EventoCrachaPrintComponent},
-  { path: 'pessoas', component: PessoasComponent },
-  { path: 'operacao', component: OperacaoComponent },
+  { path: 'dashboard', component: DashboardComponent, canActivate: [authGuard], data: { perfis: TODOS_PERFIS } },
+  { path: 'paroquias', component: ParoquiasComponent, canActivate: [authGuard], data: { perfis: TODOS_PERFIS } },
+  { path: 'eventos', component: EventosComponent, canActivate: [authGuard], data: { perfis: TODOS_PERFIS } },
+  { path: 'eventos/:eventoId/gestao', component: EventoGestaoComponent, canActivate: [authGuard], data: { perfis: TODOS_PERFIS } },
+  { path: 'eventos/:eventoId/operacao', component: EventoOperacaoComponent, canActivate: [authGuard], data: { perfis: TODOS_PERFIS } },
+  { path: 'eventos/:eventoId/operacao/impressao-presenca', component: EventoListaPresencaPrintComponent, canActivate: [authGuard], data: { perfis: TODOS_PERFIS } },
+  { path: 'eventos/:eventoId/credenciais', component: EventoCredenciaisComponent, canActivate: [authGuard], data: { perfis: TODOS_PERFIS } },
+  { path: 'eventos/:eventoId/credenciais/impressao-qrcode', component: EventoQrCodePrintComponent, canActivate: [authGuard], data: { perfis: TODOS_PERFIS } },
+  { path: 'eventos/:eventoId/credenciais/impressao-crachas', component: EventoCrachaPrintComponent, canActivate: [authGuard], data: { perfis: TODOS_PERFIS } },
+  { path: 'pessoas', component: PessoasComponent, canActivate: [authGuard], data: { perfis: TODOS_PERFIS } },
+  { path: 'operacao', component: OperacaoComponent, canActivate: [authGuard], data: { perfis: TODOS_PERFIS } },
+
   { path: '**', redirectTo: 'dashboard' }
 ];
