@@ -32,8 +32,9 @@ export class LoginComponent implements OnInit {
   password = '';
 
   ngOnInit(): void {
-    if (this.auth.isAuthenticated()) {
-      void this.router.navigate(['/dashboard']);
+    if (this.auth.autenticado()) {
+      void this.router.navigateByUrl('/dashboard');
+      return;
     }
 
     if (this.route.snapshot.queryParamMap.get('motivo') === 'sessao-expirada') {
@@ -42,19 +43,22 @@ export class LoginComponent implements OnInit {
   }
 
   entrar(): void {
-    this.mensagemErro.set(null);
+    if (this.carregando()) {
+      return;
+    }
 
-    if (!this.username.trim() || !this.password.trim()) {
+    const username = this.username.trim();
+    const password = this.password;
+
+    if (!username || !password) {
       this.mensagemErro.set('Informe usuário e senha.');
       return;
     }
 
     this.carregando.set(true);
+    this.mensagemErro.set(null);
 
-    this.auth.login({
-      username: this.username,
-      password: this.password
-    })
+    this.auth.login({ username, password })
       .pipe(finalize(() => this.carregando.set(false)))
       .subscribe({
         next: () => {
@@ -62,7 +66,10 @@ export class LoginComponent implements OnInit {
           void this.router.navigateByUrl(returnUrl);
         },
         error: erro => {
-          this.mensagemErro.set(extrairMensagemErro(erro));
+          console.error('Erro ao realizar login', erro);
+
+          const mensagem = extrairMensagemErro(erro) || 'Usuário ou senha inválidos.';
+          this.mensagemErro.set(mensagem);
         }
       });
   }

@@ -14,7 +14,10 @@ import { authTokenInterceptor } from './app/core/auth/auth-token.interceptor';
 bootstrapApplication(AppComponent, {
   providers: [
     provideRouter(routes),
-    provideHttpClient(withInterceptors([authTokenInterceptor, apiErrorInterceptor])),
+    provideHttpClient(withInterceptors([
+      authTokenInterceptor,
+      apiErrorInterceptor
+    ])),
 
     providePrimeNG({
       theme: {

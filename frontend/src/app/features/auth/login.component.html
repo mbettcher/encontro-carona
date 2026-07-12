@@ -20,38 +20,20 @@
     </div>
     }
 
-    <form (ngSubmit)="entrar()" class="d-grid gap-3">
-      <div>
+    <form (ngSubmit)="entrar()">
+      <div class="mb-3">
         <label for="username" class="form-label">Usuário</label>
-        <input
-          id="username"
-          pInputText
-          type="text"
-          class="w-100"
-          name="username"
-          autocomplete="username"
-          [(ngModel)]="username"
-          [disabled]="carregando()" />
+        <input id="username" pInputText type="text" name="username" class="w-100" [(ngModel)]="username"
+          autocomplete="username" />
       </div>
 
-      <div>
+      <div class="mb-3">
         <label for="password" class="form-label">Senha</label>
-        <input
-          id="password"
-          pInputText
-          type="password"
-          class="w-100"
-          name="password"
-          autocomplete="current-password"
-          [(ngModel)]="password"
-          [disabled]="carregando()" />
+        <input id="password" pInputText type="password" name="password" class="w-100" [(ngModel)]="password"
+          autocomplete="current-password" />
       </div>
 
-      <button
-        pButton
-        type="submit"
-        label="Entrar"
-        icon="fa-solid fa-right-to-bracket"
+      <button pButton type="submit" label="Entrar" icon="fa-solid fa-right-to-bracket" class="w-100"
         [loading]="carregando()">
       </button>
     </form>
