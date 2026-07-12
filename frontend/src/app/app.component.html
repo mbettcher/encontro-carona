@@ -21,7 +21,7 @@
         Dashboard
       </a>
 
-      @if (podeVerCadastros()) {
+      @if (auth.podeVerCadastros()) {
       <a routerLink="/paroquias" routerLinkActive="active">
         <i class="fa-solid fa-church me-2"></i>
         Paróquias
@@ -55,7 +55,7 @@
           Dashboard
         </a>
 
-        @if (podeVerCadastros()) {
+        @if (auth.podeVerCadastros()) {
         <a class="btn btn-sm btn-outline-secondary" routerLink="/eventos">
           Eventos
         </a>
@@ -70,7 +70,7 @@
         @if (auth.usuario(); as usuario) {
         <span class="badge text-bg-light border">
           <i class="fa-solid fa-user-shield me-1"></i>
-          {{ usuario.nome }} · {{ labelPerfil(usuario.perfil) }}
+          {{ usuario.nome }} · {{ auth.labelPerfil(usuario.perfil) }}
         </span>
         }
 

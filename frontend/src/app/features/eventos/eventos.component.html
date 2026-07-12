@@ -10,6 +10,7 @@
 
   <div class="row g-4">
     <div class="col-12 col-xl-4">
+      @if (seguranca.podeEscrever()) {
       <p-card styleClass="shadow-sm border-0 h-100">
         <ng-template pTemplate="header">
           <div class="px-4 pt-4">
@@ -139,6 +140,14 @@
           </div>
         </form>
       </p-card>
+      } @else {
+      <p-card styleClass="shadow-sm border-0 h-100">
+        <div class="alert alert-warning py-2 px-3 mb-0 small">
+          <i class="fa-solid fa-lock me-2"></i>
+          Seu perfil permite consultar eventos, mas não permite criar ou editar dados do encontro.
+        </div>
+      </p-card>
+      }
     </div>
 
     <div class="col-12 col-xl-8">
@@ -224,14 +233,20 @@
 
                 <td class="text-end">
                   <div class="d-flex flex-column flex-lg-row justify-content-end gap-2">
+                    @if (seguranca.podeEscrever()) {
                     <p-button type="button" label="Editar" icon="fa-solid fa-pen-to-square" size="small" severity="warn"
                       (onClick)="editar(evento)" />
+                    }
 
+                    @if (seguranca.podeVerCadastros()) {
                     <p-button label="Gestão" icon="fa-solid fa-users-gear" size="small" severity="info"
                       [routerLink]="['/eventos', evento.id, 'gestao']" />
+                    }
 
+                    @if (seguranca.podeVerOperacao()) {
                     <p-button label="Operação" icon="fa-solid fa-clipboard-check" size="small" severity="success"
                       [routerLink]="['/eventos', evento.id, 'operacao']" />
+                    }
                   </div>
                 </td>
               </tr>

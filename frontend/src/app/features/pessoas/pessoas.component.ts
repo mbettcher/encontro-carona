@@ -12,6 +12,7 @@ import { MessageService } from 'primeng/api';
 
 import { Pessoa, PessoaRequest, PessoaTipo } from '../../shared/models';
 import { CustomFormHelperService } from '../../shared/services/custom-form-helper.service';
+import { AuthService } from '../../core/auth/auth.service';
 import { TelefoneMaskDirective } from '../../shared/directives/telefone-mask.directive';
 import { PessoasService } from './pessoas.service';
 
@@ -46,6 +47,8 @@ interface TipoFiltroOpcao {
   styleUrl: './pessoas.component.scss'
 })
 export class PessoasComponent implements OnInit {
+
+  readonly seguranca = inject(AuthService);
 
   private readonly service = inject(PessoasService);
   private readonly fb = inject(FormBuilder);

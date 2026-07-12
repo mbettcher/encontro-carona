@@ -14,6 +14,7 @@ import { TagModule } from 'primeng/tag';
 
 import { Evento, EventoRequest, EventoStatus, ParoquiaResumo } from '../../shared/models';
 import { CustomFormHelperService } from '../../shared/services/custom-form-helper.service';
+import { AuthService } from '../../core/auth/auth.service';
 import { EventosService } from './eventos.service';
 
 interface StatusOpcao {
@@ -40,6 +41,8 @@ interface StatusOpcao {
   styleUrl: './eventos.component.scss'
 })
 export class EventosComponent implements OnInit {
+  readonly seguranca = inject(AuthService);
+
   private readonly service = inject(EventosService);
   private readonly fb = inject(FormBuilder);
   private readonly messageService = inject(MessageService);

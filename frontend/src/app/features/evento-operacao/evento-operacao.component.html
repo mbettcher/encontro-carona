@@ -28,13 +28,22 @@
       <p-button label="Voltar para eventos" icon="fa-solid fa-arrow-left" severity="secondary"
         [routerLink]="['/eventos']" />
 
+      @if (seguranca.podeVerCadastros()) {
       <p-button label="Gestão do evento" icon="fa-solid fa-users-gear" severity="info"
         [routerLink]="['/eventos', eventoId, 'gestao']" />
+      }
 
       <p-button label="Credenciais" icon="fa-solid fa-id-card" severity="help"
         [routerLink]="['/eventos', eventoId, 'credenciais']" />
     </div>
   </div>
+
+  @if (seguranca.podeSomenteLer()) {
+  <div class="alert alert-warning py-2 px-3 mb-4 small">
+    <i class="fa-solid fa-lock me-2"></i>
+    Seu perfil permite consultar a operação, mas não permite executar ações de check-in, presença ou Caderno de Mensagens.
+  </div>
+  }
 
   @if (!operacaoPronta()) {
   <div class="alert alert-warning py-2 px-3 mb-4 small">
@@ -302,7 +311,7 @@
             </div>
 
             <p-button type="submit" label="Processar leitura" icon="fa-solid fa-barcode"
-              [loading]="processandoCodigo()" />
+              [loading]="processandoCodigo()" [disabled]="!seguranca.podeEscrever()" />
           </form>
         </p-card>
       </div>
@@ -367,7 +376,7 @@
             </div>
 
             <p-button type="submit" label="Registrar presença" icon="fa-solid fa-qrcode" severity="success"
-              [loading]="processandoCodigoSobrinho()" />
+              [loading]="processandoCodigoSobrinho()" [disabled]="!seguranca.podeEscrever()" />
           </form>
         </p-card>
       </div>
@@ -524,11 +533,11 @@
               <td class="text-end">
                 <div class="d-flex flex-column flex-lg-row justify-content-end gap-2">
                   <p-button label="Check-in" icon="fa-solid fa-right-to-bracket" size="small" severity="success"
-                    [loading]="processandoManual() === tio.id" [disabled]="!podeCheckinManual(tio)"
+                    [loading]="processandoManual() === tio.id" [disabled]="!seguranca.podeEscrever() || !podeCheckinManual(tio)"
                     (onClick)="registrarCheckinManual(tio)" />
 
                   <p-button label="Checkout" icon="fa-solid fa-right-from-bracket" size="small" severity="warn"
-                    [loading]="processandoManual() === tio.id" [disabled]="!podeCheckoutManual(tio)"
+                    [loading]="processandoManual() === tio.id" [disabled]="!seguranca.podeEscrever() || !podeCheckoutManual(tio)"
                     (onClick)="registrarCheckoutManual(tio)" />
                 </div>
               </td>
@@ -690,16 +699,16 @@
                 } @else {
                 <div class="d-flex flex-column flex-xl-row justify-content-end gap-2">
                   <p-button label="Presente" icon="fa-solid fa-user-check" size="small" severity="success"
-                    [loading]="processandoPresencaSobrinho() === sobrinho.id" [disabled]="!podeMarcarPresente(sobrinho)"
+                    [loading]="processandoPresencaSobrinho() === sobrinho.id" [disabled]="!seguranca.podeEscrever() || !podeMarcarPresente(sobrinho)"
                     (onClick)="registrarPresencaSobrinho(sobrinho, 'PRESENTE')" />
 
                   <p-button label="Ausente" icon="fa-solid fa-user-clock" size="small" severity="warn"
-                    [loading]="processandoPresencaSobrinho() === sobrinho.id" [disabled]="!podeMarcarAusente(sobrinho)"
+                    [loading]="processandoPresencaSobrinho() === sobrinho.id" [disabled]="!seguranca.podeEscrever() || !podeMarcarAusente(sobrinho)"
                     (onClick)="registrarPresencaSobrinho(sobrinho, 'AUSENTE')" />
 
                   <p-button label="Desistente" icon="fa-solid fa-user-xmark" size="small" severity="danger"
                     [loading]="processandoPresencaSobrinho() === sobrinho.id"
-                    [disabled]="!podeMarcarDesistente(sobrinho)"
+                    [disabled]="!seguranca.podeEscrever() || !podeMarcarDesistente(sobrinho)"
                     (onClick)="registrarPresencaSobrinho(sobrinho, 'DESISTENTE')" />
                 </div>
                 }
@@ -830,7 +839,8 @@
 
           <div class="d-flex flex-wrap gap-2">
             <p-button label="Gerar/atualizar cadernos" icon="fa-solid fa-wand-magic-sparkles" severity="info"
-              size="small" [loading]="processandoCadernos()" (onClick)="gerarCadernos()" />
+              size="small" [loading]="processandoCadernos()" [disabled]="!seguranca.podeEscrever()"
+              (onClick)="gerarCadernos()" />
           </div>
         </div>
       </ng-template>
@@ -908,13 +918,13 @@
           <div class="row g-2">
             <div class="col-12 col-sm-6">
               <p-button label="Entregar à dupla" icon="fa-solid fa-hand-holding-heart" severity="info" size="small"
-                styleClass="w-100" [loading]="processandoCadernos()" [disabled]="!podeEntregarCadernosADuplaEmLote()"
+                styleClass="w-100" [loading]="processandoCadernos()" [disabled]="!seguranca.podeEscrever() || !podeEntregarCadernosADuplaEmLote()"
                 (onClick)="entregarCadernosADupla()" />
             </div>
 
             <div class="col-12 col-sm-6">
               <p-button label="Receber da dupla" icon="fa-solid fa-people-carry-box" severity="warn" size="small"
-                styleClass="w-100" [loading]="processandoCadernos()" [disabled]="!podeReceberCadernosDaDuplaEmLote()"
+                styleClass="w-100" [loading]="processandoCadernos()" [disabled]="!seguranca.podeEscrever() || !podeReceberCadernosDaDuplaEmLote()"
                 (onClick)="receberCadernosDaDupla()" />
             </div>
           </div>
@@ -1041,17 +1051,17 @@
                   <p-button icon="fa-solid fa-clipboard-check" size="small" severity="warn"
                     styleClass="caderno-icon-button" pTooltip="Conferir caderno" tooltipPosition="top"
                     ariaLabel="Conferir caderno" [loading]="processandoCadernoId() === caderno.id"
-                    [disabled]="!podeConferirCaderno(caderno)" (onClick)="conferirCaderno(caderno)" />
+                    [disabled]="!seguranca.podeEscrever() || !podeConferirCaderno(caderno)" (onClick)="conferirCaderno(caderno)" />
 
                   <p-button icon="fa-solid fa-box" size="small" severity="info" styleClass="caderno-icon-button"
                     pTooltip="Anexar ao kit" tooltipPosition="top" ariaLabel="Anexar ao kit"
-                    [loading]="processandoCadernoId() === caderno.id" [disabled]="!podeAnexarCadernoAoKit(caderno)"
+                    [loading]="processandoCadernoId() === caderno.id" [disabled]="!seguranca.podeEscrever() || !podeAnexarCadernoAoKit(caderno)"
                     (onClick)="anexarCadernoAoKit(caderno)" />
 
                   <p-button icon="fa-solid fa-gift" size="small" severity="success" styleClass="caderno-icon-button"
                     pTooltip="Entregar ao encontrista" tooltipPosition="top" ariaLabel="Entregar ao encontrista"
                     [loading]="processandoCadernoId() === caderno.id"
-                    [disabled]="!podeEntregarCadernoAoSobrinho(caderno)"
+                    [disabled]="!seguranca.podeEscrever() || !podeEntregarCadernoAoSobrinho(caderno)"
                     (onClick)="entregarCadernoAoSobrinho(caderno)" />
 
                   <p-button icon="fa-solid fa-clock-rotate-left" size="small" severity="help"
@@ -1060,7 +1070,7 @@
 
                   <p-button icon="fa-solid fa-ellipsis" size="small" severity="danger" styleClass="caderno-icon-button"
                     pTooltip="Mais ações" tooltipPosition="top" ariaLabel="Mais ações"
-                    (onClick)="abrirAcoesEspeciaisCaderno(caderno)" />
+                    [disabled]="!seguranca.podeEscrever()" (onClick)="abrirAcoesEspeciaisCaderno(caderno)" />
                 </div>
                 }
               </td>
@@ -1188,7 +1198,7 @@
         (onClick)="fecharOperacaoCaderno()" />
 
       <p-button [label]="labelBotaoConfirmarOperacaoCaderno()" icon="fa-solid fa-check"
-        [severity]="severityBotaoConfirmarOperacaoCaderno()"
+        [severity]="severityBotaoConfirmarOperacaoCaderno()" [disabled]="!seguranca.podeEscrever()"
         [loading]="processandoCadernoId() === cadernoSelecionado()?.id" (onClick)="confirmarOperacaoCaderno()" />
     </div>
   </ng-template>
@@ -1211,17 +1221,17 @@
   <div class="acoes-especiais-caderno">
     <p-button icon="fa-solid fa-triangle-exclamation" severity="danger" styleClass="w-100"
       pTooltip="Marcar como perdido" tooltipPosition="top" ariaLabel="Marcar como perdido"
-      [disabled]="!cadernoSelecionado() || !podeMarcarCadernoPerdido(cadernoSelecionado()!)"
+      [disabled]="!seguranca.podeEscrever() || !cadernoSelecionado() || !podeMarcarCadernoPerdido(cadernoSelecionado()!)"
       (onClick)="marcarCadernoPerdido(cadernoSelecionado()!)" />
 
     <p-button icon="fa-solid fa-arrows-rotate" severity="warn" styleClass="w-100" pTooltip="Marcar como substituído"
       tooltipPosition="top" ariaLabel="Marcar como substituído"
-      [disabled]="!cadernoSelecionado() || !podeMarcarCadernoSubstituido(cadernoSelecionado()!)"
+      [disabled]="!seguranca.podeEscrever() || !cadernoSelecionado() || !podeMarcarCadernoSubstituido(cadernoSelecionado()!)"
       (onClick)="marcarCadernoSubstituido(cadernoSelecionado()!)" />
 
     <p-button icon="fa-solid fa-ban" severity="danger" styleClass="w-100" pTooltip="Cancelar caderno"
       tooltipPosition="top" ariaLabel="Cancelar caderno"
-      [disabled]="!cadernoSelecionado() || !podeCancelarCaderno(cadernoSelecionado()!)"
+      [disabled]="!seguranca.podeEscrever() || !cadernoSelecionado() || !podeCancelarCaderno(cadernoSelecionado()!)"
       (onClick)="cancelarCaderno(cadernoSelecionado()!)" />
   </div>
   }

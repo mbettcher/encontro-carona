@@ -10,6 +10,7 @@ import { TagModule } from 'primeng/tag';
 
 import { Paroquia, ParoquiaRequest } from '../../shared/models';
 import { CustomFormHelperService } from '../../shared/services/custom-form-helper.service';
+import { AuthService } from '../../core/auth/auth.service';
 import { TelefoneMaskDirective } from '../../shared/directives/telefone-mask.directive';
 import { ParoquiasService } from './paroquias.service';
 
@@ -29,6 +30,8 @@ import { ParoquiasService } from './paroquias.service';
   styleUrl: './paroquias.component.scss'
 })
 export class ParoquiasComponent implements OnInit {
+  readonly seguranca = inject(AuthService);
+
   private readonly service = inject(ParoquiasService);
   private readonly fb = inject(FormBuilder);
   private readonly messageService = inject(MessageService);

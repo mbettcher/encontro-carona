@@ -35,3 +35,22 @@ export const PERFIS_ESCRITA: PerfilUsuario[] = [
   'ADMIN',
   'OPERADOR_ADMIN'
 ];
+
+export const PERFIS_CADASTROS: PerfilUsuario[] = [
+  'ADMIN',
+  'OPERADOR_ADMIN',
+  'OPERADOR_LEITURA'
+];
+
+export const PERFIS_OPERACAO: PerfilUsuario[] = [
+  'ADMIN',
+  'OPERADOR_ADMIN',
+  'OPERADOR_LEITURA'
+];
+
+export const PERFIS_IMPRESSAO: PerfilUsuario[] = [
+  'ADMIN',
+  'OPERADOR_ADMIN',
+  'OPERADOR_LEITURA',
+  'SOMENTE_LEITURA'
+];

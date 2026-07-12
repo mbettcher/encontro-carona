@@ -26,6 +26,7 @@ export class AuthService {
   readonly usuario = signal<UsuarioLogado | null>(this.carregarUsuarioStorage());
 
   readonly autenticado = computed(() => Boolean(this.token() && this.usuario()));
+  readonly perfilAtual = computed<PerfilUsuario | null>(() => this.usuario()?.perfil ?? null);
 
   login(request: LoginRequest): Observable<LoginResponse> {
     return this.http.post<LoginResponse>(`${this.apiUrl}/auth/login`, request)
@@ -72,6 +73,63 @@ export class AuthService {
 
   isAuthenticated(): boolean {
     return this.autenticado();
+  }
+
+  podeAdministrar(): boolean {
+    return this.possuiPerfil('ADMIN');
+  }
+
+  podeEscrever(): boolean {
+    return this.possuiPerfil('ADMIN', 'OPERADOR_ADMIN');
+  }
+
+  podeEditarCadastros(): boolean {
+    return this.podeEscrever();
+  }
+
+  podeOperar(): boolean {
+    return this.possuiPerfil('ADMIN', 'OPERADOR_ADMIN');
+  }
+
+  podeVerCadastros(): boolean {
+    return this.possuiPerfil('ADMIN', 'OPERADOR_ADMIN', 'OPERADOR_LEITURA');
+  }
+
+  podeVerOperacao(): boolean {
+    return this.possuiPerfil('ADMIN', 'OPERADOR_ADMIN', 'OPERADOR_LEITURA');
+  }
+
+  podeVerCredenciais(): boolean {
+    return this.possuiPerfil('ADMIN', 'OPERADOR_ADMIN', 'OPERADOR_LEITURA', 'SOMENTE_LEITURA');
+  }
+
+  podeImprimir(): boolean {
+    return this.possuiPerfil('ADMIN', 'OPERADOR_ADMIN', 'OPERADOR_LEITURA', 'SOMENTE_LEITURA');
+  }
+
+  podeSomenteLer(): boolean {
+    return this.possuiPerfil('OPERADOR_LEITURA', 'SOMENTE_LEITURA');
+  }
+
+  labelPerfil(perfil?: string | null): string {
+    const perfilNormalizado = perfil ?? this.perfilAtual();
+
+    switch (perfilNormalizado) {
+      case 'ADMIN':
+        return 'Administrador';
+
+      case 'OPERADOR_ADMIN':
+        return 'Operador administrador';
+
+      case 'OPERADOR_LEITURA':
+        return 'Operador leitura';
+
+      case 'SOMENTE_LEITURA':
+        return 'Somente leitura';
+
+      default:
+        return 'Perfil não identificado';
+    }
   }
 
   private salvarSessao(response: LoginResponse): void {

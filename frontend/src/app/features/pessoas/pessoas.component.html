@@ -27,6 +27,7 @@
 
   <div class="row g-4">
     <div class="col-12 col-xl-4">
+      @if (seguranca.podeEscrever()) {
       <p-card styleClass="shadow-sm border-0 h-100">
         <ng-template pTemplate="header">
           <div class="px-4 pt-4">
@@ -106,6 +107,14 @@
           </div>
         </form>
       </p-card>
+      } @else {
+      <p-card styleClass="shadow-sm border-0 h-100">
+        <div class="alert alert-warning py-2 px-3 mb-0 small">
+          <i class="fa-solid fa-lock me-2"></i>
+          Seu perfil permite consultar estes dados, mas não permite criar ou editar registros.
+        </div>
+      </p-card>
+      }
     </div>
 
     <div class="col-12 col-xl-8">
@@ -196,8 +205,12 @@
                 </td>
 
                 <td class="text-end">
+                  @if (seguranca.podeEscrever()) {
                   <p-button type="button" label="Editar" icon="fa-solid fa-pen-to-square" size="small" severity="warn"
                     (onClick)="editar(pessoa)" />
+                  } @else {
+                  <span class="small text-body-secondary">Consulta</span>
+                  }
                 </td>
               </tr>
             </ng-template>

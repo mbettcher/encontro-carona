@@ -19,6 +19,7 @@ import {
     StatusCredencial,
     TipoCredencial
 } from '../../shared/models';
+import { AuthService } from '../../core/auth/auth.service';
 import { EventoCredenciaisService } from './evento-credenciais.service';
 
 type FiltroRapidoCredencial =
@@ -59,7 +60,9 @@ interface CardResumoCredencial {
 })
 export class EventoCredenciaisComponent implements OnInit {
     private readonly route = inject(ActivatedRoute);
-    private readonly service = inject(EventoCredenciaisService);
+    readonly seguranca = inject(AuthService);
+
+  private readonly service = inject(EventoCredenciaisService);
     private readonly messageService = inject(MessageService);
     private readonly router = inject(Router);
 

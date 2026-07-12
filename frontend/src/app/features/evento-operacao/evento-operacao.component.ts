@@ -28,6 +28,7 @@ import {
   StatusCadernoChoro,
   TioCaronaEvento
 } from '../../shared/models';
+import { AuthService } from '../../core/auth/auth.service';
 import { EventoOperacaoService } from './evento-operacao.service';
 
 type OperacaoCadernoChoro =
@@ -70,6 +71,8 @@ type AbaOperacao =
 })
 export class EventoOperacaoComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
+  readonly seguranca = inject(AuthService);
+
   private readonly service = inject(EventoOperacaoService);
   private readonly fb = inject(FormBuilder);
   private readonly messageService = inject(MessageService);

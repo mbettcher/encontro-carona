@@ -29,6 +29,7 @@ import {
   VinculoStatus
 } from '../../shared/models';
 import { CustomFormHelperService } from '../../shared/services/custom-form-helper.service';
+import { AuthService } from '../../core/auth/auth.service';
 import { TelefoneMaskDirective } from '../../shared/directives/telefone-mask.directive';
 import { EventoGestaoService } from './evento-gestao.service';
 
@@ -64,6 +65,8 @@ interface OpcaoNumerica {
 })
 export class EventoGestaoComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
+  readonly seguranca = inject(AuthService);
+
   private readonly service = inject(EventoGestaoService);
   private readonly fb = inject(FormBuilder);
   private readonly messageService = inject(MessageService);
