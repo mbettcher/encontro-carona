@@ -1,0 +1,98 @@
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+  <div>
+    <h2 class="h4 mb-1">
+      <i class="fa-solid fa-key me-2"></i>
+      Alterar senha
+    </h2>
+    <p class="text-muted mb-0">
+      Atualize sua senha de acesso ao sistema.
+    </p>
+  </div>
+
+  <a class="btn btn-outline-secondary btn-sm" routerLink="/dashboard">
+    <i class="fa-solid fa-arrow-left me-1"></i>
+    Voltar
+  </a>
+</div>
+
+<div class="row">
+  <div class="col-12 col-lg-6 col-xl-5">
+    <p-card>
+      <form class="d-grid gap-3" [formGroup]="form" (ngSubmit)="alterarSenha()">
+        <div>
+          <label for="senhaAtual" class="form-label">Senha atual</label>
+          <input
+            id="senhaAtual"
+            pInputText
+            type="password"
+            class="w-100"
+            formControlName="senhaAtual"
+            autocomplete="current-password" />
+
+          @if (campoInvalido('senhaAtual')) {
+          <div class="text-danger small mt-1">
+            Informe sua senha atual.
+          </div>
+          }
+        </div>
+
+        <div>
+          <label for="novaSenha" class="form-label">Nova senha</label>
+          <input
+            id="novaSenha"
+            pInputText
+            type="password"
+            class="w-100"
+            formControlName="novaSenha"
+            autocomplete="new-password" />
+
+          <div class="form-text">
+            Use ao menos 8 caracteres, com maiúscula, minúscula, número e caractere especial.
+          </div>
+
+          @if (campoInvalido('novaSenha')) {
+          <div class="text-danger small mt-1">
+            Informe uma nova senha válida.
+          </div>
+          }
+        </div>
+
+        <div>
+          <label for="confirmacaoSenha" class="form-label">Confirmar nova senha</label>
+          <input
+            id="confirmacaoSenha"
+            pInputText
+            type="password"
+            class="w-100"
+            formControlName="confirmacaoSenha"
+            autocomplete="new-password" />
+
+          @if (campoInvalido('confirmacaoSenha')) {
+          <div class="text-danger small mt-1">
+            Confirme a nova senha.
+          </div>
+          }
+        </div>
+
+        <div class="alert alert-warning py-2 px-3 small mb-0">
+          <i class="fa-solid fa-circle-info me-2"></i>
+          Após alterar a senha, continue usando normalmente. Em caso de sessão expirada, faça login novamente.
+        </div>
+
+        <div class="d-flex flex-column flex-sm-row gap-2 justify-content-end">
+          <a class="btn btn-outline-secondary" routerLink="/dashboard">
+            Cancelar
+          </a>
+
+          <button
+            pButton
+            type="submit"
+            label="Alterar senha"
+            icon="fa-solid fa-floppy-disk"
+            [loading]="salvando()">
+          </button>
+        </div>
+      </form>
+    </p-card>
+  </div>
+</div>

@@ -58,3 +58,9 @@ export const PERFIS_IMPRESSAO: PerfilUsuario[] = [
 export const PERFIS_ADMIN: PerfilUsuario[] = [
   'ADMIN'
 ];
+
+export interface AlterarSenhaRequest {
+  senhaAtual: string;
+  novaSenha: string;
+  confirmacaoSenha: string;
+}

@@ -5,6 +5,7 @@ import { Observable, tap } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
 import {
+  AlterarSenhaRequest,
   LoginRequest,
   LoginResponse,
   PerfilUsuario,
@@ -22,11 +23,22 @@ export class AuthService {
   private readonly tokenStorageKey = 'encontro_carona_token';
   private readonly usuarioStorageKey = 'encontro_carona_usuario';
 
+  private expiracaoTimerId: ReturnType<typeof setTimeout> | null = null;
+
   readonly token = signal<string | null>(localStorage.getItem(this.tokenStorageKey));
   readonly usuario = signal<UsuarioLogado | null>(this.carregarUsuarioStorage());
 
-  readonly autenticado = computed(() => Boolean(this.token() && this.usuario()));
+  readonly autenticado = computed(() => Boolean(this.token() && this.usuario() && !this.sessaoExpirada()));
   readonly perfilAtual = computed<PerfilUsuario | null>(() => this.usuario()?.perfil ?? null);
+
+  constructor() {
+    if (this.sessaoExpirada()) {
+      this.limparSessao();
+      return;
+    }
+
+    this.agendarExpiracaoToken();
+  }
 
   login(request: LoginRequest): Observable<LoginResponse> {
     return this.http.post<LoginResponse>(`${this.apiUrl}/auth/login`, request)
@@ -35,6 +47,10 @@ export class AuthService {
           this.salvarSessao(response);
         })
       );
+  }
+
+  alterarSenha(request: AlterarSenhaRequest): Observable<void> {
+    return this.http.patch<void>(`${this.apiUrl}/auth/alterar-senha`, request);
   }
 
   logout(): void {
@@ -49,14 +65,35 @@ export class AuthService {
     });
   }
 
+  sessaoExpirada(): boolean {
+    const token = this.token();
+
+    if (!token) {
+      return false;
+    }
+
+    const exp = this.obterExpiracaoToken(token);
+
+    if (!exp) {
+      return true;
+    }
+
+    return Date.now() >= exp * 1000;
+  }
+
   obterToken(): string | null {
+    if (this.sessaoExpirada()) {
+      this.encerrarSessaoExpirada();
+      return null;
+    }
+
     return this.token();
   }
 
   possuiPerfil(...perfis: PerfilUsuario[]): boolean {
     const usuario = this.usuario();
 
-    if (!usuario) {
+    if (!usuario || this.sessaoExpirada()) {
       return false;
     }
 
@@ -138,9 +175,12 @@ export class AuthService {
 
     this.token.set(response.accessToken);
     this.usuario.set(response.usuario);
+    this.agendarExpiracaoToken();
   }
 
   private limparSessao(): void {
+    this.cancelarTimerExpiracao();
+
     localStorage.removeItem(this.tokenStorageKey);
     localStorage.removeItem(this.usuarioStorageKey);
 
@@ -159,6 +199,59 @@ export class AuthService {
       return JSON.parse(valor) as UsuarioLogado;
     } catch {
       localStorage.removeItem(this.usuarioStorageKey);
+      return null;
+    }
+  }
+
+  private agendarExpiracaoToken(): void {
+    this.cancelarTimerExpiracao();
+
+    const token = this.token();
+
+    if (!token) {
+      return;
+    }
+
+    const exp = this.obterExpiracaoToken(token);
+
+    if (!exp) {
+      this.encerrarSessaoExpirada();
+      return;
+    }
+
+    const delay = exp * 1000 - Date.now();
+
+    if (delay <= 0) {
+      this.encerrarSessaoExpirada();
+      return;
+    }
+
+    this.expiracaoTimerId = setTimeout(() => {
+      this.encerrarSessaoExpirada();
+    }, delay + 500);
+  }
+
+  private cancelarTimerExpiracao(): void {
+    if (this.expiracaoTimerId) {
+      clearTimeout(this.expiracaoTimerId);
+      this.expiracaoTimerId = null;
+    }
+  }
+
+  private obterExpiracaoToken(token: string): number | null {
+    try {
+      const partes = token.split('.');
+
+      if (partes.length !== 3) {
+        return null;
+      }
+
+      const payloadBase64 = partes[1].replace(/-/g, '+').replace(/_/g, '/');
+      const payloadJson = atob(payloadBase64.padEnd(payloadBase64.length + (4 - payloadBase64.length % 4) % 4, '='));
+      const payload = JSON.parse(payloadJson) as { exp?: number };
+
+      return typeof payload.exp === 'number' ? payload.exp : null;
+    } catch {
       return null;
     }
   }

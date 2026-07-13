@@ -66,6 +66,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/api/auth/login").permitAll()
+                        .requestMatchers("/api/auth/alterar-senha").hasAnyRole(TODOS_PERFIS)
 
                         /*
                          * Em produção pública, deixe Swagger protegido.
