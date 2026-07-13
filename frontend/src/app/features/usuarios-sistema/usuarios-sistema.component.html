@@ -1,0 +1,211 @@
+<div class="container-fluid py-4 usuarios-sistema-page">
+  <div class="d-flex flex-column flex-lg-row justify-content-between gap-3 mb-4">
+    <div>
+      <h1 class="h3 mb-1">Usuários do Sistema</h1>
+      <p class="text-body-secondary mb-0">
+        Gerencie os acessos administrativos e operacionais do aplicativo.
+      </p>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-12 col-xl-4">
+      <p-card styleClass="shadow-sm border-0 h-100">
+        <ng-template pTemplate="header">
+          <div class="px-4 pt-4">
+            <h2 class="h5 mb-1">{{ tituloFormulario() }}</h2>
+            <p class="text-body-secondary small mb-0">
+              Apenas usuários com perfil Administrador podem criar e alterar acessos.
+            </p>
+          </div>
+        </ng-template>
+
+        <form [formGroup]="form" (ngSubmit)="salvar()" class="d-grid gap-3">
+          <div>
+            <label for="nome" class="form-label">Nome *</label>
+            <input id="nome" pInputText type="text" class="w-100" formControlName="nome"
+              placeholder="Ex.: Maria Silva" />
+
+            @if (form.controls.nome.touched && form.controls.nome.invalid) {
+            <div class="form-text text-danger">
+              Informe o nome do usuário.
+            </div>
+            }
+          </div>
+
+          <div>
+            <label for="username" class="form-label">Usuário *</label>
+            <input id="username" pInputText type="text" class="w-100" formControlName="username"
+              placeholder="Ex.: maria.silva" autocomplete="off" />
+
+            @if (usuarioEmEdicao()) {
+            <div class="form-text">
+              O login não é alterado após a criação.
+            </div>
+            }
+
+            @if (form.controls.username.touched && form.controls.username.invalid) {
+            <div class="form-text text-danger">
+              Informe o usuário de acesso.
+            </div>
+            }
+          </div>
+
+          @if (!usuarioEmEdicao()) {
+          <div>
+            <label for="senha" class="form-label">Senha inicial *</label>
+            <input id="senha" pInputText type="password" class="w-100" formControlName="senha"
+              placeholder="Mínimo de 8 caracteres" autocomplete="new-password" />
+
+            <div class="form-text">
+              O usuário poderá usar esta senha no primeiro acesso.
+            </div>
+          </div>
+          }
+
+          <div>
+            <label for="perfil" class="form-label">Perfil *</label>
+            <p-select inputId="perfil" [options]="perfilOpcoes" optionLabel="label" optionValue="value"
+              formControlName="perfil" styleClass="w-100" />
+          </div>
+
+          <div class="alert alert-warning py-2 px-3 mb-0 small">
+            <i class="fa-solid fa-circle-info me-2"></i>
+            Use <strong>ADMIN</strong> somente para quem deve gerenciar usuários e permissões.
+          </div>
+
+          <div class="d-flex flex-column flex-sm-row gap-2">
+            <p-button type="submit" label="Salvar" icon="fa-solid fa-floppy-disk" [loading]="salvando()" />
+
+            <p-button type="button" label="Limpar" severity="secondary" variant="outlined" icon="fa-solid fa-eraser"
+              [disabled]="salvando()" (onClick)="limparFormulario()" />
+
+            @if (usuarioEmEdicao()) {
+            <p-button type="button" label="Cancelar" severity="secondary" variant="outlined" icon="fa-solid fa-xmark"
+              (onClick)="cancelarEdicao()" />
+            }
+          </div>
+        </form>
+      </p-card>
+    </div>
+
+    <div class="col-12 col-xl-8">
+      @if (usuarioResetSenha(); as usuarioReset) {
+      <p-card styleClass="shadow-sm border-0 mb-4">
+        <div class="d-flex flex-column flex-lg-row gap-3 justify-content-between align-items-lg-end">
+          <div class="flex-fill">
+            <h2 class="h5 mb-1">Resetar senha</h2>
+            <p class="text-body-secondary small mb-3">
+              Informe uma nova senha temporária para <strong>{{ usuarioReset.nome }}</strong>.
+            </p>
+
+            <label for="novaSenha" class="form-label">Nova senha *</label>
+            <input id="novaSenha" pInputText type="password" class="w-100" [(ngModel)]="novaSenha"
+              name="novaSenha" autocomplete="new-password" placeholder="Mínimo de 8 caracteres" />
+          </div>
+
+          <div class="d-flex gap-2">
+            <p-button type="button" label="Confirmar" icon="fa-solid fa-key" [loading]="resetandoSenha()"
+              (onClick)="resetarSenha()" />
+
+            <p-button type="button" label="Cancelar" severity="secondary" variant="outlined"
+              icon="fa-solid fa-xmark" [disabled]="resetandoSenha()" (onClick)="cancelarResetSenha()" />
+          </div>
+        </div>
+      </p-card>
+      }
+
+      <p-card styleClass="shadow-sm border-0">
+        <ng-template pTemplate="header">
+          <div class="px-4 pt-4 d-flex justify-content-between align-items-start gap-3">
+            <div>
+              <h2 class="h5 mb-1">Usuários cadastrados</h2>
+              <p class="text-body-secondary small mb-0">
+                {{ usuarios().length }} usuário(s) cadastrado(s)
+              </p>
+            </div>
+
+            @if (carregando()) {
+            <span class="small text-body-secondary">
+              <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+              Carregando...
+            </span>
+            }
+          </div>
+        </ng-template>
+
+        @if (usuarios().length === 0 && !carregando()) {
+        <div class="empty-state text-center py-5">
+          <i class="fa-solid fa-user-shield text-body-secondary mb-3"></i>
+          <h3 class="h6 mb-1">Nenhum usuário cadastrado</h3>
+          <p class="text-body-secondary small mb-0">
+            Cadastre o primeiro usuário para liberar o acesso ao sistema.
+          </p>
+        </div>
+        } @else {
+        <div class="table-responsive-wrapper">
+          <p-table [value]="usuarios()" [loading]="carregando()" [paginator]="true" [rows]="10"
+            [rowsPerPageOptions]="[10, 20, 50]" styleClass="p-datatable-sm min-width-table">
+            <ng-template pTemplate="header">
+              <tr>
+                <th>Usuário</th>
+                <th>Perfil</th>
+                <th>Status</th>
+                <th>Atualizado em</th>
+                <th class="text-end">Ações</th>
+              </tr>
+            </ng-template>
+
+            <ng-template pTemplate="body" let-usuario>
+              <tr>
+                <td>
+                  <div class="fw-semibold">{{ usuario.nome }}</div>
+                  <div class="small text-body-secondary">
+                    {{ usuario.username }}
+                  </div>
+                </td>
+
+                <td>
+                  <p-tag [value]="labelPerfil(usuario.perfil)" [severity]="severityPerfil(usuario.perfil)" />
+                </td>
+
+                <td>
+                  @if (usuario.ativo) {
+                  <p-tag value="Ativo" severity="success" />
+                  } @else {
+                  <p-tag value="Inativo" severity="secondary" />
+                  }
+                </td>
+
+                <td>
+                  <span class="small">
+                    {{ usuario.atualizadoEm | date:'dd/MM/yyyy HH:mm' }}
+                  </span>
+                </td>
+
+                <td class="text-end">
+                  <div class="d-flex justify-content-end gap-2 flex-wrap">
+                    <p-button type="button" label="Editar" icon="fa-solid fa-pen-to-square" size="small"
+                      severity="warn" (onClick)="editar(usuario)" />
+
+                    <p-button type="button" label="Senha" icon="fa-solid fa-key" size="small"
+                      severity="info" (onClick)="prepararResetSenha(usuario)" />
+
+                    @if (usuario.ativo) {
+                    <p-button type="button" label="Desativar" icon="fa-solid fa-user-slash" size="small"
+                      severity="danger" (onClick)="confirmarAtivacao(usuario)" />
+                    } @else {
+                    <p-button type="button" label="Ativar" icon="fa-solid fa-user-check" size="small"
+                      severity="success" (onClick)="confirmarAtivacao(usuario)" />
+                    }
+                  </div>
+                </td>
+              </tr>
+            </ng-template>
+          </p-table>
+        </div>
+        }
+      </p-card>
+    </div>
+  </div>
+</div>

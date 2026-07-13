@@ -75,6 +75,23 @@ public class UsuarioSistema {
         return valor == null ? null : valor.trim().toLowerCase();
     }
 
+    public void atualizarDados(String nome, PerfilUsuario perfil) {
+        this.nome = nome;
+        this.perfil = perfil;
+    }
+
+    public void alterarSenha(String senhaHash) {
+        this.senhaHash = senhaHash;
+    }
+
+    public void ativar() {
+        this.ativo = true;
+    }
+
+    public void desativar() {
+        this.ativo = false;
+    }
+
     public Long getId() {
         return id;
     }

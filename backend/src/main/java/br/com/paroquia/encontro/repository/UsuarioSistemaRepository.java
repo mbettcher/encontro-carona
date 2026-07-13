@@ -7,4 +7,8 @@ import java.util.Optional;
 
 public interface UsuarioSistemaRepository extends JpaRepository<UsuarioSistema, Long> {
     Optional<UsuarioSistema> findByUsernameIgnoreCaseAndAtivoTrue(String username);
+
+    Optional<UsuarioSistema> findByUsernameIgnoreCase(String username);
+
+    boolean existsByUsernameIgnoreCase(String username);
 }

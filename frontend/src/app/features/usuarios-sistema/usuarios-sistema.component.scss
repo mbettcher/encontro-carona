@@ -1,0 +1,16 @@
+.usuarios-sistema-page {
+  .empty-state {
+    i {
+      font-size: 2.25rem;
+    }
+  }
+
+  .table-responsive-wrapper {
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  .min-width-table {
+    min-width: 780px;
+  }
+}

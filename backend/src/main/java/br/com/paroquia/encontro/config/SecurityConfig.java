@@ -73,6 +73,7 @@ public class SecurityConfig {
                          * ou use um profile específico.
                          */
                         .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**").hasRole("ADMIN")
+                        .requestMatchers("/api/usuarios-sistema/**").hasRole("ADMIN")
 
                         /*
                          * Leitura:

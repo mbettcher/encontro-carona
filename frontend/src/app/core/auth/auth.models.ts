@@ -54,3 +54,7 @@ export const PERFIS_IMPRESSAO: PerfilUsuario[] = [
   'OPERADOR_LEITURA',
   'SOMENTE_LEITURA'
 ];
+
+export const PERFIS_ADMIN: PerfilUsuario[] = [
+  'ADMIN'
+];

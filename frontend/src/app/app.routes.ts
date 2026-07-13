@@ -11,8 +11,10 @@ import { EventoQrCodePrintComponent } from './features/evento-credenciais/evento
 import { EventoCrachaPrintComponent } from './features/evento-credenciais/evento-cracha-print.component';
 import { EventoListaPresencaPrintComponent } from './features/evento-operacao/evento-lista-presenca-print.component';
 import { LoginComponent } from './features/auth/login.component';
+import { UsuariosSistemaComponent } from './features/usuarios-sistema/usuarios-sistema.component';
 import { authGuard } from './core/auth/auth.guard';
 import {
+  PERFIS_ADMIN,
   PERFIS_CADASTROS,
   PERFIS_IMPRESSAO,
   PERFIS_OPERACAO,
@@ -33,6 +35,7 @@ export const routes: Routes = [
   { path: 'eventos/:eventoId/credenciais/impressao-qrcode', component: EventoQrCodePrintComponent, canActivate: [authGuard], data: { perfis: PERFIS_IMPRESSAO } },
   { path: 'eventos/:eventoId/credenciais/impressao-crachas', component: EventoCrachaPrintComponent, canActivate: [authGuard], data: { perfis: PERFIS_IMPRESSAO } },
   { path: 'pessoas', component: PessoasComponent, canActivate: [authGuard], data: { perfis: PERFIS_CADASTROS } },
+  { path: 'administracao/usuarios', component: UsuariosSistemaComponent, canActivate: [authGuard], data: { perfis: PERFIS_ADMIN } },
   { path: 'operacao', component: OperacaoComponent, canActivate: [authGuard], data: { perfis: PERFIS_OPERACAO } },
 
   { path: '**', redirectTo: 'dashboard' }

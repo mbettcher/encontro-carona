@@ -37,6 +37,13 @@
         Pessoas
       </a>
       }
+
+      @if (auth.podeAdministrar()) {
+      <a routerLink="/administracao/usuarios" routerLinkActive="active">
+        <i class="fa-solid fa-user-gear me-2"></i>
+        Usuários
+      </a>
+      }
     </nav>
   </aside>
 
@@ -62,6 +69,12 @@
 
         <a class="btn btn-sm btn-outline-secondary" routerLink="/pessoas">
           Pessoas
+        </a>
+        }
+
+        @if (auth.podeAdministrar()) {
+        <a class="btn btn-sm btn-outline-secondary" routerLink="/administracao/usuarios">
+          Usuários
         </a>
         }
       </nav>
