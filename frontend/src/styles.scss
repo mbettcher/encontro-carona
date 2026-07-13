@@ -11971,3 +11971,44 @@ body {
   background-color: var(--bs-gray-100, #f8f9fa);
 }
 
+/* =========================================================
+   Correções globais 2.17A1
+   - força aplicação das fontes locais do projeto
+   - mantém Bootstrap/PrimeNG herdando a mesma família
+   ========================================================= */
+
+:root {
+  --app-font-family: "Be Vietnam Pro", "Inter", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  --app-font-monospace: "Inter", SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+html,
+body {
+  font-family: var(--app-font-family) !important;
+}
+
+body,
+app-root,
+.p-component,
+.p-inputtext,
+.p-button,
+.p-select,
+.p-card,
+.p-datatable,
+.p-tag,
+.p-dialog,
+.p-toast,
+.p-confirmdialog,
+input,
+button,
+select,
+textarea {
+  font-family: var(--app-font-family) !important;
+}
+
+code,
+pre,
+kbd,
+samp {
+  font-family: var(--app-font-monospace) !important;
+}

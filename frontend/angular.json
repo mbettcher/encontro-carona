@@ -16,7 +16,9 @@
             "outputPath": "dist/encontro-carona-web",
             "index": "src/index.html",
             "browser": "src/main.ts",
-            "polyfills": ["zone.js"],
+            "polyfills": [
+              "zone.js"
+            ],
             "tsConfig": "tsconfig.app.json",
             "styles": [
               "node_modules/bootstrap/dist/css/bootstrap.min.css",
@@ -28,12 +30,21 @@
             ],
             "allowedCommonJsDependencies": [
               "qrcode"
+            ],
+            "assets": [
+              {
+                "glob": "**/*",
+                "input": "src/assets",
+                "output": "/assets"
+              }
             ]
           }
         },
         "serve": {
           "builder": "@angular/build:dev-server",
-          "options": { "buildTarget": "encontro-carona-web:build" }
+          "options": {
+            "buildTarget": "encontro-carona-web:build"
+          }
         }
       }
     }

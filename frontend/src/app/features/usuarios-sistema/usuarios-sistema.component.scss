@@ -5,6 +5,23 @@
     }
   }
 
+  .table-filter-bar {
+    display: flex;
+    align-items: flex-end;
+    gap: 0.75rem;
+  }
+
+  .table-filter-field {
+    flex: 1 1 auto;
+    min-width: 14rem;
+    max-width: 32rem;
+  }
+
+  .table-filter-actions {
+    flex: 0 0 auto;
+    padding-bottom: 0.05rem;
+  }
+
   .table-responsive-wrapper {
     width: 100%;
     overflow-x: auto;
@@ -15,4 +32,15 @@
   }
 }
 
+@media (max-width: 575.98px) {
+  .usuarios-sistema-page {
+    .table-filter-bar {
+      align-items: stretch;
+      flex-direction: column;
+    }
 
+    .table-filter-field {
+      max-width: 100%;
+    }
+  }
+}

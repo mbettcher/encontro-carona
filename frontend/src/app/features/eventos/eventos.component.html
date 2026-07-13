@@ -173,7 +173,7 @@
 
         @if (eventos().length > 0) {
         <div class="table-filter-bar mb-3">
-          <div class="flex-grow-1">
+          <div class="table-filter-field">
             <label for="filtroEventos" class="form-label small text-body-secondary mb-1">
               Localizar evento
             </label>
@@ -182,10 +182,10 @@
               placeholder="Busque por evento, paróquia, status, local ou período" />
           </div>
 
-          @if (filtroTexto()) {
-          <p-button type="button" label="Limpar" icon="fa-solid fa-xmark" size="small" severity="secondary"
-            [outlined]="true" (onClick)="limparFiltroTexto()" />
-          }
+          <div class="table-filter-actions">
+            <p-button type="button" label="Limpar" icon="fa-solid fa-xmark" size="small" severity="secondary"
+              [outlined]="true" [disabled]="!filtroTexto()" (onClick)="limparFiltroTexto()" />
+          </div>
         </div>
         }
 
@@ -285,4 +285,3 @@
     </div>
   </div>
 </div>
-
