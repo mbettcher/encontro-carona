@@ -116,7 +116,7 @@
             <div>
               <h2 class="h5 mb-1">Paróquias cadastradas</h2>
               <p class="text-body-secondary small mb-0">
-                {{ paroquias().length }} registro(s)
+                {{ paroquiasFiltradas().length }} de {{ paroquias().length }} registro(s)
               </p>
             </div>
 
@@ -129,6 +129,25 @@
           </div>
         </ng-template>
 
+
+        @if (paroquias().length > 0) {
+        <div class="table-filter-bar mb-3">
+          <div class="flex-grow-1">
+            <label for="filtroParoquias" class="form-label small text-body-secondary mb-1">
+              Localizar paróquia
+            </label>
+            <input id="filtroParoquias" pInputText type="text" class="w-100"
+              [ngModel]="filtroTexto()" (ngModelChange)="atualizarFiltroTexto($event)"
+              placeholder="Busque por nome, cidade, UF, responsável ou contato" />
+          </div>
+
+          @if (filtroTexto()) {
+          <p-button type="button" label="Limpar" icon="fa-solid fa-xmark" size="small" severity="secondary"
+            [outlined]="true" (onClick)="limparFiltroTexto()" />
+          }
+        </div>
+        }
+
         @if (paroquias().length === 0 && !carregando()) {
         <div class="empty-state text-center py-5">
           <i class="fa-solid fa-church text-body-secondary mb-3"></i>
@@ -140,7 +159,7 @@
         } @else {
 
         <div class="table-responsive-wrapper">
-          <p-table [value]="paroquias()" [loading]="carregando()" [paginator]="true" [rows]="10"
+          <p-table [value]="paroquiasFiltradas()" [loading]="carregando()" [paginator]="true" [rows]="10"
             [rowsPerPageOptions]="[10, 20, 50]" class="p-datatable-sm min-width-table">
             <ng-template pTemplate="header">
               <tr>
@@ -204,6 +223,14 @@
                 </td>
               </tr>
             </ng-template>
+
+            <ng-template pTemplate="emptymessage">
+              <tr>
+                <td colspan="5" class="text-center text-body-secondary py-4">
+                  Nenhuma paróquia encontrada para o filtro informado.
+                </td>
+              </tr>
+            </ng-template>
           </p-table>
         </div>
         }
@@ -211,3 +238,4 @@
     </div>
   </div>
 </div>
+

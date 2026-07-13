@@ -157,7 +157,7 @@
             <div>
               <h2 class="h5 mb-1">Eventos cadastrados</h2>
               <p class="text-body-secondary small mb-0">
-                {{ eventos().length }} evento(s) cadastrado(s)
+                {{ eventosFiltrados().length }} de {{ eventos().length }} evento(s)
               </p>
             </div>
 
@@ -170,6 +170,25 @@
           </div>
         </ng-template>
 
+
+        @if (eventos().length > 0) {
+        <div class="table-filter-bar mb-3">
+          <div class="flex-grow-1">
+            <label for="filtroEventos" class="form-label small text-body-secondary mb-1">
+              Localizar evento
+            </label>
+            <input id="filtroEventos" pInputText type="text" class="w-100"
+              [ngModel]="filtroTexto()" (ngModelChange)="atualizarFiltroTexto($event)"
+              placeholder="Busque por evento, paróquia, status, local ou período" />
+          </div>
+
+          @if (filtroTexto()) {
+          <p-button type="button" label="Limpar" icon="fa-solid fa-xmark" size="small" severity="secondary"
+            [outlined]="true" (onClick)="limparFiltroTexto()" />
+          }
+        </div>
+        }
+
         @if (eventos().length === 0 && !carregando()) {
         <div class="empty-state text-center py-5">
           <i class="fa-solid fa-calendar-days text-body-secondary mb-3"></i>
@@ -181,7 +200,7 @@
         } @else {
 
         <div class="table-responsive-wrapper">
-          <p-table [value]="eventos()" [loading]="carregando()" [paginator]="true" [rows]="10"
+          <p-table [value]="eventosFiltrados()" [loading]="carregando()" [paginator]="true" [rows]="10"
             [rowsPerPageOptions]="[10, 20, 50]" class="p-datatable-sm min-width-table">
             <ng-template pTemplate="header">
               <tr>
@@ -251,6 +270,14 @@
                 </td>
               </tr>
             </ng-template>
+
+            <ng-template pTemplate="emptymessage">
+              <tr>
+                <td colspan="6" class="text-center text-body-secondary py-4">
+                  Nenhum evento encontrado para o filtro informado.
+                </td>
+              </tr>
+            </ng-template>
           </p-table>
         </div>
         }
@@ -258,3 +285,4 @@
     </div>
   </div>
 </div>
+

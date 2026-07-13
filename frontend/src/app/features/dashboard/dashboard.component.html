@@ -16,7 +16,7 @@
 
             <div class="dashboard-hero-actions">
                 <div class="event-select-wrapper">
-                    <label for="eventoDashboard" class="form-label text-white-50 small mb-1">Evento monitorado</label>
+                    <label for="eventoDashboard" class="form-label text-body-secondary small mb-1">Evento monitorado</label>
 
                     <p-select inputId="eventoDashboard" [options]="opcoesEvento()" optionLabel="label"
                         optionValue="value" [ngModel]="eventoSelecionadoId()" (ngModelChange)="alterarEvento($event)"
@@ -76,14 +76,14 @@
         <div class="dashboard-summary-grid mb-4">
             @for (card of cardsEvento(); track card.titulo) {
             <article class="dashboard-stat-card" [class]="classeTemaCard(card.tema)">
-                <div class="stat-icon">
-                    <i [class]="card.icone"></i>
-                </div>
-
                 <div class="stat-content">
                     <div class="stat-title">{{ card.titulo }}</div>
                     <div class="stat-value">{{ card.valor }}</div>
                     <div class="stat-subtitle">{{ card.subtitulo }}</div>
+                </div>
+
+                <div class="stat-icon">
+                    <i [class]="card.icone"></i>
                 </div>
             </article>
             }
@@ -190,14 +190,14 @@
         <div class="dashboard-summary-grid">
             @for (card of cardsGerais(); track card.titulo) {
             <article class="dashboard-stat-card" [class]="classeTemaCard(card.tema)">
-                <div class="stat-icon">
-                    <i [class]="card.icone"></i>
-                </div>
-
                 <div class="stat-content">
                     <div class="stat-title">{{ card.titulo }}</div>
                     <div class="stat-value">{{ card.valor }}</div>
                     <div class="stat-subtitle">{{ card.subtitulo }}</div>
+                </div>
+
+                <div class="stat-icon">
+                    <i [class]="card.icone"></i>
                 </div>
             </article>
             }
@@ -205,3 +205,4 @@
     </section>
     }
 </div>
+

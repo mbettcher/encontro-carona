@@ -37,7 +37,7 @@ springdoc:
 app:
   security:
     jwt-secret: ${APP_JWT_SECRET:WhkoxphGWPCHi0Ls62tE87wB6A3E2yYL}
-    jwt-expiration-minutes: ${APP_JWT_EXPIRATION_MINUTES:30}
+    jwt-expiration-minutes: ${APP_JWT_EXPIRATION_MINUTES:15}
     initial-admin:
       username: ${APP_ADMIN_USERNAME:admin}
       password: ${APP_ADMIN_INITIAL_PASSWORD:Admin@123456}

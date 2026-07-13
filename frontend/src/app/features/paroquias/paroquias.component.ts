@@ -1,5 +1,5 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 
 import { MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
@@ -18,6 +18,7 @@ import { ParoquiasService } from './paroquias.service';
   selector: 'app-paroquias',
   standalone: true,
   imports: [
+    FormsModule,
     ReactiveFormsModule,
     ButtonModule,
     CardModule,
@@ -38,9 +39,28 @@ export class ParoquiasComponent implements OnInit {
   private readonly customFormHelper = inject(CustomFormHelperService);
 
   readonly paroquias = signal<Paroquia[]>([]);
+  readonly filtroTexto = signal('');
   readonly carregando = signal(false);
   readonly salvando = signal(false);
   readonly paroquiaEmEdicao = signal<Paroquia | null>(null);
+
+  readonly paroquiasFiltradas = computed(() => {
+    const termo = this.normalizarBusca(this.filtroTexto());
+
+    if (!termo) {
+      return this.paroquias();
+    }
+
+    return this.paroquias().filter(paroquia => [
+      paroquia.nome,
+      paroquia.endereco,
+      paroquia.cidade,
+      paroquia.uf,
+      paroquia.telefone,
+      paroquia.email,
+      paroquia.responsavel
+    ].some(valor => this.normalizarBusca(valor).includes(termo)));
+  });
 
   readonly tituloFormulario = computed(() =>
     this.paroquiaEmEdicao() ? 'Editar paróquia' : 'Nova paróquia'
@@ -154,6 +174,14 @@ export class ParoquiasComponent implements OnInit {
     this.limparFormulario();
   }
 
+  atualizarFiltroTexto(valor: string): void {
+    this.filtroTexto.set(valor);
+  }
+
+  limparFiltroTexto(): void {
+    this.filtroTexto.set('');
+  }
+
   formatarCamposTexto(): void {
     this.customFormHelper.formatarCamposComTitleCase(this.form, [
       'nome',
@@ -187,6 +215,14 @@ export class ParoquiasComponent implements OnInit {
     });
   }
 
+  private normalizarBusca(valor: unknown): string {
+    return String(valor ?? '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .trim();
+  }
+
   private montarPayload(): ParoquiaRequest {
     const valor = this.form.getRawValue();
 
@@ -211,3 +247,4 @@ export class ParoquiasComponent implements OnInit {
     return texto ? texto : undefined;
   }
 }
+

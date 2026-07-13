@@ -1,6 +1,6 @@
 import { DatePipe } from '@angular/common';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 
 import { MessageService } from 'primeng/api';
@@ -27,6 +27,7 @@ interface StatusOpcao {
   standalone: true,
   imports: [
     DatePipe,
+    FormsModule,
     ReactiveFormsModule,
     RouterLink,
     ButtonModule,
@@ -49,10 +50,31 @@ export class EventosComponent implements OnInit {
   private readonly customFormHelper = inject(CustomFormHelperService);
 
   readonly eventos = signal<Evento[]>([]);
+  readonly filtroTexto = signal('');
   readonly paroquias = signal<ParoquiaResumo[]>([]);
   readonly carregando = signal(false);
   readonly salvando = signal(false);
   readonly eventoEmEdicao = signal<Evento | null>(null);
+
+  readonly eventosFiltrados = computed(() => {
+    const termo = this.normalizarBusca(this.filtroTexto());
+
+    if (!termo) {
+      return this.eventos();
+    }
+
+    return this.eventos().filter(evento => [
+      evento.nome,
+      evento.tema,
+      evento.local,
+      evento.status,
+      this.labelStatus(evento.status),
+      this.nomeParoquia(evento),
+      evento.dataInicio,
+      evento.dataFim,
+      evento.monitoramentoAtivo ? 'monitoramento ativo' : 'monitoramento inativo'
+    ].some(valor => this.normalizarBusca(valor).includes(termo)));
+  });
 
   readonly statusOpcoes: StatusOpcao[] = [
     { label: 'Planejado', value: 'PLANEJADO' },
@@ -215,9 +237,18 @@ export class EventosComponent implements OnInit {
     ]);
   }
 
+  atualizarFiltroTexto(valor: string): void {
+    this.filtroTexto.set(valor);
+  }
+
+  limparFiltroTexto(): void {
+    this.filtroTexto.set('');
+  }
+
   labelStatus(status: EventoStatus): string {
     return this.statusOpcoes.find(opcao => opcao.value === status)?.label ?? status;
   }
+
 
   severityStatus(status: EventoStatus): 'success' | 'info' | 'warn' | 'danger' | 'secondary' {
     switch (status) {
@@ -256,6 +287,14 @@ export class EventosComponent implements OnInit {
       monitoramentoInicio: '05:00',
       monitoramentoFim: '20:00'
     });
+  }
+
+  private normalizarBusca(valor: unknown): string {
+    return String(valor ?? '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .trim();
   }
 
   private montarPayload(): EventoRequest {
@@ -303,3 +342,4 @@ export class EventosComponent implements OnInit {
     return valor.substring(0, 10);
   }
 }
+

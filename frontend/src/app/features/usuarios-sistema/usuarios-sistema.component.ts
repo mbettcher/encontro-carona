@@ -49,6 +49,7 @@ export class UsuariosSistemaComponent implements OnInit {
   private readonly confirmationService = inject(ConfirmationService);
 
   readonly usuarios = signal<UsuarioSistema[]>([]);
+  readonly filtroTexto = signal('');
   readonly carregando = signal(false);
   readonly salvando = signal(false);
   readonly usuarioEmEdicao = signal<UsuarioSistema | null>(null);
@@ -56,6 +57,22 @@ export class UsuariosSistemaComponent implements OnInit {
   readonly resetandoSenha = signal(false);
 
   novaSenha = '';
+
+  readonly usuariosFiltrados = computed(() => {
+    const termo = this.normalizarBusca(this.filtroTexto());
+
+    if (!termo) {
+      return this.usuarios();
+    }
+
+    return this.usuarios().filter(usuario => [
+      usuario.nome,
+      usuario.username,
+      usuario.perfil,
+      this.labelPerfil(usuario.perfil),
+      usuario.ativo ? 'ativo' : 'inativo'
+    ].some(valor => this.normalizarBusca(valor).includes(termo)));
+  });
 
   readonly perfilOpcoes: PerfilOpcao[] = [
     { label: 'Administrador', value: 'ADMIN' },
@@ -284,9 +301,18 @@ export class UsuariosSistemaComponent implements OnInit {
       });
   }
 
+  atualizarFiltroTexto(valor: string): void {
+    this.filtroTexto.set(valor);
+  }
+
+  limparFiltroTexto(): void {
+    this.filtroTexto.set('');
+  }
+
   labelPerfil(perfil: PerfilUsuario): string {
     return this.seguranca.labelPerfil(perfil);
   }
+
 
   severityPerfil(perfil: PerfilUsuario): 'success' | 'info' | 'warn' | 'danger' | 'secondary' {
     switch (perfil) {
@@ -299,6 +325,14 @@ export class UsuariosSistemaComponent implements OnInit {
       case 'SOMENTE_LEITURA':
         return 'secondary';
     }
+  }
+
+  private normalizarBusca(valor: unknown): string {
+    return String(valor ?? '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .trim();
   }
 
   private alterarStatus(usuario: UsuarioSistema): void {
@@ -330,3 +364,5 @@ export class UsuariosSistemaComponent implements OnInit {
     });
   }
 }
+
+
