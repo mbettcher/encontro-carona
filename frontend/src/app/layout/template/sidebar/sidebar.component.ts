@@ -61,6 +61,12 @@ export class SidebarComponent {
       icon: 'fa-solid fa-user-gear',
       route: '/administracao/usuarios',
       visible: () => this.auth.podeAdministrar()
+    },
+    {
+      label: 'Sobre / Versão',
+      icon: 'fa-solid fa-circle-info',
+      route: '/sobre-versao',
+      visible: () => true
     }
   ];
 

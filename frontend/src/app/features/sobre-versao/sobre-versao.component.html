@@ -1,0 +1,127 @@
+<div class="release-page">
+  <section class="release-hero">
+    <div>
+      <span class="release-kicker">Release 1.0</span>
+      <h1>Sobre / Versão</h1>
+      <p>
+        Central de informações da versão atual, ambiente, usuário logado e checklist final da release.
+      </p>
+    </div>
+
+    <div class="release-version-card">
+      <span>Versão atual</span>
+      <strong>{{ buildInfo.releaseLabel }}</strong>
+      <small>{{ buildInfo.appName }}</small>
+    </div>
+  </section>
+
+  <section class="release-summary-grid">
+    <article class="release-summary-card release-card-primary">
+      <div class="release-summary-icon">
+        <i class="fa-solid fa-code-branch"></i>
+      </div>
+
+      <div>
+        <span>Versão</span>
+        <strong>{{ buildInfo.releaseLabel }}</strong>
+        <small>Release base da versão 1.0</small>
+      </div>
+    </article>
+
+    <article class="release-summary-card release-card-success">
+      <div class="release-summary-icon">
+        <i class="fa-solid fa-server"></i>
+      </div>
+
+      <div>
+        <span>Ambiente</span>
+        <strong>{{ buildInfo.environmentName }}</strong>
+        <small>{{ buildInfo.apiUrl }}</small>
+      </div>
+    </article>
+
+    <article class="release-summary-card release-card-info">
+      <div class="release-summary-icon">
+        <i class="fa-solid fa-user-shield"></i>
+      </div>
+
+      <div>
+        <span>Usuário logado</span>
+        <strong>{{ usuarioAtual()?.nome || 'Usuário' }}</strong>
+        <small>{{ perfilAtualLabel() }}</small>
+      </div>
+    </article>
+
+    <article class="release-summary-card release-card-warning">
+      <div class="release-summary-icon">
+        <i class="fa-solid fa-list-check"></i>
+      </div>
+
+      <div>
+        <span>Checklist</span>
+        <strong>{{ totalOk() }}/{{ totalItens() }} OK</strong>
+        <small>{{ totalValidar() }} item(ns) no roadmap pós-release</small>
+      </div>
+    </article>
+  </section>
+
+  <section class="release-actions">
+    <a routerLink="/dashboard" class="btn btn-sm btn-primary">
+      <i class="fa-solid fa-chart-line me-1"></i>
+      Voltar ao dashboard
+    </a>
+
+    <a routerLink="/eventos" class="btn btn-sm btn-outline-primary">
+      <i class="fa-solid fa-calendar-days me-1"></i>
+      Eventos
+    </a>
+
+    <a routerLink="/minha-conta/alterar-senha" class="btn btn-sm btn-outline-secondary">
+      <i class="fa-solid fa-key me-1"></i>
+      Alterar senha
+    </a>
+  </section>
+
+  <section class="release-checklist-grid">
+    @for (grupo of checklist; track grupo.titulo) {
+    <article class="release-checklist-card" [class]="classeBorda(grupo.cor)">
+      <header>
+        <div class="release-checklist-icon">
+          <i [class]="grupo.icon"></i>
+        </div>
+
+        <div>
+          <h2>{{ grupo.titulo }}</h2>
+          <small>{{ grupo.itens.length }} item(ns)</small>
+        </div>
+      </header>
+
+      <div class="release-checklist-items">
+        @for (item of grupo.itens; track item.label) {
+        <div class="release-checklist-item">
+          <div>
+            <strong>{{ item.label }}</strong>
+            <p>{{ item.detalhe }}</p>
+          </div>
+
+          <span [class]="classeStatus(item.status)">
+            {{ item.status }}
+          </span>
+        </div>
+        }
+      </div>
+    </article>
+    }
+  </section>
+
+  <section class="release-note">
+    <i class="fa-solid fa-circle-info"></i>
+    <div>
+      <strong>Próxima etapa planejada</strong>
+      <p>
+        Após validar este checklist, o próximo bloco recomendado é a preparação TQS/produção local
+        com Docker, variáveis de ambiente, Nginx e backup do PostgreSQL.
+      </p>
+    </div>
+  </section>
+</div>

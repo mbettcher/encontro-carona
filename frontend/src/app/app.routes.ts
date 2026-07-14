@@ -16,6 +16,7 @@ import { EventoListaPresencaPrintComponent } from './features/evento-operacao/ev
 import { LoginComponent } from './features/auth/login.component';
 import { UsuariosSistemaComponent } from './features/usuarios-sistema/usuarios-sistema.component';
 import { AlterarSenhaComponent } from './features/minha-conta/alterar-senha.component';
+import { SobreVersaoComponent } from './features/sobre-versao/sobre-versao.component';
 
 import { authGuard } from './core/auth/auth.guard';
 import {
@@ -71,6 +72,13 @@ export const routes: Routes = [
         canActivate: [authGuard],
         data: { perfis: TODOS_PERFIS }
       },
+      {
+        path: 'sobre-versao',
+        component: SobreVersaoComponent,
+        canActivate: [authGuard],
+        data: { perfis: TODOS_PERFIS }
+      },
+
       {
         path: 'paroquias',
         component: ParoquiasComponent,

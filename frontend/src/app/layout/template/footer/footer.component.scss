@@ -23,3 +23,11 @@
 .ec-footer-muted {
   color: var(--bs-gray-500);
 }
+
+.ec-footer a {
+  text-decoration: none;
+}
+
+.ec-footer a:hover {
+  color: var(--bs-primary) !important;
+}
