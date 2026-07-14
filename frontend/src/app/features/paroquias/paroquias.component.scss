@@ -1,5 +1,32 @@
 /* Estilos específicos da feature Paróquias. */
 .paroquias-page {
+  .filtros-listagem {
+    min-width: min(100%, 34rem);
+  }
+
+  .table-search {
+    width: 100%;
+    min-width: 16rem;
+
+    .p-input-icon-left {
+      position: relative;
+      display: block;
+
+      i {
+        position: absolute;
+        top: 50%;
+        left: 0.75rem;
+        transform: translateY(-50%);
+        color: var(--bs-secondary-color);
+        z-index: 1;
+      }
+
+      input {
+        padding-left: 2.25rem;
+      }
+    }
+  }
+
     .form-label {
         font-weight: 600;
     }
@@ -36,18 +63,6 @@
             width: 100%;
         }
     }
-
-
-    .table-filter-bar {
-        display: flex;
-        align-items: flex-end;
-        gap: 0.75rem;
-        padding: 0.9rem;
-        border: 1px solid var(--bs-border-color);
-        border-radius: 0.85rem;
-        background: var(--bs-light);
-    }
-
     .table-responsive-wrapper {
         width: 100%;
         overflow-x: auto;
@@ -77,4 +92,5 @@
         }
     }
 }
+
 

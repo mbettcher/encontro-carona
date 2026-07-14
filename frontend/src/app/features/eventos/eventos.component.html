@@ -6,6 +6,20 @@
         Cadastre os encontros da paróquia e configure a base operacional do evento.
       </p>
     </div>
+
+    <div class="d-flex flex-column flex-sm-row align-items-stretch align-items-sm-end gap-2 filtros-listagem">
+      <div class="table-search">
+        <label for="filtroEventos" class="form-label small mb-1">Pesquisar</label>
+        <span class="p-input-icon-left w-100">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input id="filtroEventos" pInputText type="text" class="w-100" placeholder="Evento, paróquia, status, local ou período"
+            [ngModel]="filtroTexto()" (ngModelChange)="atualizarFiltroTexto($event)" />
+        </span>
+      </div>
+
+      <p-button type="button" label="Limpar" icon="fa-solid fa-eraser" size="small" severity="secondary"
+        [outlined]="true" [disabled]="!filtroTexto()" (onClick)="limparFiltroTexto()" />
+    </div>
   </div>
 
   <div class="row g-4">
@@ -169,26 +183,6 @@
             }
           </div>
         </ng-template>
-
-
-        @if (eventos().length > 0) {
-        <div class="table-filter-bar mb-3">
-          <div class="table-filter-field">
-            <label for="filtroEventos" class="form-label small text-body-secondary mb-1">
-              Localizar evento
-            </label>
-            <input id="filtroEventos" pInputText type="text" class="w-100"
-              [ngModel]="filtroTexto()" (ngModelChange)="atualizarFiltroTexto($event)"
-              placeholder="Busque por evento, paróquia, status, local ou período" />
-          </div>
-
-          <div class="table-filter-actions">
-            <p-button type="button" label="Limpar" icon="fa-solid fa-xmark" size="small" severity="secondary"
-              [outlined]="true" [disabled]="!filtroTexto()" (onClick)="limparFiltroTexto()" />
-          </div>
-        </div>
-        }
-
         @if (eventos().length === 0 && !carregando()) {
         <div class="empty-state text-center py-5">
           <i class="fa-solid fa-calendar-days text-body-secondary mb-3"></i>
