@@ -354,3 +354,49 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Hotfix 2.17B1
+   PrimeNG p-card recebe a classe visual corretamente via styleClass.
+   Estes seletores atingem o elemento interno .p-card gerado pelo PrimeNG. */
+:host ::ng-deep .operation-summary-card {
+  height: 100%;
+  border: 1px solid var(--bs-border-color) !important;
+  border-left: 0.32rem solid var(--summary-accent, var(--bs-primary)) !important;
+  border-radius: 0.9rem !important;
+  background: #fff !important;
+  box-shadow: 0 0.125rem 0.75rem rgba(15, 23, 42, 0.06) !important;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+  overflow: hidden;
+}
+
+:host ::ng-deep .operation-summary-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(var(--summary-accent-rgb, var(--bs-primary-rgb)), 0.32) !important;
+  border-left-color: var(--summary-accent, var(--bs-primary)) !important;
+  box-shadow: 0 0.35rem 1rem rgba(15, 23, 42, 0.1) !important;
+}
+
+:host ::ng-deep .operation-summary-card .p-card-body,
+:host ::ng-deep .operation-summary-card .p-card-content {
+  height: 100%;
+}
+
+.evento-operacao-page .operacao-tab-content > .row.g-3.mb-4 > .col-12:nth-child(1) ::ng-deep .operation-summary-card {
+  --summary-accent: var(--bs-primary);
+  --summary-accent-rgb: var(--bs-primary-rgb);
+}
+
+.evento-operacao-page .operacao-tab-content > .row.g-3.mb-4 > .col-12:nth-child(2) ::ng-deep .operation-summary-card {
+  --summary-accent: var(--bs-success);
+  --summary-accent-rgb: var(--bs-success-rgb);
+}
+
+.evento-operacao-page .operacao-tab-content > .row.g-3.mb-4 > .col-12:nth-child(3) ::ng-deep .operation-summary-card {
+  --summary-accent: var(--bs-purple-500);
+  --summary-accent-rgb: var(--bs-purple-rgb);
+}
+
+.evento-operacao-page .operacao-tab-content > .row.g-3.mb-4 > .col-12:nth-child(4) ::ng-deep .operation-summary-card {
+  --summary-accent: var(--bs-info);
+  --summary-accent-rgb: var(--bs-info-rgb);
+}
