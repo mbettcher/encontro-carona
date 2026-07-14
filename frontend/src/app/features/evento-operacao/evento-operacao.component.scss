@@ -1,13 +1,64 @@
 .evento-operacao-page {
   .operation-summary-card {
-    border: 0;
-    box-shadow: 0 0.125rem 0.75rem rgba(15, 23, 42, 0.06);
+    --summary-accent: var(--bs-primary);
+    --summary-accent-rgb: var(--bs-primary-rgb);
+
+    display: block;
+    height: 100%;
+
+    :host ::ng-deep & .p-card,
+    ::ng-deep .p-card {
+      height: 100%;
+      border: 1px solid var(--bs-border-color);
+      border-left: 0.28rem solid var(--summary-accent);
+      border-radius: 0.75rem;
+      background: #fff;
+      box-shadow: 0 0.125rem 0.75rem rgba(15, 23, 42, 0.06);
+      transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+    }
+
+    :host ::ng-deep & .p-card:hover,
+    ::ng-deep .p-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(var(--summary-accent-rgb), 0.32);
+      border-left-color: var(--summary-accent);
+      box-shadow: 0 0.35rem 1rem rgba(15, 23, 42, 0.1);
+    }
 
     i {
-      font-size: 2rem;
-      color: var(--bs-primary);
-      opacity: 0.85;
+      width: 3rem;
+      height: 3rem;
+      min-width: 3rem;
+      border-radius: 999px;
+      background: var(--summary-accent);
+      color: #fff;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.15rem;
+      opacity: 1;
+      box-shadow: 0 0.35rem 0.8rem rgba(var(--summary-accent-rgb), 0.22);
     }
+  }
+
+  .operacao-tab-content > .row.g-3.mb-4 > .col-12:nth-child(1) .operation-summary-card {
+    --summary-accent: var(--bs-primary);
+    --summary-accent-rgb: var(--bs-primary-rgb);
+  }
+
+  .operacao-tab-content > .row.g-3.mb-4 > .col-12:nth-child(2) .operation-summary-card {
+    --summary-accent: var(--bs-success);
+    --summary-accent-rgb: var(--bs-success-rgb);
+  }
+
+  .operacao-tab-content > .row.g-3.mb-4 > .col-12:nth-child(3) .operation-summary-card {
+    --summary-accent: var(--bs-purple-500);
+    --summary-accent-rgb: var(--bs-purple-rgb);
+  }
+
+  .operacao-tab-content > .row.g-3.mb-4 > .col-12:nth-child(4) .operation-summary-card {
+    --summary-accent: var(--bs-info);
+    --summary-accent-rgb: var(--bs-info-rgb);
   }
 
   .operation-action-card {

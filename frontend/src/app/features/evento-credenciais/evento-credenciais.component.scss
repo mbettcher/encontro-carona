@@ -6,57 +6,56 @@
     }
 
     .credencial-stat-card {
+        --summary-accent: var(--bs-primary);
+        --summary-accent-rgb: var(--bs-primary-rgb);
+
         position: relative;
-        border: 0;
-        border-radius: 1.1rem;
+        border: 1px solid var(--bs-border-color);
+        border-left: 0.28rem solid var(--summary-accent);
+        border-radius: 0.75rem;
         padding: 1.15rem 1.25rem;
-        color: #fff;
+        color: var(--bs-body-color);
+        background: #fff;
         display: flex;
         align-items: center;
+        justify-content: space-between;
         gap: 1rem;
         text-align: left;
         width: 100%;
+        min-height: 7.25rem;
         cursor: pointer;
         overflow: hidden;
-        transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
-        box-shadow: 0 0.35rem 1rem rgba(15, 23, 42, 0.12);
-
-        &::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background:
-                linear-gradient(135deg, rgba(255, 255, 255, 0.14), transparent 45%),
-                radial-gradient(circle at top right, rgba(255, 255, 255, 0.18), transparent 32%);
-            pointer-events: none;
-        }
+        transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+        box-shadow: 0 0.125rem 0.75rem rgba(15, 23, 42, 0.06);
 
         &:hover {
             transform: translateY(-2px);
-            filter: brightness(1.02);
-            box-shadow: 0 0.55rem 1.35rem rgba(15, 23, 42, 0.18);
+            border-color: rgba(var(--summary-accent-rgb), 0.32);
+            border-left-color: var(--summary-accent);
+            box-shadow: 0 0.35rem 1rem rgba(15, 23, 42, 0.1);
         }
 
         &.active {
-            outline: 3px solid rgba(255, 255, 255, 0.75);
-            outline-offset: -3px;
-            box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.08), 0 0.65rem 1.4rem rgba(15, 23, 42, 0.22);
+            border-color: rgba(var(--summary-accent-rgb), 0.42);
+            border-left-color: var(--summary-accent);
+            box-shadow: 0 0 0 3px rgba(var(--summary-accent-rgb), 0.12), 0 0.35rem 1rem rgba(15, 23, 42, 0.1);
         }
 
         .stat-icon {
-            width: 3.4rem;
-            height: 3.4rem;
-            min-width: 3.4rem;
+            order: 2;
+            width: 3rem;
+            height: 3rem;
+            min-width: 3rem;
             border-radius: 999px;
-            background: rgba(255, 255, 255, 0.18);
-            border: 1px solid rgba(255, 255, 255, 0.28);
+            background: var(--summary-accent);
+            border: 0;
             display: flex;
             align-items: center;
             justify-content: center;
-            backdrop-filter: blur(2px);
+            box-shadow: 0 0.35rem 0.8rem rgba(var(--summary-accent-rgb), 0.22);
 
             i {
-                font-size: 1.35rem;
+                font-size: 1.18rem;
                 color: #fff;
             }
         }
@@ -66,68 +65,64 @@
             z-index: 1;
             min-width: 0;
             flex: 1;
+            order: 1;
         }
 
         .stat-title {
-            font-size: 0.95rem;
-            font-weight: 700;
+            font-size: 0.9rem;
+            font-weight: 600;
             line-height: 1.2;
-            opacity: 0.96;
-            margin-bottom: 0.25rem;
+            color: var(--bs-gray-700);
+            margin-bottom: 0.3rem;
         }
 
         .stat-value {
-            font-size: 2rem;
-            font-weight: 900;
+            font-size: 1.75rem;
+            font-weight: 700;
             line-height: 1;
             margin-bottom: 0.35rem;
             letter-spacing: -0.02em;
+            color: var(--bs-gray-900);
         }
 
         .stat-subtitle {
             font-size: 0.78rem;
             line-height: 1.2;
-            opacity: 0.9;
+            color: var(--bs-secondary-color);
         }
 
         &.total {
-            background: linear-gradient(135deg, #2563eb 0%, #3b82f6 55%, #0ea5e9 100%);
+            --summary-accent: var(--bs-primary);
+            --summary-accent-rgb: var(--bs-primary-rgb);
         }
 
         &.ativas {
-            background: linear-gradient(135deg, #16a34a 0%, #22c55e 55%, #4ade80 100%);
+            --summary-accent: var(--bs-success);
+            --summary-accent-rgb: var(--bs-success-rgb);
         }
 
         &.tios {
-            background: linear-gradient(135deg, #7c3aed 0%, #9333ea 55%, #a855f7 100%);
+            --summary-accent: var(--bs-info);
+            --summary-accent-rgb: var(--bs-info-rgb);
         }
 
         &.sobrinhos {
-            background: linear-gradient(135deg, #db2777 0%, #ec4899 55%, #f472b6 100%);
+            --summary-accent: var(--bs-purple-500);
+            --summary-accent-rgb: var(--bs-purple-rgb);
         }
 
         &.inativas {
-            background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 55%, #fcd34d 100%);
-            color: #1f2937;
+            --summary-accent: var(--bs-warning);
+            --summary-accent-rgb: var(--bs-warning-rgb);
 
-            .stat-icon {
-                background: rgba(255, 255, 255, 0.35);
-                border-color: rgba(255, 255, 255, 0.4);
-
-                i {
-                    color: #1f2937;
-                }
-            }
-
-            .stat-title,
-            .stat-value,
-            .stat-subtitle {
-                color: #1f2937;
+            .stat-icon i {
+                color: var(--bs-gray-900);
             }
         }
 
         &.canceladas {
-            background: linear-gradient(135deg, #dc2626 0%, #ef4444 55%, #f87171 100%);
+            --summary-accent: var(--bs-danger);
+            --summary-accent-rgb: var(--bs-danger-rgb);
         }
     }
 }
@@ -142,13 +137,13 @@
             padding: 1rem;
 
             .stat-value {
-                font-size: 1.7rem;
+                font-size: 1.55rem;
             }
 
             .stat-icon {
-                width: 3rem;
-                height: 3rem;
-                min-width: 3rem;
+                width: 2.8rem;
+                height: 2.8rem;
+                min-width: 2.8rem;
             }
         }
     }

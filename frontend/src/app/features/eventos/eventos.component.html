@@ -16,9 +16,6 @@
             [ngModel]="filtroTexto()" (ngModelChange)="atualizarFiltroTexto($event)" />
         </span>
       </div>
-
-      <p-button type="button" label="Limpar" icon="fa-solid fa-eraser" size="small" severity="secondary"
-        [outlined]="true" [disabled]="!filtroTexto()" (onClick)="limparFiltroTexto()" />
     </div>
   </div>
 
