@@ -1,0 +1,36 @@
+<aside class="ec-sidebar" [class.ec-sidebar-is-collapsed]="collapsed">
+  <div class="ec-sidebar-brand">
+    <div class="ec-sidebar-brand-icon">
+      <i class="fa-solid fa-van-shuttle"></i>
+    </div>
+
+    <div class="ec-sidebar-brand-text">
+      <h1>EAC</h1>
+      <span>Tio Carona</span>
+    </div>
+  </div>
+
+  <nav class="ec-sidebar-nav" aria-label="Menu principal">
+    @for (item of itensVisiveis(); track item.route) {
+    <a
+      [routerLink]="item.route"
+      routerLinkActive="active"
+      [routerLinkActiveOptions]="item.route === '/dashboard' ? { exact: true } : { exact: false }"
+      [title]="collapsed ? item.label : null"
+      (click)="navigate.emit()">
+      <i [class]="item.icon"></i>
+      <span>{{ item.label }}</span>
+    </a>
+    }
+  </nav>
+
+  <div class="ec-sidebar-footer">
+    @if (auth.usuario(); as usuario) {
+    <div class="ec-sidebar-footer-label">Usuário logado</div>
+    <strong>{{ usuario.nome }}</strong>
+    <span>{{ auth.labelPerfil(usuario.perfil) }}</span>
+    }
+
+    <small class="ec-sidebar-version">v1.0.0</small>
+  </div>
+</aside>

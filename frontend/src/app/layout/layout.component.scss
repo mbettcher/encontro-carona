@@ -1,0 +1,46 @@
+:host {
+  display: block;
+  min-height: 100vh;
+}
+
+.ec-layout {
+  min-height: 100vh;
+  display: flex;
+  background: var(--bs-gray-100);
+}
+
+.ec-layout-main {
+  min-width: 0;
+  min-height: 100vh;
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+}
+
+.ec-page-content {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 1rem;
+}
+
+.ec-mobile-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 1030;
+  border: 0;
+  padding: 0;
+  background: rgba(var(--bs-dark-rgb), 0.38);
+}
+
+@media (min-width: 768px) {
+  .ec-page-content {
+    padding: 1.5rem;
+  }
+}
+
+@media (max-width: 991.98px) {
+  .ec-mobile-sidebar-open .ec-mobile-backdrop {
+    display: block;
+  }
+}

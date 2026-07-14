@@ -1,0 +1,50 @@
+<header class="ec-navbar">
+  <div class="ec-navbar-left">
+    <button
+      type="button"
+      class="btn btn-light ec-navbar-toggle d-none d-lg-inline-flex"
+      [attr.aria-label]="sidebarCollapsed ? 'Expandir menu' : 'Recolher menu'"
+      (click)="toggleSidebar.emit()">
+      <i class="fa-solid" [class.fa-bars-staggered]="!sidebarCollapsed" [class.fa-bars]="sidebarCollapsed"></i>
+    </button>
+
+    <button
+      type="button"
+      class="btn btn-light ec-navbar-toggle d-inline-flex d-lg-none"
+      aria-label="Abrir menu"
+      (click)="openMobileSidebar.emit()">
+      <i class="fa-solid fa-bars"></i>
+    </button>
+
+    <div class="ec-navbar-title">
+      <strong>EAC - Encontro de Adolescentes com Cristo</strong>
+      <span>Cadastro, caronas, check-in e operação do evento</span>
+    </div>
+  </div>
+
+  <div class="ec-navbar-actions">
+    @if (auth.usuario(); as usuario) {
+    <div class="ec-user-pill">
+      <div class="ec-user-avatar">
+        <i class="fa-solid fa-user-shield"></i>
+      </div>
+
+      <div class="ec-user-text">
+        <strong>{{ usuario.nome }}</strong>
+        <span>{{ auth.labelPerfil(usuario.perfil) }}</span>
+      </div>
+    </div>
+    }
+
+    <a class="btn btn-sm btn-outline-primary" routerLink="/minha-conta/alterar-senha">
+      <i class="fa-solid fa-key me-1"></i>
+      <span class="d-none d-sm-inline">Alterar senha</span>
+      <span class="d-inline d-sm-none">Senha</span>
+    </a>
+
+    <button type="button" class="btn btn-sm btn-outline-secondary" (click)="sair()">
+      <i class="fa-solid fa-right-from-bracket me-1"></i>
+      Sair
+    </button>
+  </div>
+</header>

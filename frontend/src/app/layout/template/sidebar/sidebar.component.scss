@@ -1,0 +1,198 @@
+:host {
+  display: block;
+  flex: 0 0 auto;
+}
+
+.ec-sidebar {
+  width: 17rem;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: 1.25rem;
+  background:
+    radial-gradient(circle at top left, rgba(var(--bs-primary-rgb), 0.22), transparent 28rem),
+    linear-gradient(180deg, var(--bs-gray-900), var(--bs-gray-800));
+  color: var(--bs-white);
+  box-shadow: 0.75rem 0 2rem rgba(var(--bs-dark-rgb), 0.08);
+  position: sticky;
+  top: 0;
+  z-index: 1035;
+  transition: width 0.18s ease, transform 0.18s ease;
+}
+
+.ec-sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding-bottom: 1.25rem;
+  margin-bottom: 1.25rem;
+  border-bottom: 1px solid rgba(var(--bs-white-rgb), 0.12);
+}
+
+.ec-sidebar-brand-icon {
+  width: 2.75rem;
+  height: 2.75rem;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  border-radius: 0.9rem;
+  background: rgba(var(--bs-primary-rgb), 0.18);
+  color: var(--bs-blue-300);
+  font-size: 1.2rem;
+}
+
+.ec-sidebar-brand-text {
+  min-width: 0;
+}
+
+.ec-sidebar-brand h1 {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.ec-sidebar-brand span {
+  display: block;
+  color: rgba(var(--bs-white-rgb), 0.66);
+  font-size: 0.78rem;
+}
+
+.ec-sidebar-nav {
+  display: grid;
+  gap: 0.35rem;
+  align-content: start;
+}
+
+.ec-sidebar-nav a {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  min-height: 2.55rem;
+  padding: 0.65rem 0.8rem;
+  border-radius: 0.8rem;
+  color: rgba(var(--bs-white-rgb), 0.78);
+  text-decoration: none;
+  font-weight: 500;
+  transition: background-color 0.16s ease, color 0.16s ease, transform 0.16s ease;
+}
+
+.ec-sidebar-nav a i {
+  width: 1.15rem;
+  text-align: center;
+  flex: 0 0 auto;
+  color: rgba(var(--bs-white-rgb), 0.58);
+}
+
+.ec-sidebar-nav a:hover,
+.ec-sidebar-nav a.active {
+  color: var(--bs-white);
+  background: rgba(var(--bs-white-rgb), 0.12);
+}
+
+.ec-sidebar-nav a:hover {
+  transform: translateX(2px);
+}
+
+.ec-sidebar-nav a.active {
+  box-shadow: inset 3px 0 0 var(--bs-primary);
+}
+
+.ec-sidebar-nav a.active i {
+  color: var(--bs-blue-300);
+}
+
+.ec-sidebar-footer {
+  margin-top: auto;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(var(--bs-white-rgb), 0.12);
+  color: rgba(var(--bs-white-rgb), 0.72);
+  display: grid;
+  gap: 0.15rem;
+  font-size: 0.76rem;
+}
+
+.ec-sidebar-footer strong {
+  color: var(--bs-white);
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ec-sidebar-footer-label,
+.ec-sidebar-version {
+  color: rgba(var(--bs-white-rgb), 0.55);
+}
+
+.ec-sidebar-version {
+  margin-top: 0.55rem;
+}
+
+.ec-sidebar-is-collapsed {
+  width: 5.25rem;
+  padding-inline: 0.85rem;
+}
+
+.ec-sidebar-is-collapsed .ec-sidebar-brand {
+  justify-content: center;
+}
+
+.ec-sidebar-is-collapsed .ec-sidebar-brand-text,
+.ec-sidebar-is-collapsed .ec-sidebar-nav a span,
+.ec-sidebar-is-collapsed .ec-sidebar-footer {
+  display: none;
+}
+
+.ec-sidebar-is-collapsed .ec-sidebar-nav a {
+  justify-content: center;
+  padding-inline: 0;
+}
+
+.ec-sidebar-is-collapsed .ec-sidebar-nav a i {
+  width: auto;
+}
+
+@media (max-width: 991.98px) {
+  :host {
+    position: fixed;
+    inset: 0 auto 0 0;
+    z-index: 1035;
+    pointer-events: none;
+  }
+
+  .ec-sidebar {
+    width: 17rem;
+    position: relative;
+    transform: translateX(-105%);
+    pointer-events: auto;
+  }
+
+  :host-context(.ec-mobile-sidebar-open) .ec-sidebar {
+    transform: translateX(0);
+  }
+
+  .ec-sidebar-is-collapsed {
+    width: 17rem;
+    padding: 1.25rem;
+  }
+
+  .ec-sidebar-is-collapsed .ec-sidebar-brand {
+    justify-content: flex-start;
+  }
+
+  .ec-sidebar-is-collapsed .ec-sidebar-brand-text,
+  .ec-sidebar-is-collapsed .ec-sidebar-nav a span,
+  .ec-sidebar-is-collapsed .ec-sidebar-footer {
+    display: grid;
+  }
+
+  .ec-sidebar-is-collapsed .ec-sidebar-nav a {
+    justify-content: flex-start;
+    padding: 0.65rem 0.8rem;
+  }
+
+  .ec-sidebar-is-collapsed .ec-sidebar-nav a i {
+    width: 1.15rem;
+  }
+}

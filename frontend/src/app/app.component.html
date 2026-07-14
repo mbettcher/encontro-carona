@@ -1,120 +1,12 @@
 <p-toast position="top-center" />
 
-<p-confirmdialog header="Confirmação" icon="fa-solid fa-triangle-exclamation" acceptLabel="Confirmar"
-  rejectLabel="Cancelar" acceptButtonStyleClass="p-button-danger"
+<p-confirmdialog
+  header="Confirmação"
+  icon="fa-solid fa-triangle-exclamation"
+  acceptLabel="Confirmar"
+  rejectLabel="Cancelar"
+  acceptButtonStyleClass="p-button-danger"
   rejectButtonStyleClass="p-button-secondary p-button-outlined">
 </p-confirmdialog>
 
-@if (!auth.autenticado()) {
 <router-outlet />
-} @else {
-<div class="ec-shell">
-  <aside class="ec-sidebar d-none d-lg-flex">
-    <div class="ec-sidebar-brand">
-      <div class="ec-sidebar-brand-icon">
-        <i class="fa-solid fa-van-shuttle"></i>
-      </div>
-
-      <div>
-        <h1>EAC</h1>
-        <span>Tio Carona</span>
-      </div>
-    </div>
-
-    <nav class="ec-sidebar-nav">
-      <a routerLink="/dashboard" routerLinkActive="active">
-        <i class="fa-solid fa-chart-line"></i>
-        <span>Dashboard</span>
-      </a>
-
-      @if (auth.podeVerCadastros()) {
-      <a routerLink="/paroquias" routerLinkActive="active">
-        <i class="fa-solid fa-church"></i>
-        <span>Paróquias</span>
-      </a>
-
-      <a routerLink="/eventos" routerLinkActive="active">
-        <i class="fa-solid fa-calendar-days"></i>
-        <span>Eventos</span>
-      </a>
-
-      <a routerLink="/pessoas" routerLinkActive="active">
-        <i class="fa-solid fa-users"></i>
-        <span>Pessoas</span>
-      </a>
-      }
-
-      @if (auth.podeAdministrar()) {
-      <a routerLink="/administracao/usuarios" routerLinkActive="active">
-        <i class="fa-solid fa-user-gear"></i>
-        <span>Usuários</span>
-      </a>
-      }
-    </nav>
-  </aside>
-
-  <main class="ec-main">
-    <header class="ec-topbar">
-      <div class="ec-topbar-title">
-        <strong>EAC - Encontro de Adolescentes com Cristo</strong>
-        <span>Cadastro, caronas, check-in e operação do evento</span>
-      </div>
-
-      <nav class="ec-mobile-nav d-flex d-lg-none">
-        <a class="btn btn-sm btn-outline-secondary" routerLink="/dashboard">
-          Dashboard
-        </a>
-
-        <a class="btn btn-sm btn-outline-secondary" routerLink="/minha-conta/alterar-senha">
-          Senha
-        </a>
-
-        @if (auth.podeVerCadastros()) {
-        <a class="btn btn-sm btn-outline-secondary" routerLink="/eventos">
-          Eventos
-        </a>
-
-        <a class="btn btn-sm btn-outline-secondary" routerLink="/pessoas">
-          Pessoas
-        </a>
-        }
-
-        @if (auth.podeAdministrar()) {
-        <a class="btn btn-sm btn-outline-secondary" routerLink="/administracao/usuarios">
-          Usuários
-        </a>
-        }
-      </nav>
-
-      <div class="ec-user-actions">
-        @if (auth.usuario(); as usuario) {
-        <div class="ec-user-pill">
-          <div class="ec-user-avatar">
-            <i class="fa-solid fa-user-shield"></i>
-          </div>
-
-          <div class="ec-user-text">
-            <strong>{{ usuario.nome }}</strong>
-            <span>{{ auth.labelPerfil(usuario.perfil) }}</span>
-          </div>
-        </div>
-        }
-
-        <a class="btn btn-sm btn-outline-primary" routerLink="/minha-conta/alterar-senha">
-          <i class="fa-solid fa-key me-1"></i>
-          Alterar senha
-        </a>
-
-        <button type="button" class="btn btn-sm btn-outline-secondary" (click)="sair()">
-          <i class="fa-solid fa-right-from-bracket me-1"></i>
-          Sair
-        </button>
-      </div>
-    </header>
-
-    <section class="container-fluid p-3 p-md-4">
-      <router-outlet />
-    </section>
-  </main>
-</div>
-}

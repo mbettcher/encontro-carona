@@ -1,0 +1,112 @@
+.ec-navbar {
+  min-height: 4.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.9rem;
+  padding: 0.85rem 1.25rem;
+  background: rgba(var(--bs-white-rgb), 0.96);
+  border-bottom: 1px solid var(--bs-border-color);
+  box-shadow: 0 0.5rem 1.5rem rgba(var(--bs-dark-rgb), 0.035);
+  position: sticky;
+  top: 0;
+  z-index: 1020;
+  backdrop-filter: blur(10px);
+}
+
+.ec-navbar-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.ec-navbar-toggle {
+  width: 2.45rem;
+  height: 2.45rem;
+  align-items: center;
+  justify-content: center;
+  border-color: var(--bs-border-color);
+  border-radius: 0.75rem;
+  color: var(--bs-gray-700);
+}
+
+.ec-navbar-title {
+  display: grid;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.ec-navbar-title strong {
+  color: var(--bs-gray-900);
+  line-height: 1.2;
+}
+
+.ec-navbar-title span {
+  color: var(--bs-secondary);
+  font-size: 0.82rem;
+}
+
+.ec-navbar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.55rem;
+}
+
+.ec-user-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  min-height: 2.4rem;
+  padding: 0.35rem 0.75rem 0.35rem 0.4rem;
+  border: 1px solid var(--bs-border-color);
+  border-radius: 999px;
+  background: var(--bs-white);
+}
+
+.ec-user-avatar {
+  width: 1.9rem;
+  height: 1.9rem;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(var(--bs-primary-rgb), 0.12);
+  color: var(--bs-primary);
+}
+
+.ec-user-text {
+  display: grid;
+  line-height: 1.08;
+}
+
+.ec-user-text strong {
+  max-width: 13rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.82rem;
+  color: var(--bs-gray-900);
+}
+
+.ec-user-text span {
+  font-size: 0.72rem;
+  color: var(--bs-secondary);
+}
+
+@media (max-width: 767.98px) {
+  .ec-navbar {
+    align-items: flex-start;
+  }
+
+  .ec-navbar-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .ec-user-pill {
+    max-width: 100%;
+  }
+}

@@ -1,0 +1,31 @@
+<div
+  class="ec-layout"
+  [class.ec-sidebar-collapsed]="sidebarCollapsed()"
+  [class.ec-mobile-sidebar-open]="mobileSidebarOpen()">
+
+  <app-sidebar
+    [collapsed]="sidebarCollapsed()"
+    (navigate)="fecharSidebarMobile()">
+  </app-sidebar>
+
+  <button
+    type="button"
+    class="ec-mobile-backdrop"
+    aria-label="Fechar menu"
+    (click)="fecharSidebarMobile()">
+  </button>
+
+  <div class="ec-layout-main">
+    <app-navbar
+      [sidebarCollapsed]="sidebarCollapsed()"
+      (toggleSidebar)="toggleSidebar()"
+      (openMobileSidebar)="abrirSidebarMobile()">
+    </app-navbar>
+
+    <main class="ec-page-content">
+      <router-outlet />
+    </main>
+
+    <app-footer></app-footer>
+  </div>
+</div>

@@ -1,4 +1,7 @@
 import { Routes } from '@angular/router';
+
+import { LayoutComponent } from './layout/layout.component';
+
 import { DashboardComponent } from './features/dashboard/dashboard.component';
 import { EventoGestaoComponent } from './features/evento-gestao/evento-gestao.component';
 import { EventoOperacaoComponent } from './features/evento-operacao/evento-operacao.component';
@@ -13,6 +16,7 @@ import { EventoListaPresencaPrintComponent } from './features/evento-operacao/ev
 import { LoginComponent } from './features/auth/login.component';
 import { UsuariosSistemaComponent } from './features/usuarios-sistema/usuarios-sistema.component';
 import { AlterarSenhaComponent } from './features/minha-conta/alterar-senha.component';
+
 import { authGuard } from './core/auth/auth.guard';
 import {
   PERFIS_ADMIN,
@@ -25,20 +29,98 @@ import {
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
 
-  { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
-  { path: 'dashboard', component: DashboardComponent, canActivate: [authGuard], data: { perfis: TODOS_PERFIS } },
-  { path: 'minha-conta/alterar-senha', component: AlterarSenhaComponent, canActivate: [authGuard], data: { perfis: TODOS_PERFIS } },
-  { path: 'paroquias', component: ParoquiasComponent, canActivate: [authGuard], data: { perfis: PERFIS_CADASTROS } },
-  { path: 'eventos', component: EventosComponent, canActivate: [authGuard], data: { perfis: PERFIS_CADASTROS } },
-  { path: 'eventos/:eventoId/gestao', component: EventoGestaoComponent, canActivate: [authGuard], data: { perfis: PERFIS_CADASTROS } },
-  { path: 'eventos/:eventoId/operacao', component: EventoOperacaoComponent, canActivate: [authGuard], data: { perfis: PERFIS_OPERACAO } },
-  { path: 'eventos/:eventoId/operacao/impressao-presenca', component: EventoListaPresencaPrintComponent, canActivate: [authGuard], data: { perfis: PERFIS_IMPRESSAO } },
-  { path: 'eventos/:eventoId/credenciais', component: EventoCredenciaisComponent, canActivate: [authGuard], data: { perfis: PERFIS_IMPRESSAO } },
-  { path: 'eventos/:eventoId/credenciais/impressao-qrcode', component: EventoQrCodePrintComponent, canActivate: [authGuard], data: { perfis: PERFIS_IMPRESSAO } },
-  { path: 'eventos/:eventoId/credenciais/impressao-crachas', component: EventoCrachaPrintComponent, canActivate: [authGuard], data: { perfis: PERFIS_IMPRESSAO } },
-  { path: 'pessoas', component: PessoasComponent, canActivate: [authGuard], data: { perfis: PERFIS_CADASTROS } },
-  { path: 'administracao/usuarios', component: UsuariosSistemaComponent, canActivate: [authGuard], data: { perfis: PERFIS_ADMIN } },
-  { path: 'operacao', component: OperacaoComponent, canActivate: [authGuard], data: { perfis: PERFIS_OPERACAO } },
+  /*
+   * Rotas de impressão ficam fora do layout principal para não exibir menu/sidebar
+   * durante impressão de QR Codes, crachás ou listas de presença.
+   */
+  {
+    path: 'eventos/:eventoId/operacao/impressao-presenca',
+    component: EventoListaPresencaPrintComponent,
+    canActivate: [authGuard],
+    data: { perfis: PERFIS_IMPRESSAO }
+  },
+  {
+    path: 'eventos/:eventoId/credenciais/impressao-qrcode',
+    component: EventoQrCodePrintComponent,
+    canActivate: [authGuard],
+    data: { perfis: PERFIS_IMPRESSAO }
+  },
+  {
+    path: 'eventos/:eventoId/credenciais/impressao-crachas',
+    component: EventoCrachaPrintComponent,
+    canActivate: [authGuard],
+    data: { perfis: PERFIS_IMPRESSAO }
+  },
+
+  {
+    path: '',
+    component: LayoutComponent,
+    canActivate: [authGuard],
+    data: { perfis: TODOS_PERFIS },
+    children: [
+      { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
+      {
+        path: 'dashboard',
+        component: DashboardComponent,
+        canActivate: [authGuard],
+        data: { perfis: TODOS_PERFIS }
+      },
+      {
+        path: 'minha-conta/alterar-senha',
+        component: AlterarSenhaComponent,
+        canActivate: [authGuard],
+        data: { perfis: TODOS_PERFIS }
+      },
+      {
+        path: 'paroquias',
+        component: ParoquiasComponent,
+        canActivate: [authGuard],
+        data: { perfis: PERFIS_CADASTROS }
+      },
+      {
+        path: 'eventos',
+        component: EventosComponent,
+        canActivate: [authGuard],
+        data: { perfis: PERFIS_CADASTROS }
+      },
+      {
+        path: 'eventos/:eventoId/gestao',
+        component: EventoGestaoComponent,
+        canActivate: [authGuard],
+        data: { perfis: PERFIS_CADASTROS }
+      },
+      {
+        path: 'eventos/:eventoId/operacao',
+        component: EventoOperacaoComponent,
+        canActivate: [authGuard],
+        data: { perfis: PERFIS_OPERACAO }
+      },
+      {
+        path: 'eventos/:eventoId/credenciais',
+        component: EventoCredenciaisComponent,
+        canActivate: [authGuard],
+        data: { perfis: PERFIS_IMPRESSAO }
+      },
+      {
+        path: 'pessoas',
+        component: PessoasComponent,
+        canActivate: [authGuard],
+        data: { perfis: PERFIS_CADASTROS }
+      },
+      {
+        path: 'administracao/usuarios',
+        component: UsuariosSistemaComponent,
+        canActivate: [authGuard],
+        data: { perfis: PERFIS_ADMIN }
+      },
+      {
+        path: 'operacao',
+        component: OperacaoComponent,
+        canActivate: [authGuard],
+        data: { perfis: PERFIS_OPERACAO }
+      }
+    ]
+  },
 
   { path: '**', redirectTo: 'dashboard' }
 ];
