@@ -1,0 +1,8 @@
+# Tio Carona - rotina operacional mínima
+# Edite com: crontab -e
+
+# Backup diário do PostgreSQL às 02:10
+10 2 * * * /opt/apps/tio-carona/scripts/backup-postgres.sh >> /opt/backups/tio-carona/backup.log 2>&1
+
+# Manutenção Docker semanal aos domingos às 03:30
+30 3 * * 0 /opt/apps/tio-carona/scripts/maintenance-docker.sh >> /opt/backups/tio-carona/docker-maintenance.log 2>&1
