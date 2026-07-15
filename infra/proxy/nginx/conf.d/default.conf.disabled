@@ -1,0 +1,46 @@
+server {
+    listen 80;
+    server_name cdm.dev.br www.cdm.dev.br;
+
+    access_log /var/log/nginx/cdm-http-access.log;
+    error_log  /var/log/nginx/cdm-http-error.log warn;
+
+    # Necessário para validação HTTP-01 do Let's Encrypt/Certbot.
+    location ^~ /.well-known/acme-challenge/ {
+        root /usr/share/nginx/html;
+        default_type "text/plain";
+        try_files $uri =404;
+    }
+
+    # Enquanto o SSL ainda não foi emitido, mantém o sistema acessível em HTTP.
+    location / {
+        proxy_pass http://tio-carona-frontend:80;
+        proxy_http_version 1.1;
+
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+
+server {
+    listen 80 default_server;
+    server_name _;
+
+    location ^~ /.well-known/acme-challenge/ {
+        root /usr/share/nginx/html;
+        default_type "text/plain";
+        try_files $uri =404;
+    }
+
+    location / {
+        proxy_pass http://tio-carona-frontend:80;
+        proxy_http_version 1.1;
+
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
