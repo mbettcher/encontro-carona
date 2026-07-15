@@ -4,6 +4,8 @@ import br.com.paroquia.encontro.common.BusinessException;
 import br.com.paroquia.encontro.common.ResourceNotFoundException;
 import br.com.paroquia.encontro.dto.request.AlterarSenhaRequest;
 import br.com.paroquia.encontro.dto.request.LoginRequest;
+import br.com.paroquia.encontro.dto.request.LogoutRequest;
+import br.com.paroquia.encontro.dto.request.RefreshTokenRequest;
 import br.com.paroquia.encontro.dto.response.LoginResponse;
 import br.com.paroquia.encontro.dto.response.UsuarioLogadoResponse;
 import br.com.paroquia.encontro.repository.UsuarioSistemaRepository;
@@ -20,20 +22,24 @@ public class AuthService {
     private final UsuarioSistemaRepository usuarioRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final RefreshTokenService refreshTokenService;
     private final AuthServiceValidator validator;
 
     public AuthService(
             UsuarioSistemaRepository usuarioRepository,
             PasswordEncoder passwordEncoder,
             JwtService jwtService,
+            RefreshTokenService refreshTokenService,
             AuthServiceValidator validator
     ) {
         this.usuarioRepository = usuarioRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
+        this.refreshTokenService = refreshTokenService;
         this.validator = validator;
     }
 
+    @Transactional
     public LoginResponse login(LoginRequest request) {
         var username = request.username() == null ? "" : request.username().trim().toLowerCase();
 
@@ -42,12 +48,19 @@ public class AuthService {
 
         validator.validarCredenciais(request.password(), usuario.getSenhaHash());
 
-        return new LoginResponse(
-                jwtService.gerarToken(usuario),
-                "Bearer",
-                jwtService.expirationSeconds(),
-                UsuarioLogadoResponse.from(usuario)
-        );
+        return gerarRespostaAutenticacao(usuario, refreshTokenService.emitir(usuario));
+    }
+
+    @Transactional
+    public LoginResponse refresh(RefreshTokenRequest request) {
+        var resultado = refreshTokenService.rotacionar(request.refreshToken());
+
+        return gerarRespostaAutenticacao(resultado.usuario(), resultado.refreshToken());
+    }
+
+    @Transactional
+    public void logout(LogoutRequest request) {
+        refreshTokenService.revogar(request.refreshToken());
     }
 
     public UsuarioLogadoResponse me() {
@@ -74,6 +87,17 @@ public class AuthService {
         validator.validarNovaSenha(request, usuario.getSenhaHash());
 
         usuario.alterarSenha(passwordEncoder.encode(request.novaSenha()));
+        refreshTokenService.revogarTodosAtivosDoUsuario(usuario.getId());
+    }
+
+    private LoginResponse gerarRespostaAutenticacao(br.com.paroquia.encontro.domain.entity.UsuarioSistema usuario, String refreshToken) {
+        return new LoginResponse(
+                jwtService.gerarToken(usuario),
+                refreshToken,
+                "Bearer",
+                jwtService.expirationSeconds(),
+                UsuarioLogadoResponse.from(usuario)
+        );
     }
 
     private UsuarioAutenticado usuarioLogado() {

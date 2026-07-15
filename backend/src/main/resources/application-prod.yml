@@ -46,7 +46,8 @@ app:
 
   security:
     jwt-secret: ${APP_JWT_SECRET}
-    jwt-expiration-minutes: ${APP_JWT_EXPIRATION_MINUTES:480}
+    jwt-expiration-minutes: ${APP_JWT_EXPIRATION_MINUTES:15}
+    refresh-token-expiration-days: ${APP_REFRESH_TOKEN_EXPIRATION_DAYS:7}
     initial-admin:
       username: ${APP_ADMIN_USERNAME}
       password: ${APP_ADMIN_INITIAL_PASSWORD}

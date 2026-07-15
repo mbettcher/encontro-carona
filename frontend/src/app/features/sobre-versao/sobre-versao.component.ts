@@ -64,8 +64,8 @@ export class SobreVersaoComponent {
         },
         {
           label: 'Refresh token',
-          status: 'VALIDAR',
-          detalhe: 'Pós-release: implementar refresh token com rotação para operações longas.'
+          status: 'OK',
+          detalhe: 'Refresh token com rotação implementado para renovar a sessão durante operações longas.'
         }
       ]
     },

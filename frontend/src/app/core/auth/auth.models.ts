@@ -19,9 +19,24 @@ export interface LoginRequest {
 
 export interface LoginResponse {
   accessToken: string;
+  refreshToken: string;
   tokenType: 'Bearer' | string;
   expiresIn: number;
   usuario: UsuarioLogado;
+}
+
+export interface RefreshTokenRequest {
+  refreshToken: string;
+}
+
+export interface LogoutRequest {
+  refreshToken: string;
+}
+
+export interface AlterarSenhaRequest {
+  senhaAtual: string;
+  novaSenha: string;
+  confirmacaoSenha: string;
 }
 
 export const TODOS_PERFIS: PerfilUsuario[] = [
@@ -58,9 +73,3 @@ export const PERFIS_IMPRESSAO: PerfilUsuario[] = [
 export const PERFIS_ADMIN: PerfilUsuario[] = [
   'ADMIN'
 ];
-
-export interface AlterarSenhaRequest {
-  senhaAtual: string;
-  novaSenha: string;
-  confirmacaoSenha: string;
-}
