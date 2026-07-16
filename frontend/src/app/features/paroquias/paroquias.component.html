@@ -86,7 +86,7 @@
 
             <div class="col-12 col-md-6">
               <label for="email" class="form-label">E-mail</label>
-              <input id="email" pInputText type="email" class="w-100" formControlName="email" appTelefoneMask
+              <input id="email" pInputText type="email" class="w-100" formControlName="email"
                 placeholder="paroquia@email.com" />
 
               @if (form.controls.email.touched && form.controls.email.invalid) {
@@ -100,8 +100,10 @@
           <div class="d-flex flex-column flex-sm-row gap-2">
             <p-button type="submit" label="Salvar" icon="fa-solid fa-floppy-disk" [loading]="salvando()" />
 
+            @if (!paroquiaEmEdicao()) {
             <p-button type="button" label="Limpar" severity="secondary" variant="outlined" icon="fa-solid fa-eraser"
               [disabled]="salvando()" (onClick)="limparFormulario()" />
+            }
 
             @if (paroquiaEmEdicao()) {
             <p-button type="button" label="Cancelar" severity="secondary" variant="outlined" icon="fa-solid fa-xmark"
@@ -229,5 +231,3 @@
     </div>
   </div>
 </div>
-
-

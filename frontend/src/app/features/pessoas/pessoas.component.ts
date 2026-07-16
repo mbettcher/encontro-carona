@@ -156,8 +156,6 @@ export class PessoasComponent implements OnInit {
     const payload = this.montarPayload();
     const pessoaAtual = this.pessoaEmEdicao();
 
-    this.salvando.set(false);
-
     const requisicao = pessoaAtual
       ? this.service.atualizar(pessoaAtual.id, payload)
       : this.service.criar(payload);

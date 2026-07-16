@@ -247,4 +247,3 @@ export class ParoquiasComponent implements OnInit {
     return texto ? texto : undefined;
   }
 }
-

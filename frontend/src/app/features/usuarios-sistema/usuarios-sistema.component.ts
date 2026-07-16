@@ -12,6 +12,7 @@ import { TagModule } from 'primeng/tag';
 
 import { AuthService } from '../../core/auth/auth.service';
 import { PerfilUsuario } from '../../core/auth/auth.models';
+import { CustomFormHelperService } from '../../shared/services/custom-form-helper.service';
 import { extrairMensagemErro } from '../../shared/utils/http-error.util';
 import {
   UsuarioSistema,
@@ -47,6 +48,7 @@ export class UsuariosSistemaComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly messageService = inject(MessageService);
   private readonly confirmationService = inject(ConfirmationService);
+  private readonly customFormHelper = inject(CustomFormHelperService);
 
   readonly usuarios = signal<UsuarioSistema[]>([]);
   readonly filtroTexto = signal('');
@@ -143,6 +145,8 @@ export class UsuariosSistemaComponent implements OnInit {
       return;
     }
 
+    this.formatarCamposTexto();
+
     const valor = this.form.getRawValue();
     const usuarioAtual = this.usuarioEmEdicao();
 
@@ -214,6 +218,10 @@ export class UsuariosSistemaComponent implements OnInit {
 
   cancelarEdicao(): void {
     this.limparFormulario();
+  }
+
+  formatarCamposTexto(): void {
+    this.customFormHelper.formatarCamposComTitleCase(this.form, ['nome']);
   }
 
   limparFormulario(): void {
@@ -364,5 +372,3 @@ export class UsuariosSistemaComponent implements OnInit {
     });
   }
 }
-
-

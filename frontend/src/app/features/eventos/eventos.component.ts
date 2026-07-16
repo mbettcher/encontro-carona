@@ -342,4 +342,3 @@ export class EventosComponent implements OnInit {
     return valor.substring(0, 10);
   }
 }
-
