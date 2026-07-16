@@ -598,3 +598,20 @@ textarea {
     max-width: 100%;
   }
 }
+
+/* ==========================================================================
+   Ajuste do seletor de linhas dos paginadores PrimeNG
+   ========================================================================== */
+
+.p-paginator .p-select,
+.p-paginator .p-dropdown,
+.p-paginator-rpp-options .p-select,
+.p-paginator-rpp-options .p-dropdown {
+  width: auto !important;
+  min-width: 5.25rem;
+}
+
+.p-paginator .p-select-label,
+.p-paginator .p-dropdown-label {
+  min-width: 2.25rem;
+}

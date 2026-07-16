@@ -1,3 +1,4 @@
+
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
@@ -6,9 +7,11 @@ import { finalize } from 'rxjs';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
+import { ColorPickerModule } from 'primeng/colorpicker';
 import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
+import { MultiSelectModule } from 'primeng/multiselect';
 import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
 import { TextareaModule } from 'primeng/textarea';
@@ -19,6 +22,7 @@ import {
   DuplaStatus,
   DuplaTioCarona,
   Evento,
+  EquipeMontagemKit,
   Pessoa,
   Sobrinho,
   SobrinhoDupla,
@@ -33,12 +37,17 @@ import { AuthService } from '../../core/auth/auth.service';
 import { TelefoneMaskDirective } from '../../shared/directives/telefone-mask.directive';
 import { EventoGestaoService } from './evento-gestao.service';
 
-type AbaGestao = 'TIOS' | 'DUPLAS' | 'SOBRINHOS' | 'VINCULOS';
+type AbaGestao = 'TIOS' | 'DUPLAS' | 'SOBRINHOS' | 'VINCULOS' | 'EQUIPES';
 
 interface OpcaoNumerica {
   label: string;
   value: number;
   descricao?: string;
+}
+
+interface CorRapidaEquipe {
+  label: string;
+  valor: string;
 }
 
 @Component({
@@ -50,9 +59,11 @@ interface OpcaoNumerica {
     RouterLink,
     ButtonModule,
     CardModule,
+    ColorPickerModule,
     DialogModule,
     InputTextModule,
     SelectModule,
+    MultiSelectModule,
     TableModule,
     TagModule,
     TextareaModule,
@@ -75,12 +86,24 @@ export class EventoGestaoComponent implements OnInit {
 
   readonly eventoId = Number(this.route.snapshot.paramMap.get('eventoId'));
 
+  readonly coresRapidasEquipe: CorRapidaEquipe[] = [
+    { label: 'Amarelo', valor: '#fbbf24' },
+    { label: 'Vermelho', valor: '#ef4444' },
+    { label: 'Azul', valor: '#3b82f6' },
+    { label: 'Verde', valor: '#22c55e' },
+    { label: 'Roxo', valor: '#8b5cf6' },
+    { label: 'Laranja', valor: '#f97316' },
+    { label: 'Rosa', valor: '#ec4899' },
+    { label: 'Cinza', valor: '#64748b' }
+  ];
+
   readonly evento = signal<Evento | null>(null);
   readonly pessoas = signal<Pessoa[]>([]);
   readonly tiosCarona = signal<TioCaronaEvento[]>([]);
   readonly duplas = signal<DuplaTioCarona[]>([]);
   readonly sobrinhos = signal<Sobrinho[]>([]);
   readonly vinculos = signal<SobrinhoDupla[]>([]);
+  readonly equipesMontagemKit = signal<EquipeMontagemKit[]>([]);
 
   readonly abaAtiva = signal<AbaGestao>('TIOS');
   readonly usarPessoaCadastradaEncontrista = signal(true);
@@ -90,8 +113,11 @@ export class EventoGestaoComponent implements OnInit {
   readonly salvandoSobrinho = signal(false);
   readonly salvandoPessoaSobrinho = signal(false);
   readonly salvandoVinculo = signal(false);
+  readonly salvandoEquipe = signal(false);
+  readonly salvandoEdicaoEquipe = signal(false);
   readonly processandoDuplaId = signal<number | null>(null);
   readonly processandoVinculoId = signal<number | null>(null);
+  readonly processandoEquipeId = signal<number | null>(null);
 
   readonly tioEdicaoVisivel = signal(false);
   readonly salvandoEdicaoTio = signal(false);
@@ -111,6 +137,9 @@ export class EventoGestaoComponent implements OnInit {
 
   readonly modalSubstituirDuplaVisivel = signal(false);
   readonly vinculoEmSubstituicao = signal<SobrinhoDupla | null>(null);
+
+  readonly equipeEdicaoVisivel = signal(false);
+  readonly equipeEmEdicao = signal<EquipeMontagemKit | null>(null);
   readonly salvandoSubstituicaoDupla = signal(false);
 
   readonly tio1Selecionado = signal(0);
@@ -119,6 +148,7 @@ export class EventoGestaoComponent implements OnInit {
   readonly filtroDuplas = signal('');
   readonly filtroSobrinhos = signal('');
   readonly filtroVinculos = signal('');
+  readonly filtroEquipes = signal('');
 
   readonly tioForm = this.fb.nonNullable.group({
     pessoaId: [0, [Validators.required, Validators.min(1)]],
@@ -158,6 +188,12 @@ export class EventoGestaoComponent implements OnInit {
     duplaId: [0, [Validators.required, Validators.min(1)]]
   });
 
+  readonly equipeForm = this.fb.nonNullable.group({
+    apelido: ['', [Validators.required, Validators.maxLength(80)]],
+    corIdentificacao: ['#fbbf24', [Validators.maxLength(30)]],
+    integranteIds: [[] as number[]]
+  });
+
   readonly tioEdicaoForm = this.fb.nonNullable.group({
     observacoes: ['', [Validators.maxLength(500)]]
   });
@@ -175,6 +211,12 @@ export class EventoGestaoComponent implements OnInit {
     dataNascimento: ['', [Validators.required]],
     restricaoAlimentar: ['', [Validators.maxLength(500)]],
     observacaoMedica: ['', [Validators.maxLength(500)]]
+  });
+
+  readonly equipeEdicaoForm = this.fb.nonNullable.group({
+    apelido: ['', [Validators.required, Validators.maxLength(80)]],
+    corIdentificacao: ['', [Validators.maxLength(30)]],
+    integranteIds: [[] as number[]]
   });
 
   readonly vinculoTrocaDuplaForm = this.fb.nonNullable.group({
@@ -195,6 +237,14 @@ export class EventoGestaoComponent implements OnInit {
 
   readonly vinculosRemovidos = computed(() =>
     this.vinculos().filter(vinculo => vinculo.status === 'REMOVIDO')
+  );
+
+  readonly equipesMontagemKitAtivas = computed(() =>
+    this.equipesMontagemKit().filter(equipe => equipe.status === 'ATIVA')
+  );
+
+  readonly equipesMontagemKitInativas = computed(() =>
+    this.equipesMontagemKit().filter(equipe => equipe.status === 'INATIVA')
   );
 
   readonly opcoesPessoasTioCarona = computed<OpcaoNumerica[]>(() => {
@@ -316,6 +366,18 @@ export class EventoGestaoComponent implements OnInit {
     return this.pessoas().find(pessoa => pessoa.id === pessoaId) ?? null;
   });
 
+
+  readonly opcoesPessoasEquipe = computed<OpcaoNumerica[]>(() =>
+    this.pessoas()
+      .filter(pessoa => pessoa.tipo === 'EQUIPE')
+      .map(pessoa => ({
+        label: pessoa.nome,
+        descricao: pessoa.telefone || pessoa.email || 'Pessoa cadastrada como Equipe',
+        value: pessoa.id
+      }))
+  );
+
+
   readonly idsSobrinhosComVinculoAtivo = computed<Set<number>>(() => {
     const ids = new Set<number>();
 
@@ -400,6 +462,23 @@ export class EventoGestaoComponent implements OnInit {
     );
   });
 
+
+  readonly equipesMontagemKitFiltradas = computed(() => {
+    const filtro = this.normalizarFiltro(this.filtroEquipes());
+
+    if (!filtro) {
+      return this.equipesMontagemKit();
+    }
+
+    return this.equipesMontagemKit().filter(equipe =>
+      this.contemFiltro(equipe.apelido, filtro) ||
+      this.contemFiltro(equipe.corIdentificacao, filtro) ||
+      this.contemFiltro(equipe.status, filtro) ||
+      equipe.integrantes.some(integrante => this.contemFiltro(integrante.pessoaNome, filtro))
+    );
+  });
+
+
   readonly vinculoSubstituirDuplaForm = this.fb.nonNullable.group({
     novaDuplaId: [0, [Validators.required, Validators.min(1)]],
     motivo: ['', [Validators.required, Validators.maxLength(500)]],
@@ -432,6 +511,7 @@ export class EventoGestaoComponent implements OnInit {
     this.carregarDuplas();
     this.carregarSobrinhos();
     this.carregarVinculos();
+    this.carregarEquipesMontagemKit();
 
     window.setTimeout(() => this.carregando.set(false), 600);
   }
@@ -487,6 +567,10 @@ export class EventoGestaoComponent implements OnInit {
     this.filtroVinculos.set(valor);
   }
 
+  alterarFiltroEquipes(valor: string): void {
+    this.filtroEquipes.set(valor);
+  }
+
   formatarDupla(): void {
     this.customFormHelper.formatarCamposComTitleCase(this.duplaForm, ['apelido']);
   }
@@ -504,6 +588,14 @@ export class EventoGestaoComponent implements OnInit {
       'responsavelNome',
       'endereco'
     ]);
+  }
+
+  formatarEquipe(): void {
+    this.customFormHelper.formatarCamposComTitleCase(this.equipeForm, ['apelido']);
+  }
+
+  formatarEdicaoEquipe(): void {
+    this.customFormHelper.formatarCamposComTitleCase(this.equipeEdicaoForm, ['apelido']);
   }
 
   aoAlterarPessoaSobrinho(pessoaId: number | null): void {
@@ -600,6 +692,7 @@ export class EventoGestaoComponent implements OnInit {
         this.limparFormularioDupla();
         this.carregarDuplas();
         this.carregarVinculos();
+    this.carregarEquipesMontagemKit();
       },
       error: erro => {
         console.error('Erro ao criar dupla', {
@@ -724,6 +817,7 @@ export class EventoGestaoComponent implements OnInit {
         this.salvandoVinculo.set(false);
         this.limparFormularioVinculo();
         this.carregarVinculos();
+    this.carregarEquipesMontagemKit();
         this.carregarSobrinhos();
       },
       error: erro => {
@@ -1036,6 +1130,7 @@ export class EventoGestaoComponent implements OnInit {
           this.toastSuccess('Encontrista atualizado com sucesso.');
           this.fecharEdicaoSobrinho();
           this.carregarVinculos();
+    this.carregarEquipesMontagemKit();
         },
         error: erro => {
           console.error('Erro ao atualizar encontrista', erro);
@@ -1161,6 +1256,7 @@ export class EventoGestaoComponent implements OnInit {
           this.toastSuccess('Dupla responsável substituída com sucesso.');
           this.fecharModalSubstituirDupla(true);
           this.carregarVinculos();
+    this.carregarEquipesMontagemKit();
         },
         error: erro => {
           console.error('Erro ao substituir dupla responsável', erro);
@@ -1243,6 +1339,213 @@ export class EventoGestaoComponent implements OnInit {
     );
   }
 
+  private atualizarEquipeNaLista(equipeAtualizada: EquipeMontagemKit): void {
+    this.equipesMontagemKit.update(equipes =>
+      equipes.map(equipe => equipe.id === equipeAtualizada.id ? equipeAtualizada : equipe)
+    );
+  }
+
+
+  selecionarCorEquipe(cor: string): void {
+    this.equipeForm.controls.corIdentificacao.setValue(cor);
+    this.equipeForm.controls.corIdentificacao.markAsDirty();
+    this.equipeForm.controls.corIdentificacao.updateValueAndValidity();
+  }
+
+  selecionarCorEdicaoEquipe(cor: string): void {
+    this.equipeEdicaoForm.controls.corIdentificacao.setValue(cor);
+    this.equipeEdicaoForm.controls.corIdentificacao.markAsDirty();
+    this.equipeEdicaoForm.controls.corIdentificacao.updateValueAndValidity();
+  }
+
+  corEquipeFormulario(): string {
+    return this.normalizarCorVisual(this.equipeForm.controls.corIdentificacao.value);
+  }
+
+  corEdicaoEquipeFormulario(): string {
+    return this.normalizarCorVisual(this.equipeEdicaoForm.controls.corIdentificacao.value);
+  }
+
+  corRapidaSelecionada(corAtual: string | null | undefined, corRapida: string): boolean {
+    return this.normalizarCorVisual(corAtual).toLowerCase() === corRapida.toLowerCase();
+  }
+
+  private normalizarCorVisual(cor: string | null | undefined): string {
+    const corTratada = this.normalizarCorParaPayload(cor);
+
+    return corTratada ?? '#64748b';
+  }
+
+  private normalizarCorParaPayload(cor: string | null | undefined): string | undefined {
+    if (!cor || !cor.trim()) {
+      return undefined;
+    }
+
+    const valor = cor.trim();
+
+    if (valor.startsWith('#')) {
+      return valor;
+    }
+
+    if (/^[0-9a-fA-F]{6}$/.test(valor)) {
+      return `#${valor}`;
+    }
+
+    return valor;
+  }
+
+  adicionarEquipeMontagemKit(): void {
+    if (this.equipeForm.invalid) {
+      this.equipeForm.markAllAsTouched();
+      this.toastWarn('Informe o apelido da equipe de montagem do kit.');
+      return;
+    }
+
+    this.formatarEquipe();
+
+    const valor = this.equipeForm.getRawValue();
+
+    this.salvandoEquipe.set(true);
+
+    this.service.criarEquipeMontagemKit(this.eventoId, {
+      apelido: valor.apelido,
+      corIdentificacao: this.normalizarCorParaPayload(valor.corIdentificacao),
+      integranteIds: valor.integranteIds
+    }).pipe(finalize(() => this.salvandoEquipe.set(false)))
+      .subscribe({
+        next: equipe => {
+          this.equipesMontagemKit.update(equipes => [...equipes, equipe]);
+          this.limparFormularioEquipe();
+          this.toastSuccess('Equipe de montagem do kit criada com sucesso.');
+        },
+        error: erro => {
+          console.error('Erro ao criar equipe de montagem do kit', erro);
+          this.toastError(this.mensagemErro(erro, 'Não foi possível criar a equipe de montagem do kit.'));
+        }
+      });
+  }
+
+  limparFormularioEquipe(): void {
+    this.equipeForm.reset({
+      apelido: '',
+      corIdentificacao: '#fbbf24',
+      integranteIds: []
+    });
+  }
+
+  abrirEdicaoEquipe(equipe: EquipeMontagemKit): void {
+    this.equipeEmEdicao.set(equipe);
+    this.equipeEdicaoForm.reset({
+      apelido: equipe.apelido,
+      corIdentificacao: equipe.corIdentificacao ?? '',
+      integranteIds: equipe.integrantes.map(integrante => integrante.pessoaId)
+    });
+    this.equipeEdicaoVisivel.set(true);
+  }
+
+  fecharEdicaoEquipe(): void {
+    this.equipeEdicaoVisivel.set(false);
+    this.equipeEmEdicao.set(null);
+    this.equipeEdicaoForm.reset({
+      apelido: '',
+      corIdentificacao: '',
+      integranteIds: []
+    });
+  }
+
+  salvarEdicaoEquipe(): void {
+    const equipe = this.equipeEmEdicao();
+
+    if (!equipe) {
+      return;
+    }
+
+    if (this.equipeEdicaoForm.invalid) {
+      this.equipeEdicaoForm.markAllAsTouched();
+      this.toastWarn('Informe o apelido da equipe de montagem do kit.');
+      return;
+    }
+
+    this.formatarEdicaoEquipe();
+
+    const valor = this.equipeEdicaoForm.getRawValue();
+
+    this.salvandoEdicaoEquipe.set(true);
+
+    this.service.atualizarEquipeMontagemKit(this.eventoId, equipe.id, {
+      apelido: valor.apelido,
+      corIdentificacao: this.normalizarCorParaPayload(valor.corIdentificacao),
+      integranteIds: valor.integranteIds
+    }).pipe(finalize(() => this.salvandoEdicaoEquipe.set(false)))
+      .subscribe({
+        next: equipeAtualizada => {
+          this.atualizarEquipeNaLista(equipeAtualizada);
+          this.fecharEdicaoEquipe();
+          this.toastSuccess('Equipe de montagem do kit atualizada com sucesso.');
+        },
+        error: erro => {
+          console.error('Erro ao atualizar equipe de montagem do kit', erro);
+          this.toastError(this.mensagemErro(erro, 'Não foi possível atualizar a equipe de montagem do kit.'));
+        }
+      });
+  }
+
+  inativarEquipeMontagemKit(equipe: EquipeMontagemKit): void {
+    this.processandoEquipeId.set(equipe.id);
+
+    this.service.inativarEquipeMontagemKit(this.eventoId, equipe.id)
+      .pipe(finalize(() => this.processandoEquipeId.set(null)))
+      .subscribe({
+        next: equipeAtualizada => {
+          this.atualizarEquipeNaLista(equipeAtualizada);
+          this.toastSuccess('Equipe de montagem do kit inativada.');
+        },
+        error: erro => {
+          console.error('Erro ao inativar equipe de montagem do kit', erro);
+          this.toastError(this.mensagemErro(erro, 'Não foi possível inativar a equipe.'));
+        }
+      });
+  }
+
+  reativarEquipeMontagemKit(equipe: EquipeMontagemKit): void {
+    this.processandoEquipeId.set(equipe.id);
+
+    this.service.reativarEquipeMontagemKit(this.eventoId, equipe.id)
+      .pipe(finalize(() => this.processandoEquipeId.set(null)))
+      .subscribe({
+        next: equipeAtualizada => {
+          this.atualizarEquipeNaLista(equipeAtualizada);
+          this.toastSuccess('Equipe de montagem do kit reativada.');
+        },
+        error: erro => {
+          console.error('Erro ao reativar equipe de montagem do kit', erro);
+          this.toastError(this.mensagemErro(erro, 'Não foi possível reativar a equipe.'));
+        }
+      });
+  }
+
+  labelStatusEquipeMontagemKit(status: string): string {
+    switch (status) {
+      case 'ATIVA':
+        return 'Ativa';
+      case 'INATIVA':
+        return 'Inativa';
+      default:
+        return status;
+    }
+  }
+
+  severityStatusEquipeMontagemKit(status: string): 'info' | 'success' | 'warn' | 'danger' | 'secondary' {
+    switch (status) {
+      case 'ATIVA':
+        return 'success';
+      case 'INATIVA':
+        return 'secondary';
+      default:
+        return 'secondary';
+    }
+  }
+
   private carregarEvento(): void {
     this.service.buscarEvento(this.eventoId).subscribe({
       next: evento => this.evento.set(evento),
@@ -1299,6 +1602,16 @@ export class EventoGestaoComponent implements OnInit {
       error: erro => {
         console.error('Erro ao carregar vínculos', erro);
         this.toastError('Não foi possível carregar os vínculos.');
+      }
+    });
+  }
+
+  private carregarEquipesMontagemKit(): void {
+    this.service.listarEquipesMontagemKit(this.eventoId).subscribe({
+      next: equipes => this.equipesMontagemKit.set(equipes),
+      error: erro => {
+        console.error('Erro ao carregar equipes de montagem do kit', erro);
+        this.toastError('Não foi possível carregar as equipes de montagem do kit.');
       }
     });
   }

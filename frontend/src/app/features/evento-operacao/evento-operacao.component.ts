@@ -1,3 +1,4 @@
+
 import { DatePipe } from '@angular/common';
 import { finalize } from 'rxjs';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
@@ -216,6 +217,7 @@ export class EventoOperacaoComponent implements OnInit {
           this.contemFiltro(caderno.tio1Nome, filtro) ||
           this.contemFiltro(caderno.tio2Nome, filtro) ||
           this.contemFiltro(caderno.status, filtro) ||
+          this.contemFiltro(caderno.equipeMontagemKitApelido, filtro) ||
           this.contemFiltro(this.labelStatusCaderno(caderno.status), filtro);
       });
   });
@@ -229,7 +231,7 @@ export class EventoOperacaoComponent implements OnInit {
   );
 
   readonly cadernosRecebidosDaDupla = computed(() =>
-    this.cadernos().filter(caderno => caderno.status === 'RECEBIDO_DA_DUPLA')
+    this.cadernos().filter(caderno => caderno.status === 'RECEBIDO_DA_DUPLA' || caderno.status === 'DIRECIONADO_EQUIPE_MONTAGEM')
   );
 
   readonly cadernosConferidos = computed(() =>
@@ -964,6 +966,8 @@ export class EventoOperacaoComponent implements OnInit {
         return 'Entregue à dupla';
       case 'RECEBIDO_DA_DUPLA':
         return 'Recebido da dupla';
+      case 'DIRECIONADO_EQUIPE_MONTAGEM':
+        return 'Direcionado ao kit';
       case 'CONFERIDO':
         return 'Conferido';
       case 'ANEXADO_AO_KIT':
@@ -989,6 +993,8 @@ export class EventoOperacaoComponent implements OnInit {
         return 'info';
       case 'RECEBIDO_DA_DUPLA':
         return 'info';
+      case 'DIRECIONADO_EQUIPE_MONTAGEM':
+        return 'info';
       case 'CONFERIDO':
         return 'success';
       case 'ANEXADO_AO_KIT':
@@ -1007,7 +1013,7 @@ export class EventoOperacaoComponent implements OnInit {
   }
 
   podeConferirCaderno(caderno: CadernoChoro): boolean {
-    return caderno.status === 'RECEBIDO_DA_DUPLA';
+    return caderno.status === 'RECEBIDO_DA_DUPLA' || caderno.status === 'DIRECIONADO_EQUIPE_MONTAGEM';
   }
 
   podeAnexarCadernoAoKit(caderno: CadernoChoro): boolean {

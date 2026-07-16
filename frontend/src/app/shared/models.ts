@@ -1,11 +1,10 @@
-
-
 export type EventoStatus = 'PLANEJADO' | 'EM_ANDAMENTO' | 'ENCERRADO' | 'CANCELADO';
 export type PessoaTipo = 'TIO_CARONA' | 'SOBRINHO' | 'RESPONSAVEL' | 'EQUIPE';
 export type TioCaronaStatus = 'ATIVO' | 'INATIVO';
 export type DuplaStatus = 'ATIVA' | 'INATIVA';
 export type SobrinhoStatus = 'INSCRITO' | 'PRESENTE' | 'AUSENTE' | 'DESISTENTE';
 export type VinculoStatus = 'ATIVO' | 'REMOVIDO';
+export type StatusEquipeMontagemKit = 'ATIVA' | 'INATIVA';
 
 export interface Paroquia {
   id: number;
@@ -242,6 +241,7 @@ export type StatusCadernoChoro =
   | 'PENDENTE'
   | 'ENTREGUE_A_DUPLA'
   | 'RECEBIDO_DA_DUPLA'
+  | 'DIRECIONADO_EQUIPE_MONTAGEM'
   | 'CONFERIDO'
   | 'ANEXADO_AO_KIT'
   | 'ENTREGUE_AO_SOBRINHO'
@@ -259,9 +259,13 @@ export interface CadernoChoro {
   tio2Nome: string;
   sobrinhoId: number;
   sobrinhoNome: string;
+  equipeMontagemKitId?: number;
+  equipeMontagemKitApelido?: string;
+  equipeMontagemKitCorIdentificacao?: string;
   status: StatusCadernoChoro;
   entregueADuplaEm?: string;
   recebidoDaDuplaEm?: string;
+  direcionadoEquipeMontagemEm?: string;
   conferidoEm?: string;
   anexadoAoKitEm?: string;
   entregueAoSobrinhoEm?: string;
@@ -284,10 +288,41 @@ export interface CadernoChoroHistorico {
   duplaCodigo: string;
   sobrinhoId: number;
   sobrinhoNome: string;
+  equipeMontagemKitId?: number;
+  equipeMontagemKitApelido?: string;
   status: StatusCadernoChoro;
   observacao?: string;
   ocorridoEm: string;
 }
+
+
+export interface EquipeMontagemKitIntegrante {
+  id: number;
+  pessoaId: number;
+  pessoaNome: string;
+  criadoEm: string;
+}
+
+export interface EquipeMontagemKit {
+  id: number;
+  eventoId: number;
+  apelido: string;
+  corIdentificacao?: string;
+  status: StatusEquipeMontagemKit;
+  integrantes: EquipeMontagemKitIntegrante[];
+  criadoEm: string;
+}
+
+export interface EquipeMontagemKitRequest {
+  apelido: string;
+  corIdentificacao?: string;
+  integranteIds?: number[];
+}
+
+export interface EquipeMontagemKitIntegranteRequest {
+  pessoaId: number;
+}
+
 
 export type TipoCredencial =
   'TIO_CARONA'

@@ -1,3 +1,4 @@
+
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, map } from 'rxjs';
@@ -10,6 +11,10 @@ import {
   DuplaTioCarona,
   DuplaTioCaronaRequest,
   Evento,
+  EquipeMontagemKit,
+  EquipeMontagemKitIntegranteRequest,
+  EquipeMontagemKitRequest,
+  CadernoChoro,
   Pessoa,
   Sobrinho,
   SobrinhoDupla,
@@ -195,6 +200,75 @@ export class EventoGestaoService {
     return this.http.patch<SobrinhoDupla>(
       `${this.apiUrl}/eventos/${eventoId}/vinculos/${vinculoId}/substituir-dupla`,
       payload
+    );
+  }
+
+
+  listarEquipesMontagemKit(eventoId: number): Observable<EquipeMontagemKit[]> {
+    return this.http.get<EquipeMontagemKit[]>(
+      `${this.apiUrl}/eventos/${eventoId}/equipes-montagem-kit`
+    );
+  }
+
+  criarEquipeMontagemKit(
+    eventoId: number,
+    request: EquipeMontagemKitRequest
+  ): Observable<EquipeMontagemKit> {
+    return this.http.post<EquipeMontagemKit>(
+      `${this.apiUrl}/eventos/${eventoId}/equipes-montagem-kit`,
+      this.limpar(request)
+    );
+  }
+
+  atualizarEquipeMontagemKit(
+    eventoId: number,
+    equipeId: number,
+    request: EquipeMontagemKitRequest
+  ): Observable<EquipeMontagemKit> {
+    return this.http.patch<EquipeMontagemKit>(
+      `${this.apiUrl}/eventos/${eventoId}/equipes-montagem-kit/${equipeId}`,
+      this.limpar(request)
+    );
+  }
+
+  inativarEquipeMontagemKit(eventoId: number, equipeId: number): Observable<EquipeMontagemKit> {
+    return this.http.patch<EquipeMontagemKit>(
+      `${this.apiUrl}/eventos/${eventoId}/equipes-montagem-kit/${equipeId}/inativar`,
+      {}
+    );
+  }
+
+  reativarEquipeMontagemKit(eventoId: number, equipeId: number): Observable<EquipeMontagemKit> {
+    return this.http.patch<EquipeMontagemKit>(
+      `${this.apiUrl}/eventos/${eventoId}/equipes-montagem-kit/${equipeId}/reativar`,
+      {}
+    );
+  }
+
+  adicionarIntegranteEquipeMontagemKit(
+    eventoId: number,
+    equipeId: number,
+    request: EquipeMontagemKitIntegranteRequest
+  ): Observable<EquipeMontagemKit> {
+    return this.http.post<EquipeMontagemKit>(
+      `${this.apiUrl}/eventos/${eventoId}/equipes-montagem-kit/${equipeId}/integrantes`,
+      this.limpar(request)
+    );
+  }
+
+  removerIntegranteEquipeMontagemKit(
+    eventoId: number,
+    equipeId: number,
+    integranteId: number
+  ): Observable<EquipeMontagemKit> {
+    return this.http.delete<EquipeMontagemKit>(
+      `${this.apiUrl}/eventos/${eventoId}/equipes-montagem-kit/${equipeId}/integrantes/${integranteId}`
+    );
+  }
+
+  listarCadernosEquipeMontagemKit(eventoId: number, equipeId: number): Observable<CadernoChoro[]> {
+    return this.http.get<CadernoChoro[]>(
+      `${this.apiUrl}/eventos/${eventoId}/equipes-montagem-kit/${equipeId}/cadernos`
     );
   }
 

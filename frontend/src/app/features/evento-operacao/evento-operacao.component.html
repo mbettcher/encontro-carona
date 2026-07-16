@@ -1,3 +1,4 @@
+
 <div class="container-fluid py-4 evento-operacao-page">
   <div class="d-flex flex-column flex-xl-row justify-content-between gap-3 mb-4">
     <div>
@@ -1008,6 +1009,16 @@
               <td>
                 <p-tag [value]="labelStatusCaderno(caderno.status)"
                   [severity]="severityStatusCaderno(caderno.status)" />
+              </td>
+
+              <td>
+                @if (caderno.equipeMontagemKitApelido) {
+                <span class="badge rounded-pill text-bg-light border">
+                  {{ caderno.equipeMontagemKitApelido }}
+                </span>
+                } @else {
+                <span class="small text-body-secondary">Sem equipe</span>
+                }
               </td>
 
               <td>

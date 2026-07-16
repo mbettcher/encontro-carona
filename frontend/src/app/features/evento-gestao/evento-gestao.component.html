@@ -1,3 +1,4 @@
+
 <div class="container-fluid py-4 evento-gestao-page">
   <div class="d-flex flex-column flex-xl-row justify-content-between gap-3 mb-4">
     <div>
@@ -71,6 +72,18 @@
         </div>
       </p-card>
     </div>
+
+    <div class="col-12 col-md-6 col-xl-3">
+      <p-card styleClass="summary-card">
+        <div class="d-flex align-items-center justify-content-between">
+          <div>
+            <div class="text-body-secondary small">Equipes do kit</div>
+            <div class="fs-3 fw-bold">{{ equipesMontagemKitAtivas().length }}</div>
+          </div>
+          <i class="fa-solid fa-boxes-packing"></i>
+        </div>
+      </p-card>
+    </div>
   </div>
 
   <div class="gestao-tabs mb-4">
@@ -94,6 +107,12 @@
       (click)="alterarAba('VINCULOS')">
       <i class="fa-solid fa-link me-2"></i>
       Vínculos
+    </button>
+
+    <button type="button" class="tab-button" [class.active]="abaAtiva() === 'EQUIPES'"
+      (click)="alterarAba('EQUIPES')">
+      <i class="fa-solid fa-boxes-packing me-2"></i>
+      Equipes do kit
     </button>
   </div>
 
@@ -744,6 +763,206 @@
   </div>
   }
 
+
+  @if (abaAtiva() === 'EQUIPES') {
+  <div class="row g-4">
+    <div class="col-12 col-xl-4">
+      <p-card class="shadow-sm border-0 h-100">
+        <ng-template pTemplate="header">
+          <div class="px-4 pt-4">
+            <h2 class="h5 mb-1">Nova equipe do kit</h2>
+            <p class="text-body-secondary small mb-0">
+              Cadastre equipes que receberão os Cadernos de Mensagens para montagem dos kits.
+            </p>
+          </div>
+        </ng-template>
+
+        <form [formGroup]="equipeForm" (ngSubmit)="adicionarEquipeMontagemKit()" class="d-grid gap-3">
+          <div>
+            <label for="equipeApelido" class="form-label">Apelido da equipe *</label>
+            <input pInputText id="equipeApelido" type="text" formControlName="apelido" class="w-100"
+              placeholder="Ex.: Amarela, Vermelha, Azul" (blur)="formatarEquipe()" />
+
+            @if (equipeForm.controls.apelido.touched && equipeForm.controls.apelido.invalid) {
+            <div class="form-text text-danger">Informe o apelido da equipe.</div>
+            }
+          </div>
+
+          <div>
+            <label for="equipeCor" class="form-label">Cor de identificação</label>
+
+            <div class="color-picker-box">
+              <div class="color-picker-preview" [style.background]="corEquipeFormulario()"
+                aria-hidden="true"></div>
+
+              <div class="color-picker-control">
+                <p-colorpicker inputId="equipeCor" formControlName="corIdentificacao" format="hex"
+                  appendTo="body"></p-colorpicker>
+
+                <div class="small text-body-secondary">
+                  {{ corEquipeFormulario() }}
+                </div>
+              </div>
+            </div>
+
+            <div class="quick-color-grid mt-2" aria-label="Cores rápidas para identificação da equipe">
+              @for (cor of coresRapidasEquipe; track cor.valor) {
+              <button type="button" class="quick-color-button"
+                [class.quick-color-button-active]="corRapidaSelecionada(equipeForm.controls.corIdentificacao.value, cor.valor)"
+                [style.--quick-color]="cor.valor" [attr.aria-label]="'Selecionar cor ' + cor.label"
+                (click)="selecionarCorEquipe(cor.valor)">
+                <span class="quick-color-swatch"></span>
+                <span>{{ cor.label }}</span>
+              </button>
+              }
+            </div>
+
+            <div class="form-text">
+              Escolha uma cor visual para identificar a equipe nos cadernos, filtros e badges.
+            </div>
+          </div>
+
+          <div>
+            <label for="equipeIntegrantes" class="form-label">Integrantes</label>
+            <p-multiselect inputId="equipeIntegrantes" [options]="opcoesPessoasEquipe()" optionLabel="label"
+              optionValue="value" formControlName="integranteIds" placeholder="Selecione os integrantes"
+              styleClass="w-100" display="chip" [filter]="true" filterBy="label,descricao"
+              [disabled]="opcoesPessoasEquipe().length === 0">
+              <ng-template pTemplate="item" let-opcao>
+                <div>
+                  <div class="fw-semibold">{{ opcao.label }}</div>
+                  <div class="small text-body-secondary">{{ opcao.descricao }}</div>
+                </div>
+              </ng-template>
+            </p-multiselect>
+
+            @if (opcoesPessoasEquipe().length === 0) {
+            <div class="alert alert-warning py-2 px-3 mb-0 mt-2 small">
+              <i class="fa-solid fa-circle-info me-2"></i>
+              Cadastre pessoas com tipo <strong>Equipe</strong> para vinculá-las como integrantes.
+            </div>
+            }
+          </div>
+
+          <div class="d-flex flex-column flex-sm-row gap-2">
+            <p-button type="submit" label="Salvar equipe" icon="fa-solid fa-floppy-disk" [loading]="salvandoEquipe()"
+              [disabled]="!seguranca.podeEscrever()" />
+
+            <p-button type="button" label="Limpar" icon="fa-solid fa-eraser" severity="secondary" [outlined]="true"
+              [disabled]="salvandoEquipe()" (onClick)="limparFormularioEquipe()" />
+          </div>
+        </form>
+      </p-card>
+    </div>
+
+    <div class="col-12 col-xl-8">
+      <p-card class="shadow-sm border-0">
+        <ng-template pTemplate="header">
+          <div class="px-4 pt-4">
+            <div class="d-flex flex-column flex-lg-row justify-content-between gap-3">
+              <div>
+                <h2 class="h5 mb-1">Equipes cadastradas</h2>
+                <p class="text-body-secondary small mb-0">
+                  {{ equipesMontagemKitFiltradas().length }} de {{ equipesMontagemKit().length }} equipe(s)
+                </p>
+              </div>
+
+              <div class="table-search">
+                <span class="p-input-icon-left w-100">
+                  <i class="fa-solid fa-magnifying-glass"></i>
+                  <input pInputText type="text" class="w-100"
+                    placeholder="Pesquisar por equipe, integrante ou status..." [value]="filtroEquipes()"
+                    (input)="alterarFiltroEquipes($any($event.target).value)" />
+                </span>
+              </div>
+            </div>
+          </div>
+        </ng-template>
+
+        @if (equipesMontagemKitFiltradas().length === 0) {
+        <div class="empty-state text-center py-5">
+          <i class="fa-solid fa-boxes-packing text-body-secondary mb-3"></i>
+          <h3 class="h6 mb-1">Nenhuma equipe cadastrada</h3>
+          <p class="text-body-secondary small mb-0">
+            Cadastre equipes para que os cadernos recebidos das duplas sejam distribuídos automaticamente.
+          </p>
+        </div>
+        } @else {
+        <div class="table-responsive-wrapper">
+          <p-table [value]="equipesMontagemKitFiltradas()" styleClass="p-datatable-sm min-width-table" [paginator]="true"
+            [rows]="10" [rowsPerPageOptions]="[5, 10, 20, 50]" [showCurrentPageReport]="true"
+            currentPageReportTemplate="{first} a {last} de {totalRecords} equipe(s)">
+            <ng-template pTemplate="header">
+              <tr>
+                <th>Equipe</th>
+                <th>Integrantes</th>
+                <th>Status</th>
+                <th class="text-end">Ações</th>
+              </tr>
+            </ng-template>
+
+            <ng-template pTemplate="body" let-equipe>
+              <tr>
+                <td>
+                  <div class="d-flex align-items-center gap-2">
+                    <span class="equipe-color-dot" [style.background]="equipe.corIdentificacao || '#64748b'"></span>
+                    <div>
+                      <div class="fw-semibold">{{ equipe.apelido }}</div>
+                      <div class="small text-body-secondary">{{ equipe.corIdentificacao || 'Sem cor definida' }}</div>
+                    </div>
+                  </div>
+                </td>
+
+                <td>
+                  @if (equipe.integrantes.length > 0) {
+                  <div class="d-flex flex-wrap gap-1">
+                    @for (integrante of equipe.integrantes; track integrante.id) {
+                    <span class="badge rounded-pill text-bg-light border">{{ integrante.pessoaNome }}</span>
+                    }
+                  </div>
+                  } @else {
+                  <span class="small text-body-secondary">Sem integrantes</span>
+                  }
+                </td>
+
+                <td>
+                  <p-tag [value]="labelStatusEquipeMontagemKit(equipe.status)"
+                    [severity]="severityStatusEquipeMontagemKit(equipe.status)" />
+                </td>
+
+                <td class="text-end">
+                  <div class="d-flex justify-content-end gap-2">
+                    <p-button icon="fa-solid fa-pen-to-square" size="small" severity="warning"
+                      [disabled]="!seguranca.podeEscrever() || processandoEquipeId() === equipe.id"
+                      pTooltip="Editar equipe" tooltipPosition="top" ariaLabel="Editar equipe"
+                      (onClick)="abrirEdicaoEquipe(equipe)" />
+
+                    @if (equipe.status === 'ATIVA') {
+                    <p-button icon="fa-solid fa-ban" size="small" severity="warn"
+                      [loading]="processandoEquipeId() === equipe.id"
+                      [disabled]="!seguranca.podeEscrever() || processandoEquipeId() === equipe.id"
+                      pTooltip="Inativar equipe" tooltipPosition="top" ariaLabel="Inativar equipe"
+                      (onClick)="inativarEquipeMontagemKit(equipe)" />
+                    } @else {
+                    <p-button icon="fa-solid fa-rotate-left" size="small" severity="success"
+                      [loading]="processandoEquipeId() === equipe.id"
+                      [disabled]="!seguranca.podeEscrever() || processandoEquipeId() === equipe.id"
+                      pTooltip="Reativar equipe" tooltipPosition="top" ariaLabel="Reativar equipe"
+                      (onClick)="reativarEquipeMontagemKit(equipe)" />
+                    }
+                  </div>
+                </td>
+              </tr>
+            </ng-template>
+          </p-table>
+        </div>
+        }
+      </p-card>
+    </div>
+  </div>
+  }
+
+
   @if (abaAtiva() === 'VINCULOS') {
   <div class="row g-4">
     <div class="col-12 col-xl-4">
@@ -915,6 +1134,77 @@
     </div>
   </div>
   }
+
+
+  <p-dialog header="Editar equipe de montagem do kit" [visible]="equipeEdicaoVisivel()" [modal]="true"
+    [draggable]="false" [resizable]="false" styleClass="w-100" [style]="{ maxWidth: '42rem' }"
+    (visibleChange)="equipeEdicaoVisivel.set($event)" (onHide)="fecharEdicaoEquipe()">
+
+    <form [formGroup]="equipeEdicaoForm" class="d-grid gap-3">
+      <div>
+        <label for="equipeEdicaoApelido" class="form-label">Apelido da equipe *</label>
+        <input pInputText id="equipeEdicaoApelido" type="text" class="w-100" formControlName="apelido"
+          (blur)="formatarEdicaoEquipe()" />
+
+        @if (equipeEdicaoForm.controls.apelido.touched && equipeEdicaoForm.controls.apelido.invalid) {
+        <div class="form-text text-danger">Informe o apelido da equipe.</div>
+        }
+      </div>
+
+      <div>
+        <label for="equipeEdicaoCor" class="form-label">Cor de identificação</label>
+
+        <div class="color-picker-box">
+          <div class="color-picker-preview" [style.background]="corEdicaoEquipeFormulario()"
+            aria-hidden="true"></div>
+
+          <div class="color-picker-control">
+            <p-colorpicker inputId="equipeEdicaoCor" formControlName="corIdentificacao" format="hex"
+              appendTo="body"></p-colorpicker>
+
+            <div class="small text-body-secondary">
+              {{ corEdicaoEquipeFormulario() }}
+            </div>
+          </div>
+        </div>
+
+        <div class="quick-color-grid mt-2" aria-label="Cores rápidas para identificação da equipe">
+          @for (cor of coresRapidasEquipe; track cor.valor) {
+          <button type="button" class="quick-color-button"
+            [class.quick-color-button-active]="corRapidaSelecionada(equipeEdicaoForm.controls.corIdentificacao.value, cor.valor)"
+            [style.--quick-color]="cor.valor" [attr.aria-label]="'Selecionar cor ' + cor.label"
+            (click)="selecionarCorEdicaoEquipe(cor.valor)">
+            <span class="quick-color-swatch"></span>
+            <span>{{ cor.label }}</span>
+          </button>
+          }
+        </div>
+      </div>
+
+      <div>
+        <label for="equipeEdicaoIntegrantes" class="form-label">Integrantes</label>
+        <p-multiselect inputId="equipeEdicaoIntegrantes" [options]="opcoesPessoasEquipe()" optionLabel="label"
+          optionValue="value" formControlName="integranteIds" placeholder="Selecione os integrantes" styleClass="w-100"
+          display="chip" [filter]="true" filterBy="label,descricao" appendTo="body">
+          <ng-template pTemplate="item" let-opcao>
+            <div>
+              <div class="fw-semibold">{{ opcao.label }}</div>
+              <div class="small text-body-secondary">{{ opcao.descricao }}</div>
+            </div>
+          </ng-template>
+        </p-multiselect>
+      </div>
+    </form>
+
+    <ng-template pTemplate="footer">
+      <div class="d-flex justify-content-end gap-2">
+        <p-button label="Cancelar" severity="secondary" [outlined]="true" (onClick)="fecharEdicaoEquipe()" />
+
+        <p-button label="Salvar" icon="fa-solid fa-floppy-disk" [loading]="salvandoEdicaoEquipe()"
+          [disabled]="!seguranca.podeEscrever()" (onClick)="salvarEdicaoEquipe()" />
+      </div>
+    </ng-template>
+  </p-dialog>
 
   <p-dialog header="Substituir dupla responsável" [visible]="modalSubstituirDuplaVisivel()" [modal]="true"
     [draggable]="false" [resizable]="false" styleClass="w-100" [style]="{ maxWidth: '42rem' }"
