@@ -29,7 +29,7 @@ export class EventoOperacaoService {
         const evento = eventos.find(item => item.id === eventoId);
 
         if (!evento) {
-          throw new Error(`Evento ${eventoId} nÃ£o encontrado.`);
+          throw new Error(`Evento ${eventoId} não encontrado.`);
         }
 
         return evento;
@@ -101,6 +101,30 @@ export class EventoOperacaoService {
 
     return this.http.get(
       `${this.apiUrl}/eventos/${eventoId}/relatorios/cadernos-equipes.pdf`,
+      {
+        params,
+        responseType: 'blob'
+      }
+    );
+  }
+
+  baixarListaPresencaEncontristas(eventoId: number, somenteAtivos = true): Observable<Blob> {
+    const params = new HttpParams().set('somenteAtivos', String(somenteAtivos));
+
+    return this.http.get(
+      `${this.apiUrl}/eventos/${eventoId}/relatorios/lista-presenca-encontristas.pdf`,
+      {
+        params,
+        responseType: 'blob'
+      }
+    );
+  }
+
+  baixarListaPresencaTiosCarona(eventoId: number, somenteAtivos = true): Observable<Blob> {
+    const params = new HttpParams().set('somenteAtivos', String(somenteAtivos));
+
+    return this.http.get(
+      `${this.apiUrl}/eventos/${eventoId}/relatorios/lista-presenca-tios-carona.pdf`,
       {
         params,
         responseType: 'blob'

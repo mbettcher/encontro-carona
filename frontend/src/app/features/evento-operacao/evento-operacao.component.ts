@@ -40,6 +40,8 @@ type OperacaoCadernoChoro =
   | 'SUBSTITUIDO'
   | 'CANCELADO';
 
+type TipoListaPresenca = 'ENCONTRISTAS' | 'TIOS_CARONA';
+
 type AbaOperacao =
   | 'VISAO_GERAL'
   | 'LEITURAS_QR'
@@ -123,6 +125,7 @@ export class EventoOperacaoComponent implements OnInit {
   readonly processandoCadernos = signal(false);
   readonly processandoCadernoId = signal<number | null>(null);
   readonly baixandoRelatorioCadernos = signal(false);
+  readonly baixandoListaPresenca = signal<TipoListaPresenca | null>(null);
   readonly cadernoSelecionado = signal<CadernoChoro | null>(null);
   readonly historicoCaderno = signal<CadernoChoroHistorico[]>([]);
   readonly historicoCadernoVisivel = signal(false);
@@ -519,6 +522,57 @@ export class EventoOperacaoComponent implements OnInit {
 
   alterarFiltroSobrinhosEvento(valor: string): void {
     this.filtroSobrinhosEvento.set(valor);
+  }
+
+  baixarListaPresencaEncontristas(): void {
+    this.baixarListaPresenca('ENCONTRISTAS');
+  }
+
+  baixarListaPresencaTiosCarona(): void {
+    this.baixarListaPresenca('TIOS_CARONA');
+  }
+
+  private baixarListaPresenca(tipo: TipoListaPresenca): void {
+    if (this.baixandoListaPresenca()) {
+      return;
+    }
+
+    this.baixandoListaPresenca.set(tipo);
+
+    const requisicao = tipo === 'ENCONTRISTAS'
+      ? this.service.baixarListaPresencaEncontristas(this.eventoId, true)
+      : this.service.baixarListaPresencaTiosCarona(this.eventoId, true);
+
+    requisicao
+      .pipe(finalize(() => this.baixandoListaPresenca.set(null)))
+      .subscribe({
+        next: arquivo => {
+          this.salvarArquivoPdf(
+            arquivo,
+            this.nomeArquivoListaPresenca(tipo)
+          );
+        },
+        error: erro => {
+          console.error('Erro ao baixar lista de presença', erro);
+          this.toastError(this.mensagemErro(erro, 'Não foi possível gerar a lista de presença.'));
+        }
+      });
+  }
+
+  private nomeArquivoListaPresenca(tipo: TipoListaPresenca): string {
+    const eventoNome = this.evento()?.nome || `evento-${this.eventoId}`;
+    const nomeSeguro = eventoNome
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-zA-Z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .toLowerCase();
+
+    const sufixo = tipo === 'ENCONTRISTAS'
+      ? 'encontristas'
+      : 'tios-carona';
+
+    return `lista-presenca-${sufixo}-${nomeSeguro || this.eventoId}.pdf`;
   }
 
   baixarRelatorioCadernosGeral(): void {
