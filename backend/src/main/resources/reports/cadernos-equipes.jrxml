@@ -1,6 +1,141 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-  Este arquivo foi mantido apenas como referência para evolução futura no Jaspersoft Studio.
-  No hotfix 1.1D.4A5, o relatório é montado via JasperDesign programático para evitar
-  a falha "Unable to load report" ao carregar JRXML com JasperReports 7.
--->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd"
+              name="cadernos_equipes"
+              language="java"
+              pageWidth="842"
+              pageHeight="595"
+              orientation="Landscape"
+              columnWidth="802"
+              leftMargin="20"
+              rightMargin="20"
+              topMargin="20"
+              bottomMargin="20">
+
+    <parameter name="EVENTO_NOME" class="java.lang.String"/>
+    <parameter name="PAROQUIA_NOME" class="java.lang.String"/>
+    <parameter name="EVENTO_LOCAL" class="java.lang.String"/>
+    <parameter name="EVENTO_PERIODO" class="java.lang.String"/>
+    <parameter name="EMITIDO_EM" class="java.lang.String"/>
+    <parameter name="FILTROS" class="java.lang.String"/>
+    <parameter name="TOTAL_REGISTROS" class="java.lang.Integer"/>
+
+    <field name="equipeApelido" class="java.lang.String"/>
+    <field name="sobrinhoNome" class="java.lang.String"/>
+    <field name="dupla" class="java.lang.String"/>
+    <field name="tiosCarona" class="java.lang.String"/>
+    <field name="status" class="java.lang.String"/>
+    <field name="recebidoDaDuplaEm" class="java.lang.String"/>
+    <field name="conferidoEm" class="java.lang.String"/>
+    <field name="anexadoAoKitEm" class="java.lang.String"/>
+
+    <title>
+        <band height="100">
+            <staticText>
+                <reportElement x="0" y="0" width="802" height="24"/>
+                <textElement textAlignment="Center" verticalAlignment="Middle">
+                    <font size="16" isBold="true"/>
+                </textElement>
+                <text><![CDATA[Cadernos de Mensagens por equipe do kit]]></text>
+            </staticText>
+
+            <textField>
+                <reportElement x="0" y="32" width="802" height="16"/>
+                <textElement>
+                    <font size="10" isBold="true"/>
+                </textElement>
+                <textFieldExpression><![CDATA["Evento: " + $P{EVENTO_NOME}]]></textFieldExpression>
+            </textField>
+
+            <textField>
+                <reportElement x="0" y="50" width="401" height="14"/>
+                <textElement><font size="9"/></textElement>
+                <textFieldExpression><![CDATA["Paróquia: " + $P{PAROQUIA_NOME}]]></textFieldExpression>
+            </textField>
+
+            <textField>
+                <reportElement x="410" y="50" width="392" height="14"/>
+                <textElement><font size="9"/></textElement>
+                <textFieldExpression><![CDATA["Local: " + $P{EVENTO_LOCAL}]]></textFieldExpression>
+            </textField>
+
+            <textField>
+                <reportElement x="0" y="66" width="401" height="14"/>
+                <textElement><font size="9"/></textElement>
+                <textFieldExpression><![CDATA["Período: " + $P{EVENTO_PERIODO}]]></textFieldExpression>
+            </textField>
+
+            <textField>
+                <reportElement x="410" y="66" width="392" height="14"/>
+                <textElement><font size="9"/></textElement>
+                <textFieldExpression><![CDATA["Emitido em: " + $P{EMITIDO_EM}]]></textFieldExpression>
+            </textField>
+
+            <textField>
+                <reportElement x="0" y="82" width="802" height="14"/>
+                <textElement><font size="9"/></textElement>
+                <textFieldExpression><![CDATA["Filtros: " + $P{FILTROS} + " | Total: " + $P{TOTAL_REGISTROS}]]></textFieldExpression>
+            </textField>
+        </band>
+    </title>
+
+    <columnHeader>
+        <band height="22">
+            <rectangle>
+                <reportElement mode="Opaque" x="0" y="0" width="802" height="22" backcolor="#E5E7EB"/>
+            </rectangle>
+            <staticText><reportElement x="4" y="4" width="80" height="14"/><textElement><font size="8" isBold="true"/></textElement><text><![CDATA[Equipe]]></text></staticText>
+            <staticText><reportElement x="88" y="4" width="112" height="14"/><textElement><font size="8" isBold="true"/></textElement><text><![CDATA[Encontrista]]></text></staticText>
+            <staticText><reportElement x="204" y="4" width="85" height="14"/><textElement><font size="8" isBold="true"/></textElement><text><![CDATA[Dupla]]></text></staticText>
+            <staticText><reportElement x="293" y="4" width="150" height="14"/><textElement><font size="8" isBold="true"/></textElement><text><![CDATA[Tios carona]]></text></staticText>
+            <staticText><reportElement x="447" y="4" width="75" height="14"/><textElement><font size="8" isBold="true"/></textElement><text><![CDATA[Status]]></text></staticText>
+            <staticText><reportElement x="526" y="4" width="60" height="14"/><textElement><font size="8" isBold="true"/></textElement><text><![CDATA[Recebido]]></text></staticText>
+            <staticText><reportElement x="590" y="4" width="60" height="14"/><textElement><font size="8" isBold="true"/></textElement><text><![CDATA[Conferido]]></text></staticText>
+            <staticText><reportElement x="654" y="4" width="60" height="14"/><textElement><font size="8" isBold="true"/></textElement><text><![CDATA[No kit]]></text></staticText>
+            <staticText><reportElement x="718" y="4" width="80" height="14"/><textElement><font size="8" isBold="true"/></textElement><text><![CDATA[Assinatura]]></text></staticText>
+        </band>
+    </columnHeader>
+
+    <detail>
+        <band height="32">
+            <textField><reportElement x="4" y="3" width="80" height="26"/><textElement><font size="7"/></textElement><textFieldExpression><![CDATA[$F{equipeApelido}]]></textFieldExpression></textField>
+            <textField><reportElement x="88" y="3" width="112" height="26"/><textElement><font size="7"/></textElement><textFieldExpression><![CDATA[$F{sobrinhoNome}]]></textFieldExpression></textField>
+            <textField><reportElement x="204" y="3" width="85" height="26"/><textElement><font size="7"/></textElement><textFieldExpression><![CDATA[$F{dupla}]]></textFieldExpression></textField>
+            <textField><reportElement x="293" y="3" width="150" height="26"/><textElement><font size="7"/></textElement><textFieldExpression><![CDATA[$F{tiosCarona}]]></textFieldExpression></textField>
+            <textField><reportElement x="447" y="3" width="75" height="26"/><textElement><font size="7"/></textElement><textFieldExpression><![CDATA[$F{status}]]></textFieldExpression></textField>
+            <textField><reportElement x="526" y="3" width="60" height="26"/><textElement><font size="7"/></textElement><textFieldExpression><![CDATA[$F{recebidoDaDuplaEm}]]></textFieldExpression></textField>
+            <textField><reportElement x="590" y="3" width="60" height="26"/><textElement><font size="7"/></textElement><textFieldExpression><![CDATA[$F{conferidoEm}]]></textFieldExpression></textField>
+            <textField><reportElement x="654" y="3" width="60" height="26"/><textElement><font size="7"/></textElement><textFieldExpression><![CDATA[$F{anexadoAoKitEm}]]></textFieldExpression></textField>
+            <line><reportElement x="718" y="20" width="80" height="1"/></line>
+            <line><reportElement x="0" y="31" width="802" height="1" forecolor="#E5E7EB"/></line>
+        </band>
+    </detail>
+
+    <pageFooter>
+        <band height="20">
+            <textField>
+                <reportElement x="0" y="4" width="401" height="12"/>
+                <textElement><font size="7"/></textElement>
+                <textFieldExpression><![CDATA["Gerado pelo sistema Tio Carona"]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="650" y="4" width="152" height="12"/>
+                <textElement textAlignment="Right"><font size="7"/></textElement>
+                <textFieldExpression><![CDATA["Página " + $V{PAGE_NUMBER}]]></textFieldExpression>
+            </textField>
+        </band>
+    </pageFooter>
+
+    <summary>
+        <band height="24">
+            <textField>
+                <reportElement x="0" y="6" width="802" height="14"/>
+                <textElement textAlignment="Right">
+                    <font size="8"/>
+                </textElement>
+                <textFieldExpression><![CDATA["Total de cadernos listados: " + $P{TOTAL_REGISTROS}]]></textFieldExpression>
+            </textField>
+        </band>
+    </summary>
+</jasperReport>

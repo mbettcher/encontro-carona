@@ -18,7 +18,7 @@
 
     <properties>
         <java.version>21</java.version>
-        <jasperreports.version>7.0.7</jasperreports.version>
+        <jasperreports.version>6.21.5</jasperreports.version>
     </properties>
 
     <dependencies>
@@ -64,12 +64,6 @@
         <dependency>
             <groupId>net.sf.jasperreports</groupId>
             <artifactId>jasperreports</artifactId>
-            <version>${jasperreports.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>net.sf.jasperreports</groupId>
-            <artifactId>jasperreports-pdf</artifactId>
             <version>${jasperreports.version}</version>
         </dependency>
         <dependency>
