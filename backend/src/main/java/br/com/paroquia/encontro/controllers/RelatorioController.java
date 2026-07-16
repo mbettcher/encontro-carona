@@ -29,27 +29,30 @@ public class RelatorioController {
     public ResponseEntity<byte[]> cadernosEquipes(
             @PathVariable Long eventoId,
             @RequestParam(required = false) Long equipeId,
+            @RequestParam(required = false) Long duplaId,
             @RequestParam(required = false) StatusCadernoChoro status
     ) {
-        var pdf = cadernoEquipeService.gerarPdf(eventoId, equipeId, status);
+        var pdf = cadernoEquipeService.gerarPdf(eventoId, equipeId, duplaId, status);
         return pdfResponse(pdf, "cadernos-equipes-evento-" + eventoId + ".pdf");
     }
 
     @GetMapping(value = "/lista-presenca-encontristas.pdf", produces = MediaType.APPLICATION_PDF_VALUE)
     public ResponseEntity<byte[]> listaPresencaEncontristas(
             @PathVariable Long eventoId,
-            @RequestParam(required = false, defaultValue = "true") Boolean somenteAtivos
+            @RequestParam(required = false, defaultValue = "true") Boolean somenteAtivos,
+            @RequestParam(required = false) Long duplaId
     ) {
-        var pdf = listaPresencaService.listaPresencaEncontristas(eventoId, somenteAtivos);
+        var pdf = listaPresencaService.listaPresencaEncontristas(eventoId, somenteAtivos, duplaId);
         return pdfResponse(pdf, "lista-presenca-encontristas-evento-" + eventoId + ".pdf");
     }
 
     @GetMapping(value = "/lista-presenca-tios-carona.pdf", produces = MediaType.APPLICATION_PDF_VALUE)
     public ResponseEntity<byte[]> listaPresencaTiosCarona(
             @PathVariable Long eventoId,
-            @RequestParam(required = false, defaultValue = "true") Boolean somenteAtivos
+            @RequestParam(required = false, defaultValue = "true") Boolean somenteAtivos,
+            @RequestParam(required = false) Long duplaId
     ) {
-        var pdf = listaPresencaService.listaPresencaTiosCarona(eventoId, somenteAtivos);
+        var pdf = listaPresencaService.listaPresencaTiosCarona(eventoId, somenteAtivos, duplaId);
         return pdfResponse(pdf, "lista-presenca-tios-carona-evento-" + eventoId + ".pdf");
     }
 

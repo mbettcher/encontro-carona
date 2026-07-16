@@ -87,12 +87,16 @@ export class EventoOperacaoService {
 
   baixarRelatorioCadernosEquipes(
     eventoId: number,
-    filtros?: { equipeId?: number | null; status?: StatusCadernoChoro | null }
+    filtros?: { equipeId?: number | null; duplaId?: number | null; status?: StatusCadernoChoro | null }
   ): Observable<Blob> {
     let params = new HttpParams();
 
     if (filtros?.equipeId) {
       params = params.set('equipeId', String(filtros.equipeId));
+    }
+
+    if (filtros?.duplaId) {
+      params = params.set('duplaId', String(filtros.duplaId));
     }
 
     if (filtros?.status) {
@@ -108,8 +112,16 @@ export class EventoOperacaoService {
     );
   }
 
-  baixarListaPresencaEncontristas(eventoId: number, somenteAtivos = true): Observable<Blob> {
-    const params = new HttpParams().set('somenteAtivos', String(somenteAtivos));
+  baixarListaPresencaEncontristas(
+    eventoId: number,
+    filtros?: { somenteAtivos?: boolean; duplaId?: number | null }
+  ): Observable<Blob> {
+    let params = new HttpParams()
+      .set('somenteAtivos', String(filtros?.somenteAtivos ?? true));
+
+    if (filtros?.duplaId) {
+      params = params.set('duplaId', String(filtros.duplaId));
+    }
 
     return this.http.get(
       `${this.apiUrl}/eventos/${eventoId}/relatorios/lista-presenca-encontristas.pdf`,
@@ -120,8 +132,16 @@ export class EventoOperacaoService {
     );
   }
 
-  baixarListaPresencaTiosCarona(eventoId: number, somenteAtivos = true): Observable<Blob> {
-    const params = new HttpParams().set('somenteAtivos', String(somenteAtivos));
+  baixarListaPresencaTiosCarona(
+    eventoId: number,
+    filtros?: { somenteAtivos?: boolean; duplaId?: number | null }
+  ): Observable<Blob> {
+    let params = new HttpParams()
+      .set('somenteAtivos', String(filtros?.somenteAtivos ?? true));
+
+    if (filtros?.duplaId) {
+      params = params.set('duplaId', String(filtros.duplaId));
+    }
 
     return this.http.get(
       `${this.apiUrl}/eventos/${eventoId}/relatorios/lista-presenca-tios-carona.pdf`,

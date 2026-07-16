@@ -38,10 +38,10 @@ public class RelatorioCadernoEquipeService {
     }
 
     @Transactional(readOnly = true)
-    public byte[] gerarPdf(Long eventoId, Long equipeId, StatusCadernoChoro status) {
+    public byte[] gerarPdf(Long eventoId, Long equipeId, Long duplaId, StatusCadernoChoro status) {
         var evento = buscarEvento(eventoId);
-        var itens = montarItens(eventoId, equipeId, status);
-        var parametros = montarParametros(evento, equipeId, status, itens.size());
+        var itens = montarItens(eventoId, equipeId, duplaId, status);
+        var parametros = montarParametros(evento, equipeId, duplaId, status, itens.size());
 
         return jasperReportService.gerarPdf(TEMPLATE_CADERNOS_EQUIPES, parametros, itens);
     }
@@ -54,6 +54,7 @@ public class RelatorioCadernoEquipeService {
     private HashMap<String, Object> montarParametros(
             Evento evento,
             Long equipeId,
+            Long duplaId,
             StatusCadernoChoro status,
             int totalRegistros
     ) {
@@ -64,14 +65,15 @@ public class RelatorioCadernoEquipeService {
         parametros.put("EVENTO_LOCAL", texto(evento.getLocal()));
         parametros.put("EVENTO_PERIODO", periodoEvento(evento));
         parametros.put("EMITIDO_EM", DATA_HORA_FORMATTER.format(OffsetDateTime.now()));
-        parametros.put("FILTROS", descricaoFiltros(equipeId, status));
+        parametros.put("FILTROS", descricaoFiltros(equipeId, duplaId, status));
         parametros.put("TOTAL_REGISTROS", totalRegistros);
 
         return parametros;
     }
 
-    private List<CadernoEquipeRelatorioItem> montarItens(Long eventoId, Long equipeId, StatusCadernoChoro status) {
+    private List<CadernoEquipeRelatorioItem> montarItens(Long eventoId, Long equipeId, Long duplaId, StatusCadernoChoro status) {
         return cadernoRepository.findByEventoIdOrderByDuplaCodigoAscSobrinhoNomeAsc(eventoId).stream()
+                .filter(caderno -> duplaId == null || Objects.equals(caderno.getDupla().getId(), duplaId))
                 .filter(caderno -> equipeId == null || (
                         caderno.getEquipeMontagemKit() != null &&
                                 Objects.equals(caderno.getEquipeMontagemKit().getId(), equipeId)
@@ -120,8 +122,8 @@ public class RelatorioCadernoEquipeService {
         return texto(caderno.getEquipeMontagemKit().getApelido());
     }
 
-    private String descricaoFiltros(Long equipeId, StatusCadernoChoro status) {
-        if (equipeId == null && status == null) {
+    private String descricaoFiltros(Long equipeId, Long duplaId, StatusCadernoChoro status) {
+        if (equipeId == null && duplaId == null && status == null) {
             return "Todos os cadernos";
         }
 
@@ -129,6 +131,10 @@ public class RelatorioCadernoEquipeService {
 
         if (equipeId != null) {
             filtros.add("Equipe ID: " + equipeId);
+        }
+
+        if (duplaId != null) {
+            filtros.add("Dupla ID: " + duplaId);
         }
 
         if (status != null) {

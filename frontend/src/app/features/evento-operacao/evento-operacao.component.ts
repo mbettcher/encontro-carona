@@ -41,13 +41,15 @@ type OperacaoCadernoChoro =
   | 'CANCELADO';
 
 type TipoListaPresenca = 'ENCONTRISTAS' | 'TIOS_CARONA';
+type TipoRelatorioOperacao = 'ENCONTRISTAS' | 'TIOS_CARONA' | 'CADERNOS';
 
 type AbaOperacao =
   | 'VISAO_GERAL'
   | 'LEITURAS_QR'
   | 'TIOS_CARONA'
   | 'SOBRINHOS'
-  | 'CADERNO_CHORO';
+  | 'CADERNO_CHORO'
+  | 'RELATORIOS';
 
 
 interface OpcaoStatusCaderno {
@@ -126,6 +128,11 @@ export class EventoOperacaoComponent implements OnInit {
   readonly processandoCadernoId = signal<number | null>(null);
   readonly baixandoRelatorioCadernos = signal(false);
   readonly baixandoListaPresenca = signal<TipoListaPresenca | null>(null);
+  readonly tipoRelatorioSelecionado = signal<TipoRelatorioOperacao>('ENCONTRISTAS');
+  readonly duplaRelatorioSelecionada = signal<number | null>(null);
+  readonly equipeRelatorioSelecionada = signal<number | null>(null);
+  readonly statusCadernoRelatorioSelecionado = signal<StatusCadernoChoro | null>(null);
+  readonly somenteAtivosRelatorio = signal(true);
   readonly cadernoSelecionado = signal<CadernoChoro | null>(null);
   readonly historicoCaderno = signal<CadernoChoroHistorico[]>([]);
   readonly historicoCadernoVisivel = signal(false);
@@ -229,6 +236,80 @@ export class EventoOperacaoComponent implements OnInit {
     }))
   );
 
+
+  readonly opcoesTiposRelatorio = [
+    {
+      label: 'Encontristas',
+      value: 'ENCONTRISTAS' as TipoRelatorioOperacao,
+      descricao: 'Lista oficial de presença dos encontristas'
+    },
+    {
+      label: 'Tios carona',
+      value: 'TIOS_CARONA' as TipoRelatorioOperacao,
+      descricao: 'Lista oficial de presença dos tios carona'
+    },
+    {
+      label: 'Caderno de Mensagens',
+      value: 'CADERNOS' as TipoRelatorioOperacao,
+      descricao: 'Relatório dos cadernos por equipe, dupla e status'
+    }
+  ];
+
+  readonly opcoesDuplasRelatorio = computed(() => [
+    { label: 'Todas as duplas', value: null as number | null },
+    ...this.opcoesDuplasCaderno()
+  ]);
+
+  readonly opcoesEquipesRelatorio = computed(() => [
+    { label: 'Todas as equipes', value: null as number | null },
+    ...this.opcoesEquipesCaderno()
+  ]);
+
+  readonly opcoesStatusCadernoRelatorio = computed(() => [
+    { label: 'Todos os status', value: null as StatusCadernoChoro | null },
+    ...this.opcoesStatusCaderno
+  ]);
+
+  readonly totalPrevistoRelatorio = computed(() => {
+    const tipo = this.tipoRelatorioSelecionado();
+    const duplaId = this.duplaRelatorioSelecionada();
+
+    if (tipo === 'ENCONTRISTAS') {
+      return this.vinculosAtivos()
+        .filter(vinculo => !duplaId || vinculo.duplaId === duplaId)
+        .length;
+    }
+
+    if (tipo === 'TIOS_CARONA') {
+      if (!duplaId) {
+        return this.tiosAtivos().length;
+      }
+
+      const dupla = this.duplasAtivas().find(item => item.id === duplaId);
+
+      if (!dupla) {
+        return 0;
+      }
+
+      const ids = new Set([dupla.tio1Id, dupla.tio2Id]);
+      return this.tiosAtivos().filter(tio => ids.has(tio.id)).length;
+    }
+
+    const equipeId = this.equipeRelatorioSelecionada();
+    const statusSelecionado = this.statusCadernoRelatorioSelecionado();
+
+    return this.cadernos()
+      .filter(caderno => !duplaId || caderno.duplaId === duplaId)
+      .filter(caderno => !equipeId || caderno.equipeMontagemKitId === equipeId)
+      .filter(caderno => !statusSelecionado || this.statusCadernoAgrupa(caderno.status, statusSelecionado))
+      .length;
+  });
+
+  readonly podeEmitirRelatorioOperacao = computed(() => this.totalPrevistoRelatorio() > 0 && !this.baixandoRelatorioOperacao());
+
+  readonly baixandoRelatorioOperacao = computed(() =>
+    this.baixandoListaPresenca() !== null || this.baixandoRelatorioCadernos()
+  );
 
   readonly opcoesEquipesCaderno = computed<OpcaoEquipeCaderno[]>(() => {
     const equipes = new Map<number, OpcaoEquipeCaderno>();
@@ -483,6 +564,33 @@ export class EventoOperacaoComponent implements OnInit {
     this.abaOperacaoAtiva.set(aba as AbaOperacao);
   }
 
+  alterarTipoRelatorio(tipo: TipoRelatorioOperacao): void {
+    this.tipoRelatorioSelecionado.set(tipo);
+  }
+
+  alterarDuplaRelatorio(duplaId: number | null): void {
+    this.duplaRelatorioSelecionada.set(duplaId);
+  }
+
+  alterarEquipeRelatorio(equipeId: number | null): void {
+    this.equipeRelatorioSelecionada.set(equipeId);
+  }
+
+  alterarStatusCadernoRelatorio(status: StatusCadernoChoro | null): void {
+    this.statusCadernoRelatorioSelecionado.set(status);
+  }
+
+  alterarSomenteAtivosRelatorio(valor: boolean): void {
+    this.somenteAtivosRelatorio.set(valor);
+  }
+
+  limparFiltrosRelatorio(): void {
+    this.duplaRelatorioSelecionada.set(null);
+    this.equipeRelatorioSelecionada.set(null);
+    this.statusCadernoRelatorioSelecionado.set(null);
+    this.somenteAtivosRelatorio.set(true);
+  }
+
   alterarFiltroCadernos(valor: string): void {
     this.filtroCadernos.set(valor);
   }
@@ -525,11 +633,24 @@ export class EventoOperacaoComponent implements OnInit {
   }
 
   baixarListaPresencaEncontristas(): void {
-    this.baixarListaPresenca('ENCONTRISTAS');
+    this.tipoRelatorioSelecionado.set('ENCONTRISTAS');
+    this.emitirRelatorioOperacao();
   }
 
   baixarListaPresencaTiosCarona(): void {
-    this.baixarListaPresenca('TIOS_CARONA');
+    this.tipoRelatorioSelecionado.set('TIOS_CARONA');
+    this.emitirRelatorioOperacao();
+  }
+
+  emitirRelatorioOperacao(): void {
+    const tipo = this.tipoRelatorioSelecionado();
+
+    if (tipo === 'CADERNOS') {
+      this.baixarRelatorioCadernosEquipes(true, true);
+      return;
+    }
+
+    this.baixarListaPresenca(tipo);
   }
 
   private baixarListaPresenca(tipo: TipoListaPresenca): void {
@@ -539,9 +660,14 @@ export class EventoOperacaoComponent implements OnInit {
 
     this.baixandoListaPresenca.set(tipo);
 
+    const filtros = {
+      somenteAtivos: this.somenteAtivosRelatorio(),
+      duplaId: this.duplaRelatorioSelecionada()
+    };
+
     const requisicao = tipo === 'ENCONTRISTAS'
-      ? this.service.baixarListaPresencaEncontristas(this.eventoId, true)
-      : this.service.baixarListaPresencaTiosCarona(this.eventoId, true);
+      ? this.service.baixarListaPresencaEncontristas(this.eventoId, filtros)
+      : this.service.baixarListaPresencaTiosCarona(this.eventoId, filtros);
 
     requisicao
       .pipe(finalize(() => this.baixandoListaPresenca.set(null)))
@@ -576,23 +702,36 @@ export class EventoOperacaoComponent implements OnInit {
   }
 
   baixarRelatorioCadernosGeral(): void {
-    this.baixarRelatorioCadernosEquipes(false);
+    this.tipoRelatorioSelecionado.set('CADERNOS');
+    this.duplaRelatorioSelecionada.set(null);
+    this.equipeRelatorioSelecionada.set(null);
+    this.statusCadernoRelatorioSelecionado.set(null);
+    this.baixarRelatorioCadernosEquipes(false, false);
   }
 
   baixarRelatorioCadernosFiltrado(): void {
-    this.baixarRelatorioCadernosEquipes(true);
+    this.tipoRelatorioSelecionado.set('CADERNOS');
+    this.equipeRelatorioSelecionada.set(this.equipeCadernoSelecionada());
+    this.statusCadernoRelatorioSelecionado.set(this.statusCadernoSelecionado());
+    this.baixarRelatorioCadernosEquipes(true, false);
   }
 
-  private baixarRelatorioCadernosEquipes(aplicarFiltros: boolean): void {
+  private baixarRelatorioCadernosEquipes(aplicarFiltros: boolean, usarFiltrosAbaRelatorios: boolean): void {
     if (this.baixandoRelatorioCadernos()) {
       return;
     }
 
     const filtros = aplicarFiltros
-      ? {
-        equipeId: this.equipeCadernoSelecionada(),
-        status: this.statusCadernoSelecionado()
-      }
+      ? usarFiltrosAbaRelatorios
+        ? {
+          duplaId: this.duplaRelatorioSelecionada(),
+          equipeId: this.equipeRelatorioSelecionada(),
+          status: this.statusCadernoRelatorioSelecionado()
+        }
+        : {
+          equipeId: this.equipeCadernoSelecionada(),
+          status: this.statusCadernoSelecionado()
+        }
       : undefined;
 
     this.baixandoRelatorioCadernos.set(true);

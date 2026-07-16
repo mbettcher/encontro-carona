@@ -1,4 +1,3 @@
-
 <div class="container-fluid py-4 evento-operacao-page">
   <div class="d-flex flex-column flex-xl-row justify-content-between gap-3 mb-4">
     <div>
@@ -42,7 +41,8 @@
   @if (seguranca.podeSomenteLer()) {
   <div class="alert alert-warning py-2 px-3 mb-4 small">
     <i class="fa-solid fa-lock me-2"></i>
-    Seu perfil permite consultar a operação, mas não permite executar ações de check-in, presença ou Caderno de Mensagens.
+    Seu perfil permite consultar a operação, mas não permite executar ações de check-in, presença ou Caderno de
+    Mensagens.
   </div>
   }
 
@@ -79,6 +79,11 @@
       <p-tab value="CADERNO_CHORO">
         <i class="fa-solid fa-book-bible me-2"></i>
         Caderno de Mensagens
+      </p-tab>
+
+      <p-tab value="RELATORIOS">
+        <i class="fa-solid fa-file-pdf me-2"></i>
+        Relatórios
       </p-tab>
     </p-tablist>
 
@@ -248,30 +253,7 @@
           </div>
         </div>
 
-          <div class="mt-4">
-            <p-card styleClass="shadow-sm border-0">
-              <div class="d-flex flex-column flex-xl-row align-items-xl-center justify-content-between gap-3">
-                <div>
-                  <h2 class="h5 mb-1">Impressões oficiais</h2>
-                  <p class="text-body-secondary small mb-0">
-                    Gere listas profissionais em PDF para uso na recepção, chamada e controle manual do evento.
-                  </p>
-                </div>
 
-                <div class="d-flex flex-column flex-sm-row gap-2">
-                  <p-button label="Lista de encontristas" icon="fa-solid fa-file-signature" severity="danger"
-                    [loading]="baixandoListaPresenca() === 'ENCONTRISTAS'"
-                    [disabled]="baixandoListaPresenca() !== null || vinculosAtivos().length === 0"
-                    (onClick)="baixarListaPresencaEncontristas()" />
-
-                  <p-button label="Lista de tios carona" icon="fa-solid fa-clipboard-list" severity="danger"
-                    [loading]="baixandoListaPresenca() === 'TIOS_CARONA'"
-                    [disabled]="baixandoListaPresenca() !== null || tiosAtivos().length === 0"
-                    (onClick)="baixarListaPresencaTiosCarona()" />
-                </div>
-              </div>
-            </p-card>
-          </div>
 
 </div>
 </p-tabpanel>
@@ -337,8 +319,8 @@
               A leitura aceita credenciais do tipo Tio Carona. Credenciais de sobrinho serão recusadas neste campo.
             </div>
 
-            <p-button type="submit" label="Processar leitura" icon="fa-solid fa-barcode"
-              [loading]="processandoCodigo()" [disabled]="!seguranca.podeEscrever()" />
+            <p-button type="submit" label="Processar leitura" icon="fa-solid fa-barcode" [loading]="processandoCodigo()"
+              [disabled]="!seguranca.podeEscrever()" />
           </form>
         </p-card>
       </div>
@@ -491,10 +473,6 @@
         </div>
 
         <div class="d-flex flex-column flex-lg-row align-items-stretch align-items-lg-center gap-3">
-          <p-button class="print-list-button" label="Imprimir lista" icon="fa-solid fa-print" severity="warn"
-            [routerLink]="['/eventos', eventoId, 'operacao', 'impressao-presenca']"
-            [queryParams]="{ tipo: 'TIO_CARONA' }" />
-
           <div class="table-search">
             <span class="p-input-icon-left w-100">
               <i class="fa-solid fa-magnifying-glass"></i>
@@ -558,13 +536,17 @@
               </td>
 
               <td class="text-end">
-                <div class="d-flex flex-column flex-lg-row justify-content-end gap-2">
-                  <p-button label="Check-in" icon="fa-solid fa-right-to-bracket" size="small" severity="success"
-                    [loading]="processandoManual() === tio.id" [disabled]="!seguranca.podeEscrever() || !podeCheckinManual(tio)"
+                <div class="d-flex justify-content-end gap-2">
+                  <p-button icon="fa-solid fa-right-to-bracket" pTooltip="Registrar check-in" tooltipPosition="top"
+                    ariaLabel="Registrar check-in" size="small" severity="success" styleClass="operation-icon-action"
+                    [loading]="processandoManual() === tio.id"
+                    [disabled]="!seguranca.podeEscrever() || !podeCheckinManual(tio)"
                     (onClick)="registrarCheckinManual(tio)" />
 
-                  <p-button label="Checkout" icon="fa-solid fa-right-from-bracket" size="small" severity="warn"
-                    [loading]="processandoManual() === tio.id" [disabled]="!seguranca.podeEscrever() || !podeCheckoutManual(tio)"
+                  <p-button icon="fa-solid fa-right-from-bracket" pTooltip="Registrar checkout" tooltipPosition="top"
+                    ariaLabel="Registrar checkout" size="small" severity="warn" styleClass="operation-icon-action"
+                    [loading]="processandoManual() === tio.id"
+                    [disabled]="!seguranca.podeEscrever() || !podeCheckoutManual(tio)"
                     (onClick)="registrarCheckoutManual(tio)" />
                 </div>
               </td>
@@ -657,10 +639,6 @@
         </div>
 
         <div class="d-flex flex-column flex-lg-row align-items-stretch align-items-lg-center gap-3">
-          <p-button class="print-list-button" label="Imprimir lista" icon="fa-solid fa-print" severity="warn"
-            [routerLink]="['/eventos', eventoId, 'operacao', 'impressao-presenca']"
-            [queryParams]="{ tipo: 'SOBRINHO' }" />
-
           <div class="table-search">
             <span class="p-input-icon-left w-100">
               <i class="fa-solid fa-magnifying-glass"></i>
@@ -724,16 +702,21 @@
                   </span>
                 </div>
                 } @else {
-                <div class="d-flex flex-column flex-xl-row justify-content-end gap-2">
-                  <p-button label="Presente" icon="fa-solid fa-user-check" size="small" severity="success"
-                    [loading]="processandoPresencaSobrinho() === sobrinho.id" [disabled]="!seguranca.podeEscrever() || !podeMarcarPresente(sobrinho)"
+                <div class="d-flex justify-content-end gap-2">
+                  <p-button icon="fa-solid fa-user-check" pTooltip="Marcar presente" tooltipPosition="top"
+                    ariaLabel="Marcar presente" size="small" severity="success" styleClass="operation-icon-action"
+                    [loading]="processandoPresencaSobrinho() === sobrinho.id"
+                    [disabled]="!seguranca.podeEscrever() || !podeMarcarPresente(sobrinho)"
                     (onClick)="registrarPresencaSobrinho(sobrinho, 'PRESENTE')" />
 
-                  <p-button label="Ausente" icon="fa-solid fa-user-clock" size="small" severity="warn"
-                    [loading]="processandoPresencaSobrinho() === sobrinho.id" [disabled]="!seguranca.podeEscrever() || !podeMarcarAusente(sobrinho)"
+                  <p-button icon="fa-solid fa-user-clock" pTooltip="Marcar ausente" tooltipPosition="top"
+                    ariaLabel="Marcar ausente" size="small" severity="warn" styleClass="operation-icon-action"
+                    [loading]="processandoPresencaSobrinho() === sobrinho.id"
+                    [disabled]="!seguranca.podeEscrever() || !podeMarcarAusente(sobrinho)"
                     (onClick)="registrarPresencaSobrinho(sobrinho, 'AUSENTE')" />
 
-                  <p-button label="Desistente" icon="fa-solid fa-user-xmark" size="small" severity="danger"
+                  <p-button icon="fa-solid fa-user-xmark" pTooltip="Marcar desistente" tooltipPosition="top"
+                    ariaLabel="Marcar desistente" size="small" severity="danger" styleClass="operation-icon-action"
                     [loading]="processandoPresencaSobrinho() === sobrinho.id"
                     [disabled]="!seguranca.podeEscrever() || !podeMarcarDesistente(sobrinho)"
                     (onClick)="registrarPresencaSobrinho(sobrinho, 'DESISTENTE')" />
@@ -1058,15 +1041,6 @@
 
         <div class="col-12 col-xl-8">
           <div class="d-flex flex-wrap gap-2 justify-content-xl-end">
-            <p-button label="PDF geral" icon="fa-solid fa-file-pdf" severity="danger" size="small"
-              [loading]="baixandoRelatorioCadernos()" [disabled]="cadernos().length === 0"
-              (onClick)="baixarRelatorioCadernosGeral()" />
-
-            <p-button label="PDF equipe/status" icon="fa-solid fa-filter" severity="help" size="small"
-              [loading]="baixandoRelatorioCadernos()" [disabled]="cadernos().length === 0"
-              pTooltip="Aplica os filtros de equipe e status no relatório Jasper" tooltipPosition="top"
-              (onClick)="baixarRelatorioCadernosFiltrado()" />
-
             <p-button label="Limpar filtros" icon="fa-solid fa-filter-circle-xmark" severity="secondary"
               variant="outlined" size="small" (onClick)="limparFiltrosCaderno()" />
           </div>
@@ -1188,13 +1162,13 @@
                 </div>
                 } @else {
                 <div class="caderno-actions">
-                  <p-button label="Conferir" icon="fa-solid fa-clipboard-check" size="small" severity="warn"
-                    pTooltip="Marcar como conferido pela equipe" tooltipPosition="top" ariaLabel="Conferir caderno"
-                    [loading]="processandoCadernoId() === caderno.id"
+                  <p-button icon="fa-solid fa-clipboard-check" size="small" severity="warn"
+                    styleClass="caderno-icon-button" pTooltip="Marcar como conferido pela equipe" tooltipPosition="top"
+                    ariaLabel="Conferir caderno" [loading]="processandoCadernoId() === caderno.id"
                     [disabled]="!seguranca.podeEscrever() || !podeConferirCaderno(caderno)"
                     (onClick)="conferirCaderno(caderno)" />
 
-                  <p-button label="Anexar" icon="fa-solid fa-box" size="small" severity="info"
+                  <p-button icon="fa-solid fa-box" size="small" severity="info" styleClass="caderno-icon-button"
                     pTooltip="Marcar como anexado ao kit" tooltipPosition="top" ariaLabel="Anexar ao kit"
                     [loading]="processandoCadernoId() === caderno.id"
                     [disabled]="!seguranca.podeEscrever() || !podeAnexarCadernoAoKit(caderno)"
@@ -1224,6 +1198,109 @@
     </p-card>
   </div>
 </p-tabpanel>
+
+<p-tabpanel value="RELATORIOS">
+  <div class="operacao-tab-content">
+    <p-card styleClass="relatorios-operacao-card">
+      <div class="d-flex flex-column flex-xl-row justify-content-between gap-3 mb-4">
+        <div>
+          <h2 class="h5 mb-1">Central de relatórios</h2>
+          <p class="text-body-secondary small mb-0">
+            Escolha o relatório, aplique os filtros oficiais do evento e gere o PDF em um único lugar.
+          </p>
+        </div>
+
+        <div class="d-flex flex-wrap gap-2">
+          <p-button label="Limpar filtros" icon="fa-solid fa-filter-circle-xmark" severity="secondary"
+            variant="outlined" size="small" (onClick)="limparFiltrosRelatorio()" />
+
+          <p-button label="Gerar PDF" icon="fa-solid fa-file-pdf" severity="danger" size="small"
+            [loading]="baixandoRelatorioOperacao()" [disabled]="!podeEmitirRelatorioOperacao()"
+            (onClick)="emitirRelatorioOperacao()" />
+        </div>
+      </div>
+
+      <div class="row g-3 align-items-end">
+        <div class="col-12 col-lg-4">
+          <label for="tipoRelatorioOperacao" class="form-label">Relatório</label>
+          <p-select inputId="tipoRelatorioOperacao" [options]="opcoesTiposRelatorio" optionLabel="label"
+            optionValue="value" [ngModel]="tipoRelatorioSelecionado()" (ngModelChange)="alterarTipoRelatorio($event)"
+            appendTo="body" />
+        </div>
+
+        <div class="col-12 col-lg-4">
+          <label for="duplaRelatorioOperacao" class="form-label">Dupla</label>
+          <p-select inputId="duplaRelatorioOperacao" [options]="opcoesDuplasRelatorio()" optionLabel="label"
+            optionValue="value" [ngModel]="duplaRelatorioSelecionada()" (ngModelChange)="alterarDuplaRelatorio($event)"
+            appendTo="body" />
+        </div>
+
+        @if (tipoRelatorioSelecionado() === 'CADERNOS') {
+        <div class="col-12 col-lg-4">
+          <label for="equipeRelatorioOperacao" class="form-label">Equipe do kit</label>
+          <p-select inputId="equipeRelatorioOperacao" [options]="opcoesEquipesRelatorio()" optionLabel="label"
+            optionValue="value" [ngModel]="equipeRelatorioSelecionada()"
+            (ngModelChange)="alterarEquipeRelatorio($event)" appendTo="body" />
+        </div>
+
+        <div class="col-12 col-lg-4">
+          <label for="statusRelatorioOperacao" class="form-label">Status do caderno</label>
+          <p-select inputId="statusRelatorioOperacao" [options]="opcoesStatusCadernoRelatorio()" optionLabel="label"
+            optionValue="value" [ngModel]="statusCadernoRelatorioSelecionado()"
+            (ngModelChange)="alterarStatusCadernoRelatorio($event)" appendTo="body" />
+        </div>
+        } @else {
+        <div class="col-12 col-lg-4">
+          <label class="form-label">Registros</label>
+          <div class="d-flex flex-wrap gap-2">
+            <p-button label="Somente ativos" icon="fa-solid fa-circle-check"
+              [severity]="somenteAtivosRelatorio() ? 'success' : 'secondary'" size="small"
+              (onClick)="alterarSomenteAtivosRelatorio(true)" />
+
+            <p-button label="Todos" icon="fa-solid fa-list"
+              [severity]="!somenteAtivosRelatorio() ? 'info' : 'secondary'" size="small" variant="outlined"
+              (onClick)="alterarSomenteAtivosRelatorio(false)" />
+          </div>
+        </div>
+        }
+      </div>
+
+      <div class="row g-3 mt-4">
+        <div class="col-12 col-md-4">
+          <div class="status-mini-card h-100">
+            <div class="small text-body-secondary">Evento</div>
+            <div class="fw-semibold">{{ evento()?.nome || 'Evento atual' }}</div>
+          </div>
+        </div>
+
+        <div class="col-12 col-md-4">
+          <div class="status-mini-card h-100">
+            <div class="small text-body-secondary">Registros previstos</div>
+            <div class="fs-4 fw-bold">{{ totalPrevistoRelatorio() }}</div>
+          </div>
+        </div>
+
+        <div class="col-12 col-md-4">
+          <div class="status-mini-card h-100">
+            <div class="small text-body-secondary">Saída</div>
+            <div class="fw-semibold">
+              <i class="fa-solid fa-file-pdf me-2 text-danger"></i>
+              PDF oficial
+            </div>
+          </div>
+        </div>
+      </div>
+
+      @if (totalPrevistoRelatorio() === 0) {
+      <div class="alert alert-warning py-2 px-3 mt-4 mb-0 small">
+        <i class="fa-solid fa-circle-info me-2"></i>
+        Não há registros para os filtros selecionados.
+      </div>
+      }
+    </p-card>
+  </div>
+</p-tabpanel>
+
 </p-tabpanels>
 </p-tabs>
 
@@ -1379,5 +1456,3 @@
   }
 </p-dialog>
 </div>
-
-

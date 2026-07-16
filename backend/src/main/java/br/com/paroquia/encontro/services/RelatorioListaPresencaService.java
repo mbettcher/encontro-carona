@@ -9,6 +9,7 @@ import br.com.paroquia.encontro.domain.enums.TioCaronaStatus;
 import br.com.paroquia.encontro.domain.enums.VinculoStatus;
 import br.com.paroquia.encontro.dto.relatorio.ListaPresencaEncontristaItem;
 import br.com.paroquia.encontro.dto.relatorio.ListaPresencaTioCaronaItem;
+import br.com.paroquia.encontro.repository.DuplaTioCaronaRepository;
 import br.com.paroquia.encontro.repository.EventoRepository;
 import br.com.paroquia.encontro.repository.SobrinhoDuplaRepository;
 import br.com.paroquia.encontro.repository.TioCaronaEventoRepository;
@@ -18,7 +19,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class RelatorioListaPresencaService {
@@ -31,36 +34,39 @@ public class RelatorioListaPresencaService {
     private final EventoRepository eventoRepository;
     private final SobrinhoDuplaRepository sobrinhoDuplaRepository;
     private final TioCaronaEventoRepository tioCaronaEventoRepository;
+    private final DuplaTioCaronaRepository duplaTioCaronaRepository;
     private final JasperReportService jasperReportService;
 
     public RelatorioListaPresencaService(
             EventoRepository eventoRepository,
             SobrinhoDuplaRepository sobrinhoDuplaRepository,
             TioCaronaEventoRepository tioCaronaEventoRepository,
+            DuplaTioCaronaRepository duplaTioCaronaRepository,
             JasperReportService jasperReportService
     ) {
         this.eventoRepository = eventoRepository;
         this.sobrinhoDuplaRepository = sobrinhoDuplaRepository;
         this.tioCaronaEventoRepository = tioCaronaEventoRepository;
+        this.duplaTioCaronaRepository = duplaTioCaronaRepository;
         this.jasperReportService = jasperReportService;
     }
 
     @Transactional(readOnly = true)
-    public byte[] listaPresencaEncontristas(Long eventoId, Boolean somenteAtivos) {
+    public byte[] listaPresencaEncontristas(Long eventoId, Boolean somenteAtivos, Long duplaId) {
         var evento = buscarEvento(eventoId);
         var ativos = somenteAtivos == null || somenteAtivos;
-        var itens = montarEncontristas(eventoId, ativos);
-        var parametros = montarParametros(evento, ativos ? "Encontristas com vínculo ativo" : "Todos os vínculos", itens.size());
+        var itens = montarEncontristas(eventoId, ativos, duplaId);
+        var parametros = montarParametros(evento, descricaoFiltroEncontristas(ativos, duplaId), itens.size());
 
         return jasperReportService.gerarPdf(TEMPLATE_ENCONTRISTAS, parametros, itens);
     }
 
     @Transactional(readOnly = true)
-    public byte[] listaPresencaTiosCarona(Long eventoId, Boolean somenteAtivos) {
+    public byte[] listaPresencaTiosCarona(Long eventoId, Boolean somenteAtivos, Long duplaId) {
         var evento = buscarEvento(eventoId);
         var ativos = somenteAtivos == null || somenteAtivos;
-        var itens = montarTiosCarona(eventoId, ativos);
-        var parametros = montarParametros(evento, ativos ? "Tios carona ativos" : "Todos os tios carona", itens.size());
+        var itens = montarTiosCarona(eventoId, ativos, duplaId);
+        var parametros = montarParametros(evento, descricaoFiltroTios(ativos, duplaId), itens.size());
 
         return jasperReportService.gerarPdf(TEMPLATE_TIOS_CARONA, parametros, itens);
     }
@@ -84,14 +90,17 @@ public class RelatorioListaPresencaService {
         return parametros;
     }
 
-    private List<ListaPresencaEncontristaItem> montarEncontristas(Long eventoId, boolean somenteAtivos) {
-        var vinculos = somenteAtivos
+    private List<ListaPresencaEncontristaItem> montarEncontristas(Long eventoId, boolean somenteAtivos, Long duplaId) {
+        var vinculos = duplaId != null && somenteAtivos
+                ? sobrinhoDuplaRepository.findByEventoIdAndDuplaIdAndStatusOrderBySobrinhoNome(eventoId, duplaId, VinculoStatus.ATIVO)
+                : somenteAtivos
                 ? sobrinhoDuplaRepository.findByEventoIdAndStatusOrderByDuplaCodigoAscSobrinhoNomeAsc(eventoId, VinculoStatus.ATIVO)
                 : sobrinhoDuplaRepository.findByEventoIdOrderByDuplaCodigoAscSobrinhoNomeAsc(eventoId);
 
         var contador = new java.util.concurrent.atomic.AtomicInteger(1);
 
         return vinculos.stream()
+                .filter(vinculo -> duplaId == null || Objects.equals(vinculo.getDupla().getId(), duplaId))
                 .filter(vinculo -> !somenteAtivos || vinculo.getSobrinho().getStatus() != SobrinhoStatus.DESISTENTE)
                 .map(vinculo -> toEncontristaItem(contador.getAndIncrement(), vinculo))
                 .toList();
@@ -120,13 +129,31 @@ public class RelatorioListaPresencaService {
         );
     }
 
-    private List<ListaPresencaTioCaronaItem> montarTiosCarona(Long eventoId, boolean somenteAtivos) {
+    private List<ListaPresencaTioCaronaItem> montarTiosCarona(Long eventoId, boolean somenteAtivos, Long duplaId) {
         var contador = new java.util.concurrent.atomic.AtomicInteger(1);
+
+        var tiosDaDupla = idsTiosDaDupla(eventoId, duplaId);
 
         return tioCaronaEventoRepository.findByEventoIdOrderByPessoaNomeAsc(eventoId).stream()
                 .filter(tio -> !somenteAtivos || tio.getStatus() == TioCaronaStatus.ATIVO)
+                .filter(tio -> tiosDaDupla == null || tiosDaDupla.contains(tio.getId()))
                 .map(tio -> toTioCaronaItem(contador.getAndIncrement(), tio))
                 .toList();
+    }
+
+    private HashSet<Long> idsTiosDaDupla(Long eventoId, Long duplaId) {
+        if (duplaId == null) {
+            return null;
+        }
+
+        var dupla = duplaTioCaronaRepository.findByIdAndEventoId(duplaId, eventoId)
+                .orElseThrow(() -> new ResourceNotFoundException("Dupla não encontrada neste evento."));
+
+        var ids = new HashSet<Long>();
+        ids.add(dupla.getTio1().getId());
+        ids.add(dupla.getTio2().getId());
+
+        return ids;
     }
 
     private ListaPresencaTioCaronaItem toTioCaronaItem(Integer numero, TioCaronaEvento tio) {
@@ -150,6 +177,29 @@ public class RelatorioListaPresencaService {
         }
 
         return "Aguardando check-in";
+    }
+
+
+    private String descricaoFiltroEncontristas(boolean somenteAtivos, Long duplaId) {
+        var filtros = new java.util.ArrayList<String>();
+        filtros.add(somenteAtivos ? "Encontristas ativos" : "Todos os encontristas");
+
+        if (duplaId != null) {
+            filtros.add("Dupla ID: " + duplaId);
+        }
+
+        return String.join(" | ", filtros);
+    }
+
+    private String descricaoFiltroTios(boolean somenteAtivos, Long duplaId) {
+        var filtros = new java.util.ArrayList<String>();
+        filtros.add(somenteAtivos ? "Tios carona ativos" : "Todos os tios carona");
+
+        if (duplaId != null) {
+            filtros.add("Dupla ID: " + duplaId);
+        }
+
+        return String.join(" | ", filtros);
     }
 
     private String periodoEvento(Evento evento) {
