@@ -1,3 +1,4 @@
+
 @charset "UTF-8";
 
 @import "primeicons/primeicons.css";
@@ -262,7 +263,7 @@
 }
 
 /* ==========================================================================
-   Variáveis globais
+   VariÃ¡veis globais
    ========================================================================== */
 
 :root {
@@ -476,7 +477,7 @@ textarea {
   font-family: var(--app-font-family) !important;
 }
 
-/* Preserva fontes dos ícones */
+/* Preserva fontes dos Ã­cones */
 
 .fa,
 .fas,
@@ -495,7 +496,7 @@ textarea {
 }
 
 /* ==========================================================================
-   Utilitários globais do projeto
+   UtilitÃ¡rios globais do projeto
    ========================================================================== */
 
 .page-title {
@@ -562,7 +563,7 @@ textarea {
 }
 
 /* ==========================================================================
-   Filtros no padrão Pessoas
+   Filtros no padrÃ£o Pessoas
    ========================================================================== */
 
 .table-search {
@@ -614,4 +615,16 @@ textarea {
 .p-paginator .p-select-label,
 .p-paginator .p-dropdown-label {
   min-width: 2.25rem;
+}
+
+/* Garante que o dropdown de linhas por página não fique preso dentro do card/tabela. */
+.p-select-overlay,
+.p-dropdown-panel {
+  z-index: 1200 !important;
+}
+
+.p-paginator .p-select-overlay,
+.p-paginator .p-dropdown-panel {
+  width: auto !important;
+  min-width: 5.25rem;
 }

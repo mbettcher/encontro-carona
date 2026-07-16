@@ -1,4 +1,5 @@
 
+
 <div class="container-fluid py-4 evento-gestao-page">
   <div class="d-flex flex-column flex-xl-row justify-content-between gap-3 mb-4">
     <div>
@@ -207,7 +208,8 @@
         <div class="table-responsive-wrapper">
           <p-table [value]="tiosCaronaFiltrados()" styleClass="p-datatable-sm min-width-table" [paginator]="true"
             [rows]="10" [rowsPerPageOptions]="[5, 10, 20, 50]" [showCurrentPageReport]="true"
-            currentPageReportTemplate="{first} a {last} de {totalRecords} tio(s)">
+            currentPageReportTemplate="{first} a {last} de {totalRecords} tio(s)"
+            paginatorDropdownAppendTo="body">
             <ng-template pTemplate="header">
               <tr>
                 <th>Nome</th>
@@ -353,7 +355,8 @@
         <div class="table-responsive-wrapper">
           <p-table [value]="duplasFiltradas()" styleClass="p-datatable-sm min-width-table" [paginator]="true"
             [rows]="10" [rowsPerPageOptions]="[5, 10, 20, 50]" [showCurrentPageReport]="true"
-            currentPageReportTemplate="{first} a {last} de {totalRecords} dupla(s)">
+            currentPageReportTemplate="{first} a {last} de {totalRecords} dupla(s)"
+            paginatorDropdownAppendTo="body">
             <ng-template pTemplate="header">
               <tr>
                 <th>Código</th>
@@ -705,7 +708,8 @@
         <div class="table-responsive-wrapper">
           <p-table [value]="sobrinhosFiltrados()" styleClass="p-datatable-sm min-width-table" [paginator]="true"
             [rows]="10" [rowsPerPageOptions]="[5, 10, 20, 50]" [showCurrentPageReport]="true"
-            currentPageReportTemplate="{first} a {last} de {totalRecords} encontrista(s)">
+            currentPageReportTemplate="{first} a {last} de {totalRecords} encontrista(s)"
+            paginatorDropdownAppendTo="body">
             <ng-template pTemplate="header">
               <tr>
                 <th>Nome</th>
@@ -888,7 +892,8 @@
         <div class="table-responsive-wrapper">
           <p-table [value]="equipesMontagemKitFiltradas()" styleClass="p-datatable-sm min-width-table" [paginator]="true"
             [rows]="10" [rowsPerPageOptions]="[5, 10, 20, 50]" [showCurrentPageReport]="true"
-            currentPageReportTemplate="{first} a {last} de {totalRecords} equipe(s)">
+            currentPageReportTemplate="{first} a {last} de {totalRecords} equipe(s)"
+            paginatorDropdownAppendTo="body">
             <ng-template pTemplate="header">
               <tr>
                 <th>Equipe</th>
@@ -929,7 +934,7 @@
 
                 <td class="text-end">
                   <div class="d-flex justify-content-end gap-2">
-                    <p-button icon="fa-solid fa-pen-to-square" size="small" severity="warning"
+                    <p-button icon="fa-solid fa-pen-to-square" size="small" severity="warn"
                       [disabled]="!seguranca.podeEscrever() || processandoEquipeId() === equipe.id"
                       pTooltip="Editar equipe" tooltipPosition="top" ariaLabel="Editar equipe"
                       (onClick)="abrirEdicaoEquipe(equipe)" />
@@ -1070,7 +1075,8 @@
         <div class="table-responsive-wrapper">
           <p-table [value]="vinculosFiltrados()" styleClass="p-datatable-sm min-width-table" [paginator]="true"
             [rows]="10" [rowsPerPageOptions]="[5, 10, 20, 50]" [showCurrentPageReport]="true"
-            currentPageReportTemplate="{first} a {last} de {totalRecords} vínculo(s)">
+            currentPageReportTemplate="{first} a {last} de {totalRecords} vínculo(s)"
+            paginatorDropdownAppendTo="body">
             <ng-template pTemplate="header">
               <tr>
                 <th>Encontrista</th>

@@ -1,3 +1,4 @@
+
 <div class="container-fluid py-4 usuarios-sistema-page">
   <div class="d-flex flex-column flex-lg-row justify-content-between gap-3 mb-4">
     <div>
@@ -157,7 +158,8 @@
         } @else {
         <div class="table-responsive-wrapper">
           <p-table [value]="usuariosFiltrados()" [loading]="carregando()" [paginator]="true" [rows]="10"
-            [rowsPerPageOptions]="[10, 20, 50]" styleClass="p-datatable-sm min-width-table">
+            [rowsPerPageOptions]="[10, 20, 50]" styleClass="p-datatable-sm min-width-table"
+            paginatorDropdownAppendTo="body">
             <ng-template pTemplate="header">
               <tr>
                 <th>Usuário</th>

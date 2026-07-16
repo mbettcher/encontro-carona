@@ -1,3 +1,4 @@
+
 <div class="container-fluid py-4 eventos-page">
   <div class="d-flex flex-column flex-lg-row justify-content-between gap-3 mb-4">
     <div>
@@ -194,7 +195,8 @@
 
         <div class="table-responsive-wrapper">
           <p-table [value]="eventosFiltrados()" [loading]="carregando()" [paginator]="true" [rows]="10"
-            [rowsPerPageOptions]="[10, 20, 50]" class="p-datatable-sm min-width-table">
+            [rowsPerPageOptions]="[10, 20, 50]" class="p-datatable-sm min-width-table"
+            paginatorDropdownAppendTo="body">
             <ng-template pTemplate="header">
               <tr>
                 <th>Evento</th>
