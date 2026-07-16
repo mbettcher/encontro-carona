@@ -1160,6 +1160,7 @@ export class EventoOperacaoComponent implements OnInit {
     return 'cor' in caderno;
   }
 
+
   corEquipeCadernoFundo(caderno: CadernoChoro | ResumoEquipeCaderno): string {
     return this.hexParaRgba(this.corEquipeCaderno(caderno), 0.1);
   }
