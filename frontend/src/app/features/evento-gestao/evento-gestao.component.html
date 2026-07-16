@@ -24,8 +24,8 @@
     </div>
   </div>
 
-  <div class="row g-3 mb-4">
-    <div class="col-12 col-md-6 col-xl-3">
+  <div class="row row-cols-1 row-cols-md-2 row-cols-xl-5 g-3 mb-4 summary-grid">
+    <div class="col">
       <p-card styleClass="summary-card">
         <div class="d-flex align-items-center justify-content-between">
           <div>
@@ -37,7 +37,7 @@
       </p-card>
     </div>
 
-    <div class="col-12 col-md-6 col-xl-3">
+    <div class="col">
       <p-card styleClass="summary-card">
         <div class="d-flex align-items-center justify-content-between">
           <div>
@@ -49,7 +49,7 @@
       </p-card>
     </div>
 
-    <div class="col-12 col-md-6 col-xl-3">
+    <div class="col">
       <p-card styleClass="summary-card">
         <div class="d-flex align-items-center justify-content-between">
           <div>
@@ -61,7 +61,7 @@
       </p-card>
     </div>
 
-    <div class="col-12 col-md-6 col-xl-3">
+    <div class="col">
       <p-card styleClass="summary-card">
         <div class="d-flex align-items-center justify-content-between">
           <div>
@@ -73,7 +73,7 @@
       </p-card>
     </div>
 
-    <div class="col-12 col-md-6 col-xl-3">
+    <div class="col">
       <p-card styleClass="summary-card">
         <div class="d-flex align-items-center justify-content-between">
           <div>
@@ -792,9 +792,6 @@
             <label for="equipeCor" class="form-label">Cor de identificação</label>
 
             <div class="color-picker-box">
-              <div class="color-picker-preview" [style.background]="corEquipeFormulario()"
-                aria-hidden="true"></div>
-
               <div class="color-picker-control">
                 <p-colorpicker inputId="equipeCor" formControlName="corIdentificacao" format="hex"
                   appendTo="body"></p-colorpicker>
@@ -1155,9 +1152,6 @@
         <label for="equipeEdicaoCor" class="form-label">Cor de identificação</label>
 
         <div class="color-picker-box">
-          <div class="color-picker-preview" [style.background]="corEdicaoEquipeFormulario()"
-            aria-hidden="true"></div>
-
           <div class="color-picker-control">
             <p-colorpicker inputId="equipeEdicaoCor" formControlName="corIdentificacao" format="hex"
               appendTo="body"></p-colorpicker>

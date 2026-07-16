@@ -1,3 +1,4 @@
+
 .evento-operacao-page {
   .operation-summary-card {
     --summary-accent: var(--bs-primary);
@@ -394,6 +395,42 @@
 .evento-operacao-page .operacao-tab-content > .row.g-3.mb-4 > .col-12:nth-child(3) ::ng-deep .operation-summary-card {
   --summary-accent: var(--bs-purple-500);
   --summary-accent-rgb: var(--bs-purple-rgb);
+}
+
+.evento-operacao-page .operacao-tab-content > .row.g-3.mb-4 > .col-12:nth-child(4) ::ng-deep .operation-summary-card {
+  --summary-accent: var(--bs-info);
+  --summary-accent-rgb: var(--bs-info-rgb);
+}
+
+
+
+/* 1.1D.2B - Cards da Operação com o mesmo tratamento visual do Dashboard */
+:host ::ng-deep .operation-summary-card {
+  --summary-card-bg: rgba(var(--summary-accent-rgb, var(--bs-primary-rgb)), 0.075);
+  --summary-card-bg-strong: rgba(var(--summary-accent-rgb, var(--bs-primary-rgb)), 0.13);
+  background:
+    radial-gradient(circle at 92% 88%, var(--summary-card-bg-strong) 0 4.1rem, transparent 4.2rem),
+    linear-gradient(135deg, var(--summary-card-bg) 0%, #ffffff 58%) !important;
+}
+
+:host ::ng-deep .operation-summary-card:hover {
+  border-color: rgba(var(--summary-accent-rgb, var(--bs-primary-rgb)), 0.32) !important;
+  border-left-color: var(--summary-accent, var(--bs-primary)) !important;
+}
+
+.evento-operacao-page .operacao-tab-content > .row.g-3.mb-4 > .col-12:nth-child(1) ::ng-deep .operation-summary-card {
+  --summary-accent: var(--bs-primary);
+  --summary-accent-rgb: var(--bs-primary-rgb);
+}
+
+.evento-operacao-page .operacao-tab-content > .row.g-3.mb-4 > .col-12:nth-child(2) ::ng-deep .operation-summary-card {
+  --summary-accent: var(--bs-success);
+  --summary-accent-rgb: var(--bs-success-rgb);
+}
+
+.evento-operacao-page .operacao-tab-content > .row.g-3.mb-4 > .col-12:nth-child(3) ::ng-deep .operation-summary-card {
+  --summary-accent: #6f42c1;
+  --summary-accent-rgb: 111, 66, 193;
 }
 
 .evento-operacao-page .operacao-tab-content > .row.g-3.mb-4 > .col-12:nth-child(4) ::ng-deep .operation-summary-card {
