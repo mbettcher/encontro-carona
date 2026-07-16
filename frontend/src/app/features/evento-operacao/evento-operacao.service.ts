@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, forkJoin, map, of, switchMap } from 'rxjs';
 import { environment } from 'src/environments/environment';
@@ -13,6 +13,7 @@ import {
   CadernoChoro,
   CadernoChoroGeracaoResponse,
   CadernoChoroHistorico,
+  StatusCadernoChoro,
 } from '../../shared/models';
 
 @Injectable({
@@ -28,7 +29,7 @@ export class EventoOperacaoService {
         const evento = eventos.find(item => item.id === eventoId);
 
         if (!evento) {
-          throw new Error(`Evento ${eventoId} não encontrado.`);
+          throw new Error(`Evento ${eventoId} nÃ£o encontrado.`);
         }
 
         return evento;
@@ -82,6 +83,29 @@ export class EventoOperacaoService {
 
   listarHistoricoCaderno(eventoId: number, cadernoId: number): Observable<CadernoChoroHistorico[]> {
     return this.http.get<CadernoChoroHistorico[]>(`${this.apiUrl}/eventos/${eventoId}/cadernos/${cadernoId}/historico`);
+  }
+
+  baixarRelatorioCadernosEquipes(
+    eventoId: number,
+    filtros?: { equipeId?: number | null; status?: StatusCadernoChoro | null }
+  ): Observable<Blob> {
+    let params = new HttpParams();
+
+    if (filtros?.equipeId) {
+      params = params.set('equipeId', String(filtros.equipeId));
+    }
+
+    if (filtros?.status) {
+      params = params.set('status', filtros.status);
+    }
+
+    return this.http.get(
+      `${this.apiUrl}/eventos/${eventoId}/relatorios/cadernos-equipes.pdf`,
+      {
+        params,
+        responseType: 'blob'
+      }
+    );
   }
 
   gerarCadernos(eventoId: number): Observable<CadernoChoroGeracaoResponse> {

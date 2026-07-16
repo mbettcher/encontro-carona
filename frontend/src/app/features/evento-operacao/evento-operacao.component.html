@@ -1032,6 +1032,15 @@
 
         <div class="col-12 col-xl-8">
           <div class="d-flex flex-wrap gap-2 justify-content-xl-end">
+            <p-button label="PDF geral" icon="fa-solid fa-file-pdf" severity="danger" size="small"
+              [loading]="baixandoRelatorioCadernos()" [disabled]="cadernos().length === 0"
+              (onClick)="baixarRelatorioCadernosGeral()" />
+
+            <p-button label="PDF equipe/status" icon="fa-solid fa-filter" severity="help" size="small"
+              [loading]="baixandoRelatorioCadernos()" [disabled]="cadernos().length === 0"
+              pTooltip="Aplica os filtros de equipe e status no relatório Jasper" tooltipPosition="top"
+              (onClick)="baixarRelatorioCadernosFiltrado()" />
+
             <p-button label="Limpar filtros" icon="fa-solid fa-filter-circle-xmark" severity="secondary"
               variant="outlined" size="small" (onClick)="limparFiltrosCaderno()" />
           </div>
@@ -1153,13 +1162,13 @@
                 </div>
                 } @else {
                 <div class="caderno-actions">
-                  <p-button icon="fa-solid fa-clipboard-check" size="small" severity="warn" styleClass="caderno-icon-button"
+                  <p-button label="Conferir" icon="fa-solid fa-clipboard-check" size="small" severity="warn"
                     pTooltip="Marcar como conferido pela equipe" tooltipPosition="top" ariaLabel="Conferir caderno"
                     [loading]="processandoCadernoId() === caderno.id"
                     [disabled]="!seguranca.podeEscrever() || !podeConferirCaderno(caderno)"
                     (onClick)="conferirCaderno(caderno)" />
 
-                  <p-button icon="fa-solid fa-box-open" size="small" severity="info"
+                  <p-button label="Anexar" icon="fa-solid fa-box" size="small" severity="info"
                     pTooltip="Marcar como anexado ao kit" tooltipPosition="top" ariaLabel="Anexar ao kit"
                     [loading]="processandoCadernoId() === caderno.id"
                     [disabled]="!seguranca.podeEscrever() || !podeAnexarCadernoAoKit(caderno)"

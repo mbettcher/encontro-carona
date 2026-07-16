@@ -122,6 +122,7 @@ export class EventoOperacaoComponent implements OnInit {
   readonly statusCadernoSelecionado = signal<StatusCadernoChoro | null>(null);
   readonly processandoCadernos = signal(false);
   readonly processandoCadernoId = signal<number | null>(null);
+  readonly baixandoRelatorioCadernos = signal(false);
   readonly cadernoSelecionado = signal<CadernoChoro | null>(null);
   readonly historicoCaderno = signal<CadernoChoroHistorico[]>([]);
   readonly historicoCadernoVisivel = signal(false);
@@ -518,6 +519,71 @@ export class EventoOperacaoComponent implements OnInit {
 
   alterarFiltroSobrinhosEvento(valor: string): void {
     this.filtroSobrinhosEvento.set(valor);
+  }
+
+  baixarRelatorioCadernosGeral(): void {
+    this.baixarRelatorioCadernosEquipes(false);
+  }
+
+  baixarRelatorioCadernosFiltrado(): void {
+    this.baixarRelatorioCadernosEquipes(true);
+  }
+
+  private baixarRelatorioCadernosEquipes(aplicarFiltros: boolean): void {
+    if (this.baixandoRelatorioCadernos()) {
+      return;
+    }
+
+    const filtros = aplicarFiltros
+      ? {
+        equipeId: this.equipeCadernoSelecionada(),
+        status: this.statusCadernoSelecionado()
+      }
+      : undefined;
+
+    this.baixandoRelatorioCadernos.set(true);
+
+    this.service.baixarRelatorioCadernosEquipes(this.eventoId, filtros)
+      .pipe(finalize(() => this.baixandoRelatorioCadernos.set(false)))
+      .subscribe({
+        next: arquivo => {
+          this.salvarArquivoPdf(
+            arquivo,
+            aplicarFiltros
+              ? this.nomeArquivoRelatorioCadernos('filtrado')
+              : this.nomeArquivoRelatorioCadernos('geral')
+          );
+        },
+        error: erro => {
+          console.error('Erro ao baixar relatório de cadernos por equipe', erro);
+          this.toastError(this.mensagemErro(erro, 'Não foi possível gerar o relatório Jasper dos cadernos.'));
+        }
+      });
+  }
+
+  private salvarArquivoPdf(arquivo: Blob, nomeArquivo: string): void {
+    const url = window.URL.createObjectURL(arquivo);
+    const link = document.createElement('a');
+
+    link.href = url;
+    link.download = nomeArquivo;
+    link.click();
+
+    window.URL.revokeObjectURL(url);
+  }
+
+  private nomeArquivoRelatorioCadernos(tipo: 'geral' | 'filtrado'): string {
+    const eventoNome = this.evento()?.nome || `evento-${this.eventoId}`;
+    const nomeSeguro = eventoNome
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-zA-Z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .toLowerCase();
+
+    const sufixo = tipo === 'filtrado' ? 'filtrado' : 'geral';
+
+    return `cadernos-equipes-${nomeSeguro || this.eventoId}-${sufixo}.pdf`;
   }
 
   gerarCadernos(): void {
