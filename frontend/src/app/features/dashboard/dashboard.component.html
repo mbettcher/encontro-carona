@@ -10,179 +10,77 @@
                 <h1 class="dashboard-title mb-2">Dashboard do Encontro</h1>
 
                 <p class="dashboard-subtitle mb-0">
-                    Acompanhe os principais indicadores do cadastro, da preparação e da operação do evento.
+                    Indicadores consolidados em uma única consulta ao backend para acompanhar cadastro, preparação e operação.
                 </p>
             </div>
 
             <div class="dashboard-hero-actions">
                 <div class="event-select-wrapper">
-                    <label for="eventoDashboard" class="form-label text-body-secondary small mb-1">Evento monitorado</label>
+                    <label for="eventoDashboard" class="form-label small mb-1">Evento visualizado</label>
 
-                    <p-select inputId="eventoDashboard" [options]="opcoesEvento()" optionLabel="label"
-                        optionValue="value" [ngModel]="eventoSelecionadoId()" (ngModelChange)="alterarEvento($event)"
-                        placeholder="Selecione um evento" styleClass="w-100 dashboard-event-select"
-                        panelStyleClass="dashboard-event-select-panel" appendTo="body">
+                    <p-select
+                        inputId="eventoDashboard"
+                        [options]="opcoesEvento()"
+                        optionLabel="label"
+                        optionValue="value"
+                        [ngModel]="eventoSelecionadoId()"
+                        (ngModelChange)="alterarEvento($event)"
+                        placeholder="Evento sugerido pelo backend"
+                        styleClass="w-100 dashboard-event-select"
+                        panelStyleClass="dashboard-event-select-panel"
+                        appendTo="body"
+                        [loading]="carregandoEventos()">
                     </p-select>
                 </div>
 
-                <p-button label="Atualizar" icon="fa-solid fa-rotate" severity="secondary" [outlined]="false"
-                    [loading]="carregandoBase() || carregandoEvento()" (onClick)="carregarDashboard()">
-                </p-button>
+                <div class="updated-box">
+                    <span>Atualizado em</span>
+                    <strong>{{ dataAtualizacao() }}</strong>
+                </div>
+
+                <div class="d-flex gap-2 flex-wrap">
+                    <p-button
+                        label="Sugerido"
+                        icon="fa-solid fa-wand-magic-sparkles"
+                        severity="secondary"
+                        variant="outlined"
+                        [disabled]="carregando()"
+                        (onClick)="usarEventoSugerido()">
+                    </p-button>
+
+                    <p-button
+                        label="Atualizar"
+                        icon="fa-solid fa-rotate"
+                        severity="secondary"
+                        [loading]="carregando()"
+                        (onClick)="carregarDashboard()">
+                    </p-button>
+                </div>
             </div>
         </div>
     </section>
 
-    @if (carregandoBase()) {
+    @if (carregando()) {
     <div class="dashboard-loading py-5">
         <p-progress-spinner strokeWidth="4" animationDuration=".8s" />
         <div class="text-body-secondary mt-3">Carregando indicadores...</div>
+    </div>
+    } @else if (erro()) {
+    <div class="alert alert-warning py-3 px-4 d-flex align-items-start gap-3">
+        <i class="fa-solid fa-triangle-exclamation mt-1"></i>
+        <div>
+            <strong>Não foi possível carregar o dashboard.</strong>
+            <div class="small mt-1">{{ erro() }}</div>
+        </div>
     </div>
     } @else {
 
     <section class="mb-4">
         <div class="section-heading mb-3">
             <div>
-                <h2 class="h5 mb-1">Resumo do evento</h2>
+                <h2 class="h5 mb-1">Resumo geral</h2>
                 <p class="text-body-secondary small mb-0">
-                    @if (eventoSelecionado()) {
-                    {{ eventoSelecionado()?.nome }}
-                    } @else {
-                    Selecione um evento para visualizar os indicadores operacionais.
-                    }
-                </p>
-            </div>
-
-            @if (eventoSelecionado()) {
-            <p-tag [value]="labelOperacao()" [severity]="badgeOperacao()" />
-            }
-        </div>
-
-        @if (!eventoSelecionadoId()) {
-        <div class="empty-dashboard-state text-center py-5">
-            <i class="fa-solid fa-calendar-plus text-body-secondary mb-3"></i>
-            <h3 class="h6 mb-1">Nenhum evento cadastrado</h3>
-            <p class="text-body-secondary small mb-3">
-                Cadastre o primeiro evento para liberar os indicadores operacionais.
-            </p>
-
-            <p-button label="Cadastrar evento" icon="fa-solid fa-calendar-plus" routerLink="/eventos" />
-        </div>
-        } @else if (carregandoEvento()) {
-        <div class="dashboard-loading py-5">
-            <p-progress-spinner strokeWidth="4" animationDuration=".8s" />
-            <div class="text-body-secondary mt-3">Carregando dados do evento...</div>
-        </div>
-        } @else {
-        <div class="dashboard-summary-grid mb-4">
-            @for (card of cardsEvento(); track card.titulo) {
-            <article class="dashboard-stat-card" [class]="classeTemaCard(card.tema)">
-                <div class="stat-content">
-                    <div class="stat-title">{{ card.titulo }}</div>
-                    <div class="stat-value">{{ card.valor }}</div>
-                    <div class="stat-subtitle">{{ card.subtitulo }}</div>
-                </div>
-
-                <div class="stat-icon">
-                    <i [class]="card.icone"></i>
-                </div>
-            </article>
-            }
-        </div>
-
-        <div class="row g-3">
-            <div class="col-12 col-xl-5">
-                <div class="dashboard-panel h-100">
-                    <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
-                        <div>
-                            <h3 class="h6 mb-1">Preparação da operação</h3>
-                            <p class="text-body-secondary small mb-0">
-                                Leituras rápidas sobre credenciais e presença.
-                            </p>
-                        </div>
-
-                        <span class="operation-dot" [class.ready]="operacaoPronta()"></span>
-                    </div>
-
-                    <div class="metric-row mb-3">
-                        <div>
-                            <div class="metric-label">Credenciais ativas</div>
-                            <div class="metric-help">Comparação com tios ativos e encontristas não desistentes.</div>
-                        </div>
-                        <strong>{{ progressoCredenciais() }}%</strong>
-                    </div>
-
-                    <div class="progress-track mb-4">
-                        <div class="progress-fill" [style.width.%]="progressoCredenciais()"></div>
-                    </div>
-
-                    <div class="metric-row mb-3">
-                        <div>
-                            <div class="metric-label">Frequência por dia</div>
-                            <div class="metric-help">Presenças registradas em cada dia do evento.</div>
-                        </div>
-                    </div>
-
-                    @if (frequenciaPorDia().length === 0) {
-                    <div class="small text-body-secondary">
-                        Ainda não há dados suficientes para montar a frequência.
-                    </div>
-                    } @else {
-                    <div class="frequency-chart">
-                        @for (dia of frequenciaPorDia(); track dia.data) {
-                        <div class="frequency-row">
-                            <div class="frequency-label">{{ dia.label }}</div>
-
-                            <div class="frequency-bar-track">
-                                <div class="frequency-bar-fill" [style.width.%]="dia.percentual"></div>
-                            </div>
-
-                            <div class="frequency-value">
-                                {{ dia.presentes }}/{{ dia.total }}
-                            </div>
-                        </div>
-                        }
-                    </div>
-                    }
-                </div>
-            </div>
-
-            <div class="col-12 col-xl-7">
-                <div class="dashboard-panel h-100">
-                    <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
-                        <div>
-                            <h3 class="h6 mb-1">Ações rápidas</h3>
-                            <p class="text-body-secondary small mb-0">
-                                Acesse as telas mais usadas na preparação da versão 1.0.
-                            </p>
-                        </div>
-                    </div>
-
-                    <div class="quick-actions-grid">
-                        @for (acao of acoesRapidas(); track acao.titulo) {
-                        <a class="quick-action" [class]="classeTemaCard(acao.tema)" [routerLink]="acao.routerLink">
-                            <span class="quick-action-icon">
-                                <i [class]="acao.icone"></i>
-                            </span>
-
-                            <span>
-                                <strong>{{ acao.titulo }}</strong>
-                                <small>{{ acao.descricao }}</small>
-                            </span>
-                        </a>
-                        }
-                    </div>
-                </div>
-            </div>
-        </div>
-        }
-    </section>
-
-    <section class="mb-4">
-        <div class="section-heading mb-3">
-            <div>
-                <h2 class="h5 mb-1">Visão geral do sistema</h2>
-                <p class="text-body-secondary small mb-0">
-                    Indicadores globais de cadastros e preparação.
+                    Totais principais da aplicação.
                 </p>
             </div>
         </div>
@@ -203,6 +101,236 @@
             }
         </div>
     </section>
+
+    <section class="mb-4">
+        <div class="section-heading mb-3">
+            <div>
+                <h2 class="h5 mb-1">Evento em foco</h2>
+                <p class="text-body-secondary small mb-0">
+                    O backend sugere o evento mais relevante, mas você pode selecionar outro no topo da tela.
+                </p>
+            </div>
+
+            @if (evento()) {
+            <p-tag [value]="labelStatusEvento()" [severity]="badgeStatusEvento()" />
+            }
+        </div>
+
+        @if (!evento()) {
+        <div class="empty-dashboard-state text-center py-5">
+            <i class="fa-solid fa-calendar-plus text-body-secondary mb-3"></i>
+            <h3 class="h6 mb-1">Nenhum evento cadastrado</h3>
+            <p class="text-body-secondary small mb-3">
+                Cadastre o primeiro evento para liberar os indicadores operacionais.
+            </p>
+
+            <p-button label="Cadastrar evento" icon="fa-solid fa-calendar-plus" routerLink="/eventos" />
+        </div>
+        } @else {
+        <div class="event-focus-card mb-4">
+            <div>
+                <div class="event-kicker">{{ evento()?.paroquiaNome || 'Paróquia não informada' }}</div>
+                <h3 class="event-title mb-1">{{ evento()?.nome }}</h3>
+
+                @if (evento()?.tema) {
+                <p class="event-theme mb-2">{{ evento()?.tema }}</p>
+                }
+
+                <div class="event-meta">
+                    <span><i class="fa-solid fa-calendar-days me-1"></i>{{ periodoEvento(evento()!) }}</span>
+
+                    @if (evento()?.local) {
+                    <span><i class="fa-solid fa-location-dot me-1"></i>{{ evento()?.local }}</span>
+                    }
+                </div>
+            </div>
+
+            <div class="operation-readiness" [class.ready]="operacaoPronta()">
+                <span class="operation-dot"></span>
+                <div>
+                    <strong>{{ operacaoPronta() ? 'Pronta para operação' : 'Preparação em andamento' }}</strong>
+                    <small>Credenciais ativas x participantes ativos</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="dashboard-summary-grid mb-4">
+            @for (card of cardsEvento(); track card.titulo) {
+            <article class="dashboard-stat-card" [class]="classeTemaCard(card.tema)">
+                <div class="stat-content">
+                    <div class="stat-title">{{ card.titulo }}</div>
+                    <div class="stat-value">{{ card.valor }}</div>
+                    <div class="stat-subtitle">{{ card.subtitulo }}</div>
+                </div>
+
+                <div class="stat-icon">
+                    <i [class]="card.icone"></i>
+                </div>
+            </article>
+            }
+        </div>
+
+        <div class="dashboard-panel presence-stack-panel mb-3">
+            <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+                <div>
+                    <h3 class="h6 mb-1">Presenças de encontristas por dia</h3>
+                    <p class="text-body-secondary small mb-0">
+                        Barra empilhada por dia do evento com presentes, ausentes, desistentes e sem registro.
+                    </p>
+                </div>
+
+                @if (carregandoPresencas()) {
+                <span class="small text-body-secondary">Atualizando...</span>
+                }
+            </div>
+
+            <div class="presence-stack-summary mb-3">
+                <span>Situação atual: <strong>{{ textoSituacaoAtualPresencas() }}</strong></span>
+            </div>
+
+            @if (presencasForaPeriodo() > 0) {
+            <div class="presence-stack-notice small mb-3">
+                <i class="fa-solid fa-circle-info"></i>
+                <span>
+                    Existem {{ presencasForaPeriodo() }} registro(s) de presença fora das datas oficiais do evento.
+                    Os cards consideram a última situação de cada encontrista; a barra abaixo considera apenas registros feitos em cada dia do evento.
+                </span>
+            </div>
+            }
+
+            @if (presencasPorDia().length === 0) {
+            <div class="small text-body-secondary">
+                Ainda não há dados suficientes para montar as presenças por dia.
+            </div>
+            } @else {
+            <div class="presence-stack-list">
+                @for (dia of presencasPorDia(); track dia.data) {
+                <div class="presence-stack-row">
+                    <div class="presence-stack-label">{{ dia.label }}</div>
+
+                    <div class="presence-stack-track" [attr.aria-label]="'Presenças em ' + dia.label">
+                        <span class="presence-segment presente" [style.width.%]="dia.percentualPresentes"></span>
+                        <span class="presence-segment ausente" [style.width.%]="dia.percentualAusentes"></span>
+                        <span class="presence-segment desistente" [style.width.%]="dia.percentualDesistentes"></span>
+                        <span class="presence-segment sem-registro" [style.width.%]="dia.percentualSemRegistro"></span>
+                    </div>
+
+                    <div class="presence-stack-values">
+                        <strong>{{ dia.presentes }}</strong>/{{ dia.total }} presentes
+                    </div>
+                </div>
+                }
+            </div>
+
+            <div class="presence-legend mt-3">
+                <span><i class="legend-dot presente"></i>Presentes</span>
+                <span><i class="legend-dot ausente"></i>Ausentes</span>
+                <span><i class="legend-dot desistente"></i>Desistentes</span>
+                <span><i class="legend-dot sem-registro"></i>Sem registro</span>
+            </div>
+            }
+        </div>
+
+        <div class="row g-3">
+            <div class="col-12 col-xl-7">
+                <div class="dashboard-panel h-100">
+                    <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+                        <div>
+                            <h3 class="h6 mb-1">Indicadores operacionais</h3>
+                            <p class="text-body-secondary small mb-0">
+                                Leitura rápida de preparação, cadernos, presença e check-in.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="metric-list">
+                        @for (metrica of metricasEvento(); track metrica.titulo) {
+                        <div class="metric-block" [class]="classeTemaCard(metrica.tema)">
+                            <div class="metric-header">
+                                <div>
+                                    <div class="metric-label">{{ metrica.titulo }}</div>
+                                    <div class="metric-help">{{ metrica.descricao }}</div>
+                                </div>
+                                <strong>{{ metrica.valor }} / {{ metrica.total }}</strong>
+                            </div>
+
+                            <div class="progress metric-progress" role="progressbar" [attr.aria-valuenow]="metrica.percentual"
+                                aria-valuemin="0" aria-valuemax="100">
+                                <div class="progress-bar" [style.width.%]="metrica.percentual"></div>
+                            </div>
+
+                            <div class="metric-footer">{{ metrica.percentual }}%</div>
+                        </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-xl-5">
+                <div class="dashboard-panel h-100">
+                    <div class="mb-3">
+                        <h3 class="h6 mb-1">Detalhes rápidos</h3>
+                        <p class="text-body-secondary small mb-0">
+                            Indicadores consolidados pelo endpoint do dashboard.
+                        </p>
+                    </div>
+
+                    <div class="details-list">
+                        <div class="details-row">
+                            <span>Credenciais por tipo</span>
+                            <strong>{{ evento()?.credenciaisTioCarona }} tios / {{ evento()?.credenciaisSobrinho }} encontristas</strong>
+                        </div>
+                        <div class="details-row">
+                            <span>Credenciais inativas/canceladas</span>
+                            <strong>{{ evento()?.credenciaisInativas }} / {{ evento()?.credenciaisCanceladas }}</strong>
+                        </div>
+                        <div class="details-row">
+                            <span>Cadernos pendentes</span>
+                            <strong>{{ evento()?.cadernosPendentes }}</strong>
+                        </div>
+                        <div class="details-row">
+                            <span>Cadernos anexados ao kit</span>
+                            <strong>{{ evento()?.cadernosAnexadosAoKit }}</strong>
+                        </div>
+                        <div class="details-row">
+                            <span>Vínculos ativos</span>
+                            <strong>{{ evento()?.totalVinculosAtivos }} / {{ evento()?.totalVinculos }}</strong>
+                        </div>
+                        <div class="details-row">
+                            <span>Operações dos tios</span>
+                            <strong>{{ evento()?.operacoesCheckin }} check-ins / {{ evento()?.operacoesCheckout }} checkouts</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        }
+    </section>
+
+    <section>
+        <div class="section-heading mb-3">
+            <div>
+                <h2 class="h5 mb-1">Atalhos rápidos</h2>
+                <p class="text-body-secondary small mb-0">
+                    Acesse as principais áreas da rotina operacional.
+                </p>
+            </div>
+        </div>
+
+        <div class="dashboard-actions-grid">
+            @for (acao of acoes(); track acao.titulo) {
+            <a class="dashboard-action-card text-decoration-none" [routerLink]="acao.routerLink" [class]="classeTemaCard(acao.tema)">
+                <div class="action-icon">
+                    <i [class]="acao.icone"></i>
+                </div>
+                <div>
+                    <strong>{{ acao.titulo }}</strong>
+                    <p class="mb-0">{{ acao.descricao }}</p>
+                </div>
+                <i class="fa-solid fa-arrow-right action-arrow"></i>
+            </a>
+            }
+        </div>
+    </section>
     }
 </div>
-
