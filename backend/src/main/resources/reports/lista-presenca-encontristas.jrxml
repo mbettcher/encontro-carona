@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd"
+              name="lista_de_presenca_—_encontristas"
+              language="java"
+              pageWidth="842"
+              pageHeight="595"
+              orientation="Landscape"
+              columnWidth="802"
+              leftMargin="20"
+              rightMargin="20"
+              topMargin="20"
+              bottomMargin="20">
+
+    <style name="TituloRelatorio" fontName="SansSerif" fontSize="16" isBold="true" forecolor="#FFFFFF"/>
+    <style name="SubtituloRelatorio" fontName="SansSerif" fontSize="9" forecolor="#E5E7EB"/>
+    <style name="TextoBase" fontName="SansSerif" fontSize="8" forecolor="#111827"/>
+    <style name="TextoPequeno" fontName="SansSerif" fontSize="7" forecolor="#374151"/>
+    <style name="CabecalhoColuna" fontName="SansSerif" fontSize="8" isBold="true" forecolor="#111827"/>
+    <style name="Grupo" fontName="SansSerif" fontSize="10" isBold="true" forecolor="#1F2937"/>
+
+    <parameter name="EVENTO_NOME" class="java.lang.String"/>
+    <parameter name="PAROQUIA_NOME" class="java.lang.String"/>
+    <parameter name="EVENTO_LOCAL" class="java.lang.String"/>
+    <parameter name="EVENTO_PERIODO" class="java.lang.String"/>
+    <parameter name="EMITIDO_EM" class="java.lang.String"/>
+    <parameter name="FILTROS" class="java.lang.String"/>
+    <parameter name="TOTAL_REGISTROS" class="java.lang.Integer"/>
+
+    <field name="numero" class="java.lang.Integer"/>
+    <field name="nome" class="java.lang.String"/>
+    <field name="dupla" class="java.lang.String"/>
+    <field name="tiosCarona" class="java.lang.String"/>
+    <field name="status" class="java.lang.String"/>
+    <field name="responsavel" class="java.lang.String"/>
+    <field name="observacao" class="java.lang.String"/>
+
+    <group name="duplaGroup">
+        <groupExpression><![CDATA[$F{dupla}]]></groupExpression>
+        <groupHeader>
+            <band height="26">
+                <rectangle>
+                    <reportElement mode="Opaque" x="0" y="4" width="802" height="18" backcolor="#F3F4F6"/>
+                    <graphicElement>
+                        <pen lineWidth="0.5" lineColor="#D1D5DB"/>
+                    </graphicElement>
+                </rectangle>
+                <textField>
+                    <reportElement style="Grupo" x="8" y="6" width="650" height="14"/>
+                    <textElement verticalAlignment="Middle"/>
+                    <textFieldExpression><![CDATA["Dupla: " + $F{dupla}]]></textFieldExpression>
+                </textField>
+            </band>
+        </groupHeader>
+    </group>
+
+    <title>
+        <band height="118">
+            <rectangle>
+                <reportElement mode="Opaque" x="0" y="0" width="802" height="52" backcolor="#1F2937"/>
+            </rectangle>
+
+            <staticText>
+                <reportElement style="TituloRelatorio" x="18" y="8" width="520" height="22"/>
+                <textElement verticalAlignment="Middle"/>
+                <text><![CDATA[Lista de Presença — Encontristas]]></text>
+            </staticText>
+
+            <textField>
+                <reportElement style="SubtituloRelatorio" x="18" y="31" width="520" height="13"/>
+                <textElement verticalAlignment="Middle"/>
+                <textFieldExpression><![CDATA["Evento: " + $P{EVENTO_NOME}]]></textFieldExpression>
+            </textField>
+
+            <textField>
+                <reportElement style="SubtituloRelatorio" x="595" y="10" width="190" height="13"/>
+                <textElement textAlignment="Right" verticalAlignment="Middle"/>
+                <textFieldExpression><![CDATA["Emitido em " + $P{EMITIDO_EM}]]></textFieldExpression>
+            </textField>
+
+            <textField>
+                <reportElement style="SubtituloRelatorio" x="595" y="29" width="190" height="13"/>
+                <textElement textAlignment="Right" verticalAlignment="Middle"/>
+                <textFieldExpression><![CDATA["Total: " + $P{TOTAL_REGISTROS} + " registro(s)"]]></textFieldExpression>
+            </textField>
+
+            <rectangle>
+                <reportElement mode="Opaque" x="0" y="64" width="802" height="42" backcolor="#F9FAFB"/>
+                <graphicElement>
+                    <pen lineWidth="0.5" lineColor="#E5E7EB"/>
+                </graphicElement>
+            </rectangle>
+
+            <textField>
+                <reportElement style="TextoBase" x="12" y="70" width="385" height="12"/>
+                <textFieldExpression><![CDATA["Paróquia: " + $P{PAROQUIA_NOME}]]></textFieldExpression>
+            </textField>
+
+            <textField>
+                <reportElement style="TextoBase" x="410" y="70" width="380" height="12"/>
+                <textFieldExpression><![CDATA["Local: " + $P{EVENTO_LOCAL}]]></textFieldExpression>
+            </textField>
+
+            <textField>
+                <reportElement style="TextoBase" x="12" y="88" width="385" height="12"/>
+                <textFieldExpression><![CDATA["Período: " + $P{EVENTO_PERIODO}]]></textFieldExpression>
+            </textField>
+
+            <textField>
+                <reportElement style="TextoBase" x="410" y="88" width="380" height="12"/>
+                <textFieldExpression><![CDATA["Filtros: " + $P{FILTROS}]]></textFieldExpression>
+            </textField>
+        </band>
+    </title>
+
+    <columnHeader>
+        <band height="24">
+            <rectangle>
+                <reportElement mode="Opaque" x="0" y="0" width="802" height="22" backcolor="#E5E7EB"/>
+                <graphicElement>
+                    <pen lineWidth="0.5" lineColor="#D1D5DB"/>
+                </graphicElement>
+            </rectangle>
+
+            <staticText>
+                <reportElement style="CabecalhoColuna" x="4" y="5" width="26" height="12"/>
+                <text><![CDATA[Nº]]></text>
+            </staticText>
+            <staticText>
+                <reportElement style="CabecalhoColuna" x="34" y="5" width="150" height="12"/>
+                <text><![CDATA[Encontrista]]></text>
+            </staticText>
+            <staticText>
+                <reportElement style="CabecalhoColuna" x="188" y="5" width="170" height="12"/>
+                <text><![CDATA[Tios carona]]></text>
+            </staticText>
+            <staticText>
+                <reportElement style="CabecalhoColuna" x="362" y="5" width="70" height="12"/>
+                <text><![CDATA[Status]]></text>
+            </staticText>
+            <staticText>
+                <reportElement style="CabecalhoColuna" x="436" y="5" width="110" height="12"/>
+                <text><![CDATA[Responsável]]></text>
+            </staticText>
+            <staticText>
+                <reportElement style="CabecalhoColuna" x="552" y="5" width="145" height="12"/>
+                <text><![CDATA[Assinatura]]></text>
+            </staticText>
+            <staticText>
+                <reportElement style="CabecalhoColuna" x="704" y="5" width="94" height="12"/>
+                <text><![CDATA[Obs.]]></text>
+            </staticText>
+        </band>
+    </columnHeader>
+
+    <detail>
+        <band height="34">
+            <textField>
+                <reportElement style="TextoPequeno" x="4" y="3" width="26" height="26"/>
+                <textElement verticalAlignment="Top"/>
+                <textFieldExpression><![CDATA[$F{numero}]]></textFieldExpression>
+            </textField>
+            <textField isStretchWithOverflow="true">
+                <reportElement style="TextoPequeno" x="34" y="3" width="150" height="26"/>
+                <textElement verticalAlignment="Top"/>
+                <textFieldExpression><![CDATA[$F{nome}]]></textFieldExpression>
+            </textField>
+            <textField isStretchWithOverflow="true">
+                <reportElement style="TextoPequeno" x="188" y="3" width="170" height="26"/>
+                <textElement verticalAlignment="Top"/>
+                <textFieldExpression><![CDATA[$F{tiosCarona}]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement style="TextoPequeno" x="362" y="3" width="70" height="26"/>
+                <textElement verticalAlignment="Top"/>
+                <textFieldExpression><![CDATA[$F{status}]]></textFieldExpression>
+            </textField>
+            <textField isStretchWithOverflow="true">
+                <reportElement style="TextoPequeno" x="436" y="3" width="110" height="26"/>
+                <textElement verticalAlignment="Top"/>
+                <textFieldExpression><![CDATA[$F{responsavel}]]></textFieldExpression>
+            </textField>
+            <line>
+                <reportElement x="552" y="23" width="145" height="1" forecolor="#6B7280"/>
+            </line>
+            <textField isStretchWithOverflow="true">
+                <reportElement style="TextoPequeno" x="704" y="3" width="94" height="26"/>
+                <textElement verticalAlignment="Top"/>
+                <textFieldExpression><![CDATA[$F{observacao}]]></textFieldExpression>
+            </textField>
+
+            <line>
+                <reportElement x="0" y="33" width="802" height="1" forecolor="#E5E7EB"/>
+            </line>
+        </band>
+    </detail>
+
+    <pageFooter>
+        <band height="22">
+            <line>
+                <reportElement x="0" y="1" width="802" height="1" forecolor="#E5E7EB"/>
+            </line>
+
+            <textField>
+                <reportElement style="TextoPequeno" x="0" y="6" width="420" height="12"/>
+                <textFieldExpression><![CDATA["Gerado pelo sistema Tio Carona"]]></textFieldExpression>
+            </textField>
+
+            <textField>
+                <reportElement style="TextoPequeno" x="650" y="6" width="152" height="12"/>
+                <textElement textAlignment="Right"/>
+                <textFieldExpression><![CDATA["Página " + $V{PAGE_NUMBER}]]></textFieldExpression>
+            </textField>
+        </band>
+    </pageFooter>
+
+    <summary>
+        <band height="34">
+            <rectangle>
+                <reportElement mode="Opaque" x="0" y="6" width="802" height="20" backcolor="#F9FAFB"/>
+                <graphicElement>
+                    <pen lineWidth="0.5" lineColor="#E5E7EB"/>
+                </graphicElement>
+            </rectangle>
+
+            <textField>
+                <reportElement style="TextoBase" x="12" y="10" width="778" height="12"/>
+                <textElement textAlignment="Right"/>
+                <textFieldExpression><![CDATA["Total de registros listados: " + $P{TOTAL_REGISTROS}]]></textFieldExpression>
+            </textField>
+        </band>
+    </summary>
+
+</jasperReport>
