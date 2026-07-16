@@ -138,6 +138,22 @@ export class AuthService {
     return this.refreshToken();
   }
 
+  accessTokenExpirado(margemSegundos = 10): boolean {
+    const token = this.token();
+
+    if (!token) {
+      return false;
+    }
+
+    const exp = this.obterExpiracaoToken(token);
+
+    if (!exp) {
+      return true;
+    }
+
+    return Date.now() >= (exp - margemSegundos) * 1000;
+  }
+
   possuiPerfil(...perfis: PerfilUsuario[]): boolean {
     const usuario = this.usuario();
 
@@ -212,12 +228,19 @@ export class AuthService {
   }
 
   private salvarSessao(response: LoginResponse): void {
+    const refreshToken = response.refreshToken;
+
+    if (!refreshToken) {
+      console.error('LoginResponse sem refreshToken:', response);
+      throw new Error('Resposta de login inválida: refreshToken não recebido.');
+    }
+
     localStorage.setItem(this.tokenStorageKey, response.accessToken);
-    localStorage.setItem(this.refreshTokenStorageKey, response.refreshToken);
+    localStorage.setItem(this.refreshTokenStorageKey, refreshToken);
     localStorage.setItem(this.usuarioStorageKey, JSON.stringify(response.usuario));
 
     this.token.set(response.accessToken);
-    this.refreshToken.set(response.refreshToken);
+    this.refreshToken.set(refreshToken);
     this.usuario.set(response.usuario);
   }
 

@@ -3,20 +3,23 @@ import { inject } from '@angular/core';
 import { MessageService } from 'primeng/api';
 import { catchError, throwError } from 'rxjs';
 
-import { AuthService } from './auth/auth.service';
-
 export const apiErrorInterceptor: HttpInterceptorFn = (req, next) => {
-  const auth = inject(AuthService);
   const messageService = inject(MessageService);
 
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
       console.error('Erro de API', error);
 
-      const isLogin = req.url.includes('/auth/login');
-
-      if (error.status === 401 && !isLogin) {
-        auth.encerrarSessaoExpirada();
+      /*
+       * 401 agora é responsabilidade do authTokenInterceptor.
+       *
+       * Se o access token expirou, ele tenta renovar com /api/auth/refresh.
+       * Se o refresh token falhar, aí sim o authTokenInterceptor encerra a sessão.
+       *
+       * Portanto, este interceptor não pode redirecionar em 401.
+       */
+      if (error.status === 401) {
+        return throwError(() => error);
       }
 
       if (error.status === 403) {
