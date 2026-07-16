@@ -47,6 +47,29 @@ type AbaOperacao =
   | 'SOBRINHOS'
   | 'CADERNO_CHORO';
 
+
+interface OpcaoStatusCaderno {
+  label: string;
+  value: StatusCadernoChoro;
+}
+
+interface OpcaoEquipeCaderno {
+  label: string;
+  value: number;
+  cor?: string;
+}
+
+interface ResumoEquipeCaderno {
+  id: number | null;
+  apelido: string;
+  cor?: string;
+  total: number;
+  direcionados: number;
+  conferidos: number;
+  noKit: number;
+  entregues: number;
+}
+
 @Component({
   selector: 'app-evento-operacao',
   standalone: true,
@@ -95,6 +118,8 @@ export class EventoOperacaoComponent implements OnInit {
   readonly filtroSobrinhosEvento = signal('');
   readonly filtroCadernos = signal('');
   readonly duplaCadernoSelecionada = signal<number | null>(null);
+  readonly equipeCadernoSelecionada = signal<number | null>(null);
+  readonly statusCadernoSelecionado = signal<StatusCadernoChoro | null>(null);
   readonly processandoCadernos = signal(false);
   readonly processandoCadernoId = signal<number | null>(null);
   readonly cadernoSelecionado = signal<CadernoChoro | null>(null);
@@ -200,12 +225,101 @@ export class EventoOperacaoComponent implements OnInit {
     }))
   );
 
+
+  readonly opcoesEquipesCaderno = computed<OpcaoEquipeCaderno[]>(() => {
+    const equipes = new Map<number, OpcaoEquipeCaderno>();
+
+    this.cadernos()
+      .filter(caderno => !!caderno.equipeMontagemKitId)
+      .forEach(caderno => {
+        const id = Number(caderno.equipeMontagemKitId);
+
+        if (!equipes.has(id)) {
+          equipes.set(id, {
+            value: id,
+            label: caderno.equipeMontagemKitApelido || `Equipe ${id}`,
+            cor: caderno.equipeMontagemKitCorIdentificacao
+          });
+        }
+      });
+
+    return Array.from(equipes.values())
+      .sort((a, b) => a.label.localeCompare(b.label, 'pt-BR'));
+  });
+
+  readonly opcoesStatusCaderno: OpcaoStatusCaderno[] = [
+    { label: 'Pendente', value: 'PENDENTE' },
+    { label: 'Com a dupla', value: 'ENTREGUE_A_DUPLA' },
+    { label: 'Direcionado à equipe', value: 'DIRECIONADO_EQUIPE_MONTAGEM' },
+    { label: 'Conferido', value: 'CONFERIDO' },
+    { label: 'Anexado ao kit', value: 'ANEXADO_AO_KIT' },
+    { label: 'Entregue ao encontrista', value: 'ENTREGUE_AO_SOBRINHO' },
+    { label: 'Ocorrências', value: 'PERDIDO' },
+    { label: 'Cancelado', value: 'CANCELADO' }
+  ];
+
+  readonly resumoEquipesCaderno = computed<ResumoEquipeCaderno[]>(() => {
+    const resumo = new Map<number | null, ResumoEquipeCaderno>();
+
+    this.cadernos()
+      .filter(caderno => ['DIRECIONADO_EQUIPE_MONTAGEM', 'CONFERIDO', 'ANEXADO_AO_KIT', 'ENTREGUE_AO_SOBRINHO'].includes(caderno.status))
+      .forEach(caderno => {
+        const id = caderno.equipeMontagemKitId ?? null;
+        const chave = id;
+        const item = resumo.get(chave) ?? {
+          id,
+          apelido: caderno.equipeMontagemKitApelido || 'Sem equipe',
+          cor: caderno.equipeMontagemKitCorIdentificacao,
+          total: 0,
+          direcionados: 0,
+          conferidos: 0,
+          noKit: 0,
+          entregues: 0
+        };
+
+        item.total++;
+
+        if (caderno.status === 'DIRECIONADO_EQUIPE_MONTAGEM') {
+          item.direcionados++;
+        }
+
+        if (caderno.status === 'CONFERIDO') {
+          item.conferidos++;
+        }
+
+        if (caderno.status === 'ANEXADO_AO_KIT') {
+          item.noKit++;
+        }
+
+        if (caderno.status === 'ENTREGUE_AO_SOBRINHO') {
+          item.entregues++;
+        }
+
+        resumo.set(chave, item);
+      });
+
+    return Array.from(resumo.values())
+      .sort((a, b) => a.apelido.localeCompare(b.apelido, 'pt-BR'));
+  });
+
+  readonly cadernosComEquipe = computed(() =>
+    this.cadernos().filter(caderno => !!caderno.equipeMontagemKitId)
+  );
+
+  readonly cadernosDirecionadosEquipe = computed(() =>
+    this.cadernos().filter(caderno => caderno.status === 'DIRECIONADO_EQUIPE_MONTAGEM')
+  );
+
   readonly cadernosFiltrados = computed(() => {
     const filtro = this.normalizarFiltro(this.filtroCadernos());
     const duplaId = this.duplaCadernoSelecionada();
+    const equipeId = this.equipeCadernoSelecionada();
+    const statusSelecionado = this.statusCadernoSelecionado();
 
     return this.cadernos()
       .filter(caderno => !duplaId || caderno.duplaId === duplaId)
+      .filter(caderno => !equipeId || caderno.equipeMontagemKitId === equipeId)
+      .filter(caderno => !statusSelecionado || this.statusCadernoAgrupa(caderno.status, statusSelecionado))
       .filter(caderno => {
         if (!filtro) {
           return true;
@@ -371,6 +485,27 @@ export class EventoOperacaoComponent implements OnInit {
 
   alterarDuplaCadernoSelecionada(duplaId: number | null): void {
     this.duplaCadernoSelecionada.set(duplaId);
+  }
+
+
+  alterarEquipeCadernoSelecionada(equipeId: number | null): void {
+    this.equipeCadernoSelecionada.set(equipeId);
+  }
+
+  alterarStatusCadernoSelecionado(status: StatusCadernoChoro | null): void {
+    this.statusCadernoSelecionado.set(status);
+  }
+
+  filtrarCadernosPorEquipe(equipeId: number | null): void {
+    this.equipeCadernoSelecionada.set(equipeId);
+    this.abaOperacaoAtiva.set('CADERNO_CHORO');
+  }
+
+  limparFiltrosCaderno(): void {
+    this.duplaCadernoSelecionada.set(null);
+    this.equipeCadernoSelecionada.set(null);
+    this.statusCadernoSelecionado.set(null);
+    this.filtroCadernos.set('');
   }
 
   alterarFiltroTiosOperacao(valor: string): void {
@@ -1012,6 +1147,68 @@ export class EventoOperacaoComponent implements OnInit {
     }
   }
 
+
+  corEquipeCaderno(caderno: CadernoChoro | ResumoEquipeCaderno): string {
+    if (this.ehResumoEquipeCaderno(caderno)) {
+      return this.normalizarCorHex(caderno.cor);
+    }
+
+    return this.normalizarCorHex(caderno.equipeMontagemKitCorIdentificacao);
+  }
+
+  private ehResumoEquipeCaderno(caderno: CadernoChoro | ResumoEquipeCaderno): caderno is ResumoEquipeCaderno {
+    return 'cor' in caderno;
+  }
+
+  corEquipeCadernoFundo(caderno: CadernoChoro | ResumoEquipeCaderno): string {
+    return this.hexParaRgba(this.corEquipeCaderno(caderno), 0.1);
+  }
+
+  corEquipeCadernoBorda(caderno: CadernoChoro | ResumoEquipeCaderno): string {
+    return this.hexParaRgba(this.corEquipeCaderno(caderno), 0.32);
+  }
+
+  textoAcaoPrincipalCaderno(caderno: CadernoChoro): string {
+    if (this.podeConferirCaderno(caderno)) {
+      return 'Conferir';
+    }
+
+    if (this.podeAnexarCadernoAoKit(caderno)) {
+      return 'Anexar ao kit';
+    }
+
+    if (this.podeEntregarCadernoAoSobrinho(caderno)) {
+      return 'Entregar';
+    }
+
+    return 'Sem ação';
+  }
+
+  private statusCadernoAgrupa(statusAtual: StatusCadernoChoro, statusFiltro: StatusCadernoChoro): boolean {
+    if (statusFiltro === 'PERDIDO') {
+      return ['PERDIDO', 'SUBSTITUIDO'].includes(statusAtual);
+    }
+
+    return statusAtual === statusFiltro;
+  }
+
+  private normalizarCorHex(cor?: string): string {
+    if (!cor || !/^#[0-9a-fA-F]{6}$/.test(cor.trim())) {
+      return '#64748b';
+    }
+
+    return cor.trim();
+  }
+
+  private hexParaRgba(hex: string, alpha: number): string {
+    const normalizado = this.normalizarCorHex(hex).replace('#', '');
+    const r = parseInt(normalizado.substring(0, 2), 16);
+    const g = parseInt(normalizado.substring(2, 4), 16);
+    const b = parseInt(normalizado.substring(4, 6), 16);
+
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  }
+
   podeConferirCaderno(caderno: CadernoChoro): boolean {
     return caderno.status === 'RECEBIDO_DA_DUPLA' || caderno.status === 'DIRECIONADO_EQUIPE_MONTAGEM';
   }
@@ -1317,3 +1514,4 @@ export class EventoOperacaoComponent implements OnInit {
     this.codigoSobrinhoForm.updateValueAndValidity();
   }
 }
+

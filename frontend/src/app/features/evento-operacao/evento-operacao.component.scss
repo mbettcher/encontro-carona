@@ -437,3 +437,69 @@
   --summary-accent: var(--bs-info);
   --summary-accent-rgb: var(--bs-info-rgb);
 }
+
+
+
+.equipes-kit-panel {
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 1rem;
+  padding: 1rem;
+  background: rgba(248, 250, 252, 0.75);
+}
+
+.equipe-kit-card {
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  border-left-width: 5px;
+  border-radius: 1rem;
+  padding: 1rem;
+  color: inherit;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+
+.equipe-kit-card:hover,
+.equipe-kit-card.active {
+  transform: translateY(-1px);
+  box-shadow: 0 0.75rem 1.75rem rgba(15, 23, 42, 0.08);
+}
+
+.equipe-kit-card-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.equipe-kit-metrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  font-size: 0.78rem;
+  color: var(--bs-secondary-color);
+}
+
+.equipe-kit-metrics span {
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 999px;
+  padding: 0.15rem 0.5rem;
+  background: rgba(255, 255, 255, 0.65);
+}
+
+.equipe-color-dot {
+  display: inline-flex;
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 999px;
+  flex: 0 0 auto;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.95), 0 0 0 3px rgba(15, 23, 42, 0.12);
+}
+
+.equipe-caderno-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  border-radius: 999px;
+  padding: 0.25rem 0.65rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
