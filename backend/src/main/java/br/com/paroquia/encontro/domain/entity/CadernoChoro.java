@@ -5,6 +5,7 @@ import br.com.paroquia.encontro.domain.enums.StatusCadernoChoro;
 import jakarta.persistence.*;
 
 import java.time.OffsetDateTime;
+import java.util.Set;
 
 @Entity
 @Table(
@@ -15,6 +16,11 @@ import java.time.OffsetDateTime;
         )
 )
 public class CadernoChoro {
+    private static final Set<StatusCadernoChoro> STATUS_PERMITEM_CONFERENCIA = Set.of(
+            StatusCadernoChoro.RECEBIDO_DA_DUPLA,
+            StatusCadernoChoro.DIRECIONADO_EQUIPE_MONTAGEM
+    );
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -31,6 +37,10 @@ public class CadernoChoro {
     @JoinColumn(name = "sobrinho_id", nullable = false)
     private Sobrinho sobrinho;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "equipe_montagem_kit_id")
+    private EquipeMontagemKit equipeMontagemKit;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 40)
     private StatusCadernoChoro status = StatusCadernoChoro.PENDENTE;
@@ -40,6 +50,9 @@ public class CadernoChoro {
 
     @Column(name = "recebido_da_dupla_em")
     private OffsetDateTime recebidoDaDuplaEm;
+
+    @Column(name = "direcionado_equipe_montagem_em")
+    private OffsetDateTime direcionadoEquipeMontagemEm;
 
     @Column(name = "conferido_em")
     private OffsetDateTime conferidoEm;
@@ -83,8 +96,26 @@ public class CadernoChoro {
         atualizarObservacao(observacao);
     }
 
+    public void direcionarEquipeMontagem(EquipeMontagemKit equipeMontagemKit, String observacao) {
+        if (equipeMontagemKit == null) {
+            throw new BusinessException("Equipe de montagem do kit deve ser informada.");
+        }
+
+        if (this.status != StatusCadernoChoro.RECEBIDO_DA_DUPLA
+                && this.status != StatusCadernoChoro.DIRECIONADO_EQUIPE_MONTAGEM) {
+            throw new BusinessException("Somente cadernos recebidos da dupla podem ser direcionados para a equipe de montagem do kit.");
+        }
+
+        this.equipeMontagemKit = equipeMontagemKit;
+        this.status = StatusCadernoChoro.DIRECIONADO_EQUIPE_MONTAGEM;
+        this.direcionadoEquipeMontagemEm = OffsetDateTime.now();
+        atualizarObservacao(observacao);
+    }
+
     public void conferir(String observacao) {
-        validarStatusAtual(StatusCadernoChoro.RECEBIDO_DA_DUPLA, "Somente cadernos recebidos da dupla podem ser conferidos.");
+        if (!STATUS_PERMITEM_CONFERENCIA.contains(this.status)) {
+            throw new BusinessException("Somente cadernos recebidos da dupla ou direcionados à equipe de montagem podem ser conferidos.");
+        }
 
         this.status = StatusCadernoChoro.CONFERIDO;
         this.conferidoEm = OffsetDateTime.now();
@@ -192,6 +223,10 @@ public class CadernoChoro {
         return sobrinho;
     }
 
+    public EquipeMontagemKit getEquipeMontagemKit() {
+        return equipeMontagemKit;
+    }
+
     public StatusCadernoChoro getStatus() {
         return status;
     }
@@ -202,6 +237,10 @@ public class CadernoChoro {
 
     public OffsetDateTime getRecebidoDaDuplaEm() {
         return recebidoDaDuplaEm;
+    }
+
+    public OffsetDateTime getDirecionadoEquipeMontagemEm() {
+        return direcionadoEquipeMontagemEm;
     }
 
     public OffsetDateTime getConferidoEm() {

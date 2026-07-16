@@ -13,11 +13,15 @@ public record CadernoChoroHistoricoResponse(
         String duplaCodigo,
         Long sobrinhoId,
         String sobrinhoNome,
+        Long equipeMontagemKitId,
+        String equipeMontagemKitApelido,
         StatusCadernoChoro status,
         String observacao,
         OffsetDateTime ocorridoEm
 ) {
     public static CadernoChoroHistoricoResponse from(CadernoChoroHistorico entity) {
+        var equipe = entity.getEquipeMontagemKit();
+
         return new CadernoChoroHistoricoResponse(
                 entity.getId(),
                 entity.getEvento().getId(),
@@ -26,6 +30,8 @@ public record CadernoChoroHistoricoResponse(
                 entity.getDupla().getCodigo(),
                 entity.getSobrinho().getId(),
                 entity.getSobrinho().getNome(),
+                equipe == null ? null : equipe.getId(),
+                equipe == null ? null : equipe.getApelido(),
                 entity.getStatus(),
                 entity.getObservacao(),
                 entity.getOcorridoEm()

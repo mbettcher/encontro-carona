@@ -4,7 +4,9 @@ import br.com.paroquia.encontro.common.BusinessException;
 import br.com.paroquia.encontro.common.ResourceNotFoundException;
 import br.com.paroquia.encontro.domain.entity.CadernoChoro;
 import br.com.paroquia.encontro.domain.entity.CadernoChoroHistorico;
+import br.com.paroquia.encontro.domain.entity.EquipeMontagemKit;
 import br.com.paroquia.encontro.domain.enums.StatusCadernoChoro;
+import br.com.paroquia.encontro.domain.enums.StatusEquipeMontagemKit;
 import br.com.paroquia.encontro.domain.enums.VinculoStatus;
 import br.com.paroquia.encontro.dto.response.CadernoChoroGeracaoResponse;
 import br.com.paroquia.encontro.dto.response.CadernoChoroHistoricoResponse;
@@ -12,27 +14,46 @@ import br.com.paroquia.encontro.dto.response.CadernoChoroResponse;
 import br.com.paroquia.encontro.repository.CadernoChoroHistoricoRepository;
 import br.com.paroquia.encontro.repository.CadernoChoroRepository;
 import br.com.paroquia.encontro.repository.DuplaTioCaronaRepository;
+import br.com.paroquia.encontro.repository.EquipeMontagemKitRepository;
 import br.com.paroquia.encontro.repository.EventoRepository;
 import br.com.paroquia.encontro.repository.SobrinhoDuplaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class CadernoChoroService {
+    private static final List<StatusCadernoChoro> STATUS_NAO_CONTAM_CARGA_EQUIPE = List.of(
+            StatusCadernoChoro.ENTREGUE_AO_SOBRINHO,
+            StatusCadernoChoro.PERDIDO,
+            StatusCadernoChoro.SUBSTITUIDO,
+            StatusCadernoChoro.CANCELADO
+    );
+
     private final CadernoChoroRepository repository;
     private final CadernoChoroHistoricoRepository historicoRepository;
     private final EventoRepository eventoRepository;
     private final DuplaTioCaronaRepository duplaRepository;
     private final SobrinhoDuplaRepository sobrinhoDuplaRepository;
+    private final EquipeMontagemKitRepository equipeMontagemKitRepository;
 
-    public CadernoChoroService(CadernoChoroRepository repository, CadernoChoroHistoricoRepository historicoRepository, EventoRepository eventoRepository, DuplaTioCaronaRepository duplaRepository, SobrinhoDuplaRepository sobrinhoDuplaRepository) {
+    public CadernoChoroService(
+            CadernoChoroRepository repository,
+            CadernoChoroHistoricoRepository historicoRepository,
+            EventoRepository eventoRepository,
+            DuplaTioCaronaRepository duplaRepository,
+            SobrinhoDuplaRepository sobrinhoDuplaRepository,
+            EquipeMontagemKitRepository equipeMontagemKitRepository
+    ) {
         this.repository = repository;
         this.historicoRepository = historicoRepository;
         this.eventoRepository = eventoRepository;
         this.duplaRepository = duplaRepository;
         this.sobrinhoDuplaRepository = sobrinhoDuplaRepository;
+        this.equipeMontagemKitRepository = equipeMontagemKitRepository;
     }
 
     @Transactional
@@ -109,9 +130,23 @@ public class CadernoChoroService {
             throw new BusinessException("Não há Cadernos de Mensagens entregues à dupla para receber de volta.");
         }
 
+        var equipes = equipeMontagemKitRepository.findByEventoIdAndStatusOrderByIdAsc(eventoId, StatusEquipeMontagemKit.ATIVA);
+
+        if (equipes.isEmpty()) {
+            throw new BusinessException("Cadastre ao menos uma equipe de montagem do kit ativa antes de receber Cadernos de Mensagens da dupla.");
+        }
+
+        var cargasPorEquipe = carregarCargasAtuais(equipes);
+
         cadernos.forEach(caderno -> {
             caderno.receberDaDupla(observacao);
             registrarHistorico(caderno, observacao);
+
+            var equipe = selecionarEquipeMenosCarregada(equipes, cargasPorEquipe);
+            caderno.direcionarEquipeMontagem(equipe, observacao);
+            registrarHistorico(caderno, observacaoEquipe(equipe, observacao));
+
+            cargasPorEquipe.compute(equipe.getId(), (id, cargaAtual) -> cargaAtual == null ? 1L : cargaAtual + 1L);
         });
 
         return cadernos.stream().map(CadernoChoroResponse::from).toList();
@@ -169,6 +204,52 @@ public class CadernoChoroService {
         registrarHistorico(caderno, observacao);
 
         return CadernoChoroResponse.from(caderno);
+    }
+
+    private Map<Long, Long> carregarCargasAtuais(List<EquipeMontagemKit> equipes) {
+        var cargasPorEquipe = new HashMap<Long, Long>();
+
+        for (var equipe : equipes) {
+            cargasPorEquipe.put(
+                    equipe.getId(),
+                    repository.countByEquipeMontagemKitIdAndStatusNotIn(
+                            equipe.getId(),
+                            STATUS_NAO_CONTAM_CARGA_EQUIPE
+                    )
+            );
+        }
+
+        return cargasPorEquipe;
+    }
+
+    private EquipeMontagemKit selecionarEquipeMenosCarregada(
+            List<EquipeMontagemKit> equipes,
+            Map<Long, Long> cargasPorEquipe
+    ) {
+        return equipes.stream()
+                .min((equipe1, equipe2) -> {
+                    var carga1 = cargasPorEquipe.getOrDefault(equipe1.getId(), 0L);
+                    var carga2 = cargasPorEquipe.getOrDefault(equipe2.getId(), 0L);
+
+                    var comparacaoCarga = Long.compare(carga1, carga2);
+
+                    if (comparacaoCarga != 0) {
+                        return comparacaoCarga;
+                    }
+
+                    return Long.compare(equipe1.getId(), equipe2.getId());
+                })
+                .orElseThrow(() -> new BusinessException("Nenhuma equipe de montagem do kit ativa encontrada."));
+    }
+
+    private String observacaoEquipe(EquipeMontagemKit equipe, String observacao) {
+        var mensagem = "Caderno de Mensagens direcionado automaticamente para a equipe de montagem do kit: " + equipe.getApelido() + ".";
+
+        if (observacao == null || observacao.isBlank()) {
+            return mensagem;
+        }
+
+        return mensagem + " Observação: " + observacao.trim();
     }
 
     private void registrarHistorico(CadernoChoro caderno, String observacao) {

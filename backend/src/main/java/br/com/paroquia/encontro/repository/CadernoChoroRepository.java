@@ -13,6 +13,8 @@ public interface CadernoChoroRepository extends JpaRepository<CadernoChoro, Long
 
     List<CadernoChoro> findByEventoIdAndDuplaIdOrderBySobrinhoNomeAsc(Long eventoId, Long duplaId);
 
+    List<CadernoChoro> findByEventoIdAndEquipeMontagemKitIdOrderBySobrinhoNomeAsc(Long eventoId, Long equipeMontagemKitId);
+
     Optional<CadernoChoro> findByIdAndEventoId(Long id, Long eventoId);
 
     Optional<CadernoChoro> findByEventoIdAndSobrinhoId(Long eventoId, Long sobrinhoId);
@@ -22,6 +24,11 @@ public interface CadernoChoroRepository extends JpaRepository<CadernoChoro, Long
     boolean existsByEventoIdAndDuplaId(Long eventoId, Long duplaId);
 
     long countByEventoId(Long eventoId);
+
+    long countByEquipeMontagemKitIdAndStatusNotIn(
+            Long equipeMontagemKitId,
+            Collection<StatusCadernoChoro> status
+    );
 
     List<CadernoChoro> findByEventoIdAndDuplaIdAndStatusIn(
             Long eventoId,

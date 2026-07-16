@@ -28,6 +28,10 @@ public class CadernoChoroHistorico {
     @JoinColumn(name = "sobrinho_id", nullable = false)
     private Sobrinho sobrinho;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "equipe_montagem_kit_id")
+    private EquipeMontagemKit equipeMontagemKit;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 40)
     private StatusCadernoChoro status;
@@ -50,6 +54,7 @@ public class CadernoChoroHistorico {
         this.caderno = caderno;
         this.dupla = caderno.getDupla();
         this.sobrinho = caderno.getSobrinho();
+        this.equipeMontagemKit = caderno.getEquipeMontagemKit();
         this.status = status;
         this.observacao = observacao == null || observacao.isBlank() ? null : observacao.trim();
         this.ocorridoEm = OffsetDateTime.now();
@@ -73,6 +78,10 @@ public class CadernoChoroHistorico {
 
     public Sobrinho getSobrinho() {
         return sobrinho;
+    }
+
+    public EquipeMontagemKit getEquipeMontagemKit() {
+        return equipeMontagemKit;
     }
 
     public StatusCadernoChoro getStatus() {
