@@ -772,7 +772,8 @@ export class EventoOperacaoComponent implements OnInit {
     }
 
     const valor = this.codigoForm.getRawValue();
-    const codigo = valor.codigoIdentificacao.trim();
+    const codigo = this.normalizarCodigoCredencial(valor.codigoIdentificacao);
+    this.codigoForm.controls.codigoIdentificacao.setValue(codigo, { emitEvent: false });
 
     this.processandoCodigo.set(true);
 
@@ -913,7 +914,8 @@ export class EventoOperacaoComponent implements OnInit {
     }
 
     const valor = this.codigoSobrinhoForm.getRawValue();
-    const codigo = valor.codigoIdentificacao.trim();
+    const codigo = this.normalizarCodigoCredencial(valor.codigoIdentificacao);
+    this.codigoSobrinhoForm.controls.codigoIdentificacao.setValue(codigo, { emitEvent: false });
 
     this.processandoCodigoSobrinho.set(true);
 
@@ -1215,6 +1217,13 @@ export class EventoOperacaoComponent implements OnInit {
       .toLowerCase()
       .normalize('NFD')
       .replace(/[\u0300-\u036f]/g, '');
+  }
+
+  private normalizarCodigoCredencial(valor: string | null | undefined): string {
+    return String(valor ?? '')
+      .trim()
+      .replace(/\s+/g, '')
+      .toUpperCase();
   }
 
   private contemFiltro(valor: string | undefined | null, filtro: string): boolean {

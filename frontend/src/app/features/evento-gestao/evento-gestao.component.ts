@@ -511,7 +511,7 @@ export class EventoGestaoComponent implements OnInit {
     const pessoa = this.pessoas().find(item => item.id === id);
 
     this.pessoaSobrinhoForm.patchValue({
-      telefone: pessoa?.telefone ?? '',
+      telefone: TelefoneMaskDirective.formatar(pessoa?.telefone ?? ''),
       dataNascimento: pessoa?.dataNascimento?.substring(0, 10) ?? ''
     });
 
@@ -975,9 +975,9 @@ export class EventoGestaoComponent implements OnInit {
     this.sobrinhoEmEdicao.set(sobrinho);
     this.sobrinhoEdicaoForm.reset({
       nome: sobrinho.nome ?? '',
-      telefone: sobrinho.telefone ?? '',
+      telefone: TelefoneMaskDirective.formatar(sobrinho.telefone ?? ''),
       responsavelNome: sobrinho.responsavelNome ?? '',
-      responsavelTelefone: sobrinho.responsavelTelefone ?? '',
+      responsavelTelefone: TelefoneMaskDirective.formatar(sobrinho.responsavelTelefone ?? ''),
       endereco: sobrinho.endereco ?? '',
       dataNascimento: sobrinho.dataNascimento?.substring(0, 10) ?? '',
       restricaoAlimentar: sobrinho.restricaoAlimentar ?? '',
