@@ -148,6 +148,7 @@ export class EventoOperacaoComponent implements OnInit {
   readonly modeloCarteirinhaSelecionado = signal<ModeloCarteirinhaCredencial>('A4_10_CARTEIRINHAS');
   readonly tipoCredencialImpressaoSelecionado = signal<TipoCredencial | null>(null);
   readonly statusCredencialImpressaoSelecionado = signal<StatusCredencial | null>('ATIVA');
+  readonly filtroTextoImpressao = signal('');
   readonly baixandoImpressao = signal(false);
   readonly cadernoSelecionado = signal<CadernoChoro | null>(null);
   readonly historicoCaderno = signal<CadernoChoroHistorico[]>([]);
@@ -394,10 +395,25 @@ export class EventoOperacaoComponent implements OnInit {
   readonly credenciaisImpressaoFiltradas = computed(() => {
     const tipo = this.tipoCredencialImpressaoSelecionado();
     const status = this.statusCredencialImpressaoSelecionado();
+    const filtro = this.normalizarFiltro(this.filtroTextoImpressao());
 
     return this.credenciais()
       .filter(credencial => !tipo || credencial.tipo === tipo)
-      .filter(credencial => !status || credencial.status === status);
+      .filter(credencial => !status || credencial.status === status)
+      .filter(credencial => {
+        if (!filtro) {
+          return true;
+        }
+
+        return this.contemFiltro(credencial.codigo, filtro) ||
+          this.contemFiltro(credencial.pessoaNome, filtro) ||
+          this.contemFiltro(credencial.sobrinhoNome, filtro) ||
+          this.contemFiltro(credencial.responsavelNome, filtro) ||
+          this.contemFiltro(credencial.duplaCodigo, filtro) ||
+          this.contemFiltro(credencial.duplaApelido, filtro) ||
+          this.contemFiltro(credencial.tipo, filtro) ||
+          this.contemFiltro(credencial.status, filtro);
+      });
   });
 
   readonly totalPrevistoImpressao = computed(() => this.credenciaisImpressaoFiltradas().length);
@@ -842,6 +858,10 @@ export class EventoOperacaoComponent implements OnInit {
     this.statusCredencialImpressaoSelecionado.set(status);
   }
 
+  alterarFiltroTextoImpressao(valor: string): void {
+    this.filtroTextoImpressao.set(valor);
+  }
+
   limparFiltrosImpressao(): void {
     this.tipoImpressaoSelecionado.set('ETIQUETAS_QR');
     this.modeloEtiquetaQrSelecionado.set('PIMACO_A4356_63X25_33');
@@ -849,6 +869,7 @@ export class EventoOperacaoComponent implements OnInit {
     this.modeloCarteirinhaSelecionado.set('A4_10_CARTEIRINHAS');
     this.tipoCredencialImpressaoSelecionado.set(null);
     this.statusCredencialImpressaoSelecionado.set('ATIVA');
+    this.filtroTextoImpressao.set('');
   }
 
   alterarFiltroCadernos(valor: string): void {
@@ -902,7 +923,8 @@ export class EventoOperacaoComponent implements OnInit {
     const tipoImpressao = this.tipoImpressaoSelecionado();
     const filtrosComuns = {
       tipo: this.tipoCredencialImpressaoSelecionado(),
-      status: this.statusCredencialImpressaoSelecionado()
+      status: this.statusCredencialImpressaoSelecionado(),
+      filtro: this.filtroTextoImpressao()
     };
 
     const requisicao = (() => {

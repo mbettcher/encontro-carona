@@ -41,11 +41,12 @@ public class RelatorioCrachaCredencialService {
             Long eventoId,
             ModeloCrachaCredencial modelo,
             TipoCredencial tipo,
-            StatusCredencial status
+            StatusCredencial status,
+            String filtro
     ) {
         var evento = buscarEvento(eventoId);
         var modeloResolvido = modelo == null ? ModeloCrachaCredencial.A4_2_COLUNAS_4 : modelo;
-        var itens = montarItens(eventoId, evento, tipo, status);
+        var itens = montarItens(eventoId, evento, tipo, status, filtro);
 
         if (itens.isEmpty()) {
             throw new BusinessException("Não há credenciais para os filtros selecionados.");
@@ -53,7 +54,7 @@ public class RelatorioCrachaCredencialService {
 
         var parametros = new HashMap<String, Object>();
         parametros.put("EVENTO_NOME", texto(evento.getNome()));
-        parametros.put("FILTROS", descricaoFiltros(modeloResolvido, tipo, status));
+        parametros.put("FILTROS", descricaoFiltros(modeloResolvido, tipo, status, filtro));
         parametros.put("TOTAL_REGISTROS", itens.size());
 
         return jasperReportService.gerarPdf(template(modeloResolvido), parametros, itens);
@@ -68,11 +69,13 @@ public class RelatorioCrachaCredencialService {
             Long eventoId,
             Evento evento,
             TipoCredencial tipo,
-            StatusCredencial status
+            StatusCredencial status,
+            String filtro
     ) {
         return credencialRepository.findByEventoIdOrderByTipoAscCodigoAsc(eventoId).stream()
                 .filter(credencial -> tipo == null || credencial.getTipo() == tipo)
                 .filter(credencial -> status == null || credencial.getStatus() == status)
+                .filter(credencial -> correspondeFiltro(credencial, filtro))
                 .sorted(Comparator
                         .comparing((CredencialEvento credencial) -> credencial.getTipo().name())
                         .thenComparing(this::nomeCredencial, String.CASE_INSENSITIVE_ORDER)
@@ -132,6 +135,36 @@ public class RelatorioCrachaCredencialService {
         return "Credencial do encontro";
     }
 
+
+    private boolean correspondeFiltro(CredencialEvento credencial, String filtro) {
+        var filtroNormalizado = normalizarFiltro(filtro);
+
+        if (filtroNormalizado.isBlank()) {
+            return true;
+        }
+
+        return contemFiltro(credencial.getCodigo(), filtroNormalizado)
+                || contemFiltro(nomeCredencial(credencial), filtroNormalizado)
+                || contemFiltro(complemento(credencial), filtroNormalizado)
+                || contemFiltro(labelTipo(credencial.getTipo()), filtroNormalizado);
+    }
+
+    private boolean contemFiltro(String valor, String filtroNormalizado) {
+        return normalizarFiltro(valor).contains(filtroNormalizado);
+    }
+
+    private String normalizarFiltro(String valor) {
+        if (valor == null || valor.isBlank()) {
+            return "";
+        }
+
+        return java.text.Normalizer
+                .normalize(valor, java.text.Normalizer.Form.NFD)
+                .replaceAll("\\p{M}", "")
+                .toLowerCase()
+                .trim();
+    }
+
     private String labelTipo(TipoCredencial tipo) {
         if (tipo == null) {
             return "-";
@@ -143,11 +176,15 @@ public class RelatorioCrachaCredencialService {
         };
     }
 
-    private String descricaoFiltros(ModeloCrachaCredencial modelo, TipoCredencial tipo, StatusCredencial status) {
+    private String descricaoFiltros(ModeloCrachaCredencial modelo, TipoCredencial tipo, StatusCredencial status, String filtro) {
         var filtros = new java.util.ArrayList<String>();
         filtros.add("Modelo: " + labelModelo(modelo));
         filtros.add(tipo == null ? "Público: todos" : "Público: " + labelTipo(tipo));
         filtros.add(status == null ? "Status: todos" : "Status: " + labelStatus(status));
+
+        if (filtro != null && !filtro.isBlank()) {
+            filtros.add("Busca: " + filtro.trim());
+        }
 
         return String.join(" | ", filtros);
     }

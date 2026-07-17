@@ -1372,6 +1372,14 @@
                   optionLabel="label" optionValue="value" [ngModel]="statusCredencialImpressaoSelecionado()"
                   (ngModelChange)="alterarStatusCredencialImpressao($event)" appendTo="body" />
               </div>
+
+              <div class="col-12 col-lg-4">
+                <label for="filtroTextoImpressao" class="form-label">Buscar por nome ou código</label>
+                <input id="filtroTextoImpressao" pInputText class="w-100" type="text"
+                  placeholder="Ex.: Maria, TC-E0002, SB-E0002"
+                  [ngModel]="filtroTextoImpressao()"
+                  (ngModelChange)="alterarFiltroTextoImpressao($event)" />
+              </div>
             </div>
 
             <div class="row g-3 mt-4">
@@ -1412,6 +1420,9 @@
                   <div class="small text-body-secondary mb-1">Filtros</div>
                   <div class="fw-semibold">{{ filtroPublicoImpressao() }}</div>
                   <div class="small text-body-secondary">{{ filtroStatusImpressao() }}</div>
+                  @if (filtroTextoImpressao().trim()) {
+                  <div class="small text-body-secondary">Busca: {{ filtroTextoImpressao().trim() }}</div>
+                  }
                 </div>
 
                 <div class="col-12 col-lg-4">

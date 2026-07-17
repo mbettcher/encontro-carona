@@ -79,9 +79,10 @@ public class RelatorioController {
             @PathVariable Long eventoId,
             @RequestParam(required = false, defaultValue = "A4_3_COLUNAS_24") ModeloEtiquetaQr modelo,
             @RequestParam(required = false) TipoCredencial tipo,
-            @RequestParam(required = false) StatusCredencial status
+            @RequestParam(required = false) StatusCredencial status,
+            @RequestParam(required = false) String filtro
     ) {
-        var pdf = etiquetaQrService.gerarEtiquetasQr(eventoId, modelo, tipo, status);
+        var pdf = etiquetaQrService.gerarEtiquetasQr(eventoId, modelo, tipo, status, filtro);
         return pdfResponse(pdf, "etiquetas-qr-code-evento-" + eventoId + ".pdf");
     }
 
@@ -91,9 +92,10 @@ public class RelatorioController {
             @PathVariable Long eventoId,
             @RequestParam(required = false, defaultValue = "A4_2_COLUNAS_4") ModeloCrachaCredencial modelo,
             @RequestParam(required = false) TipoCredencial tipo,
-            @RequestParam(required = false) StatusCredencial status
+            @RequestParam(required = false) StatusCredencial status,
+            @RequestParam(required = false) String filtro
     ) {
-        var pdf = crachaCredencialService.gerarCrachas(eventoId, modelo, tipo, status);
+        var pdf = crachaCredencialService.gerarCrachas(eventoId, modelo, tipo, status, filtro);
         return pdfResponse(pdf, "crachas-credenciais-evento-" + eventoId + ".pdf");
     }
 
@@ -103,9 +105,10 @@ public class RelatorioController {
             @PathVariable Long eventoId,
             @RequestParam(required = false, defaultValue = "A4_10_CARTEIRINHAS") ModeloCarteirinhaCredencial modelo,
             @RequestParam(required = false) TipoCredencial tipo,
-            @RequestParam(required = false) StatusCredencial status
+            @RequestParam(required = false) StatusCredencial status,
+            @RequestParam(required = false) String filtro
     ) {
-        var pdf = carteirinhaCredencialService.gerarCarteirinhas(eventoId, modelo, tipo, status);
+        var pdf = carteirinhaCredencialService.gerarCarteirinhas(eventoId, modelo, tipo, status, filtro);
         return pdfResponse(pdf, "carteirinhas-credenciais-evento-" + eventoId + ".pdf");
     }
 

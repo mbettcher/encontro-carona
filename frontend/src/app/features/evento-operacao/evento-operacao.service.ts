@@ -97,7 +97,7 @@ export class EventoOperacaoService {
 
   baixarEtiquetasQrCode(
     eventoId: number,
-    filtros: { modelo: ModeloEtiquetaQr; tipo?: TipoCredencial | null; status?: StatusCredencial | null }
+    filtros: { modelo: ModeloEtiquetaQr; tipo?: TipoCredencial | null; status?: StatusCredencial | null; filtro?: string | null }
   ): Observable<Blob> {
     let params = new HttpParams()
       .set('modelo', filtros.modelo);
@@ -108,6 +108,10 @@ export class EventoOperacaoService {
 
     if (filtros.status) {
       params = params.set('status', filtros.status);
+    }
+
+    if (filtros.filtro?.trim()) {
+      params = params.set('filtro', filtros.filtro.trim());
     }
 
     return this.http.get(
@@ -121,7 +125,7 @@ export class EventoOperacaoService {
 
   baixarCrachasCredenciais(
     eventoId: number,
-    filtros: { modelo: ModeloCrachaCredencial; tipo?: TipoCredencial | null; status?: StatusCredencial | null }
+    filtros: { modelo: ModeloCrachaCredencial; tipo?: TipoCredencial | null; status?: StatusCredencial | null; filtro?: string | null }
   ): Observable<Blob> {
     let params = new HttpParams()
       .set('modelo', filtros.modelo);
@@ -132,6 +136,10 @@ export class EventoOperacaoService {
 
     if (filtros.status) {
       params = params.set('status', filtros.status);
+    }
+
+    if (filtros.filtro?.trim()) {
+      params = params.set('filtro', filtros.filtro.trim());
     }
 
     return this.http.get(
@@ -145,7 +153,7 @@ export class EventoOperacaoService {
 
   baixarCarteirinhasCredenciais(
     eventoId: number,
-    filtros: { modelo: ModeloCarteirinhaCredencial; tipo?: TipoCredencial | null; status?: StatusCredencial | null }
+    filtros: { modelo: ModeloCarteirinhaCredencial; tipo?: TipoCredencial | null; status?: StatusCredencial | null; filtro?: string | null }
   ): Observable<Blob> {
     let params = new HttpParams()
       .set('modelo', filtros.modelo);
@@ -156,6 +164,10 @@ export class EventoOperacaoService {
 
     if (filtros.status) {
       params = params.set('status', filtros.status);
+    }
+
+    if (filtros.filtro?.trim()) {
+      params = params.set('filtro', filtros.filtro.trim());
     }
 
     return this.http.get(
