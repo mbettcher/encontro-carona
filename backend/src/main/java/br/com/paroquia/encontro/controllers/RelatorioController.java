@@ -1,7 +1,11 @@
 package br.com.paroquia.encontro.controllers;
 
+import br.com.paroquia.encontro.domain.enums.ModeloEtiquetaQr;
 import br.com.paroquia.encontro.domain.enums.StatusCadernoChoro;
+import br.com.paroquia.encontro.domain.enums.StatusCredencial;
+import br.com.paroquia.encontro.domain.enums.TipoCredencial;
 import br.com.paroquia.encontro.services.RelatorioCadernoEquipeService;
+import br.com.paroquia.encontro.services.RelatorioEtiquetaQrService;
 import br.com.paroquia.encontro.services.RelatorioListaPresencaService;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
@@ -16,13 +20,16 @@ import java.nio.charset.StandardCharsets;
 public class RelatorioController {
     private final RelatorioCadernoEquipeService cadernoEquipeService;
     private final RelatorioListaPresencaService listaPresencaService;
+    private final RelatorioEtiquetaQrService etiquetaQrService;
 
     public RelatorioController(
             RelatorioCadernoEquipeService cadernoEquipeService,
-            RelatorioListaPresencaService listaPresencaService
+            RelatorioListaPresencaService listaPresencaService,
+            RelatorioEtiquetaQrService etiquetaQrService
     ) {
         this.cadernoEquipeService = cadernoEquipeService;
         this.listaPresencaService = listaPresencaService;
+        this.etiquetaQrService = etiquetaQrService;
     }
 
     @GetMapping(value = "/cadernos-equipes.pdf", produces = MediaType.APPLICATION_PDF_VALUE)
@@ -54,6 +61,18 @@ public class RelatorioController {
     ) {
         var pdf = listaPresencaService.listaPresencaTiosCarona(eventoId, somenteAtivos, duplaId);
         return pdfResponse(pdf, "lista-presenca-tios-carona-evento-" + eventoId + ".pdf");
+    }
+
+
+    @GetMapping(value = "/etiquetas-qr-code.pdf", produces = MediaType.APPLICATION_PDF_VALUE)
+    public ResponseEntity<byte[]> etiquetasQrCode(
+            @PathVariable Long eventoId,
+            @RequestParam(required = false, defaultValue = "A4_3_COLUNAS_24") ModeloEtiquetaQr modelo,
+            @RequestParam(required = false) TipoCredencial tipo,
+            @RequestParam(required = false) StatusCredencial status
+    ) {
+        var pdf = etiquetaQrService.gerarEtiquetasQr(eventoId, modelo, tipo, status);
+        return pdfResponse(pdf, "etiquetas-qr-code-evento-" + eventoId + ".pdf");
     }
 
     private ResponseEntity<byte[]> pdfResponse(byte[] pdf, String filename) {

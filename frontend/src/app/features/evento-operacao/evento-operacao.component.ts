@@ -21,12 +21,16 @@ import { TabsModule } from 'primeng/tabs';
 import {
   CadernoChoro,
   CadernoChoroHistorico,
+  CredencialEvento,
   DuplaTioCarona,
   Evento,
   OperacaoPresencaSobrinho,
   Sobrinho,
   SobrinhoDupla,
   StatusCadernoChoro,
+  ModeloEtiquetaQr,
+  StatusCredencial,
+  TipoCredencial,
   TioCaronaEvento
 } from '../../shared/models';
 import { AuthService } from '../../core/auth/auth.service';
@@ -42,6 +46,7 @@ type OperacaoCadernoChoro =
 
 type TipoListaPresenca = 'ENCONTRISTAS' | 'TIOS_CARONA';
 type TipoRelatorioOperacao = 'ENCONTRISTAS' | 'TIOS_CARONA' | 'CADERNOS';
+type TipoImpressaoOperacao = 'ETIQUETAS_QR';
 
 type AbaOperacao =
   | 'VISAO_GERAL'
@@ -49,7 +54,8 @@ type AbaOperacao =
   | 'TIOS_CARONA'
   | 'SOBRINHOS'
   | 'CADERNO_CHORO'
-  | 'RELATORIOS';
+  | 'RELATORIOS'
+  | 'IMPRESSOES';
 
 
 interface OpcaoStatusCaderno {
@@ -112,6 +118,7 @@ export class EventoOperacaoComponent implements OnInit {
   readonly sobrinhos = signal<Sobrinho[]>([]);
   readonly vinculos = signal<SobrinhoDupla[]>([]);
   readonly cadernos = signal<CadernoChoro[]>([]);
+  readonly credenciais = signal<CredencialEvento[]>([]);
   readonly carregando = signal(false);
   readonly processandoCodigo = signal(false);
   readonly evento = signal<Evento | null>(null);
@@ -133,6 +140,11 @@ export class EventoOperacaoComponent implements OnInit {
   readonly equipeRelatorioSelecionada = signal<number | null>(null);
   readonly statusCadernoRelatorioSelecionado = signal<StatusCadernoChoro | null>(null);
   readonly somenteAtivosRelatorio = signal(true);
+  readonly tipoImpressaoSelecionado = signal<TipoImpressaoOperacao>('ETIQUETAS_QR');
+  readonly modeloEtiquetaQrSelecionado = signal<ModeloEtiquetaQr>('A4_3_COLUNAS_24');
+  readonly tipoCredencialImpressaoSelecionado = signal<TipoCredencial | null>(null);
+  readonly statusCredencialImpressaoSelecionado = signal<StatusCredencial | null>('ATIVA');
+  readonly baixandoImpressao = signal(false);
   readonly cadernoSelecionado = signal<CadernoChoro | null>(null);
   readonly historicoCaderno = signal<CadernoChoroHistorico[]>([]);
   readonly historicoCadernoVisivel = signal(false);
@@ -269,6 +281,62 @@ export class EventoOperacaoComponent implements OnInit {
     { label: 'Todos os status', value: null as StatusCadernoChoro | null },
     ...this.opcoesStatusCaderno
   ]);
+
+  readonly opcoesTiposImpressao = [
+    {
+      label: 'Etiquetas QR Code',
+      value: 'ETIQUETAS_QR' as TipoImpressaoOperacao,
+      descricao: 'Etiquetas oficiais com QR Code das credenciais'
+    }
+  ];
+
+  readonly opcoesModelosEtiquetaQr = [
+    {
+      label: 'A4 - 3 colunas / 24 etiquetas',
+      value: 'A4_3_COLUNAS_24' as ModeloEtiquetaQr,
+      descricao: 'Modelo para folha A4 com etiquetas menores'
+    },
+    {
+      label: 'A4 - 2 colunas / 14 etiquetas',
+      value: 'A4_2_COLUNAS_14' as ModeloEtiquetaQr,
+      descricao: 'Modelo para folha A4 com etiquetas maiores'
+    },
+    {
+      label: 'Etiqueta 70 x 37 mm',
+      value: 'ETIQUETA_70X37' as ModeloEtiquetaQr,
+      descricao: 'Modelo unitário para etiqueta comercial maior'
+    },
+    {
+      label: 'Etiqueta 50 x 30 mm',
+      value: 'ETIQUETA_50X30' as ModeloEtiquetaQr,
+      descricao: 'Modelo unitário compacto'
+    }
+  ];
+
+  readonly opcoesTiposCredencialImpressao = [
+    { label: 'Todos', value: null as TipoCredencial | null },
+    { label: 'Encontristas', value: 'SOBRINHO' as TipoCredencial },
+    { label: 'Tios carona', value: 'TIO_CARONA' as TipoCredencial }
+  ];
+
+  readonly opcoesStatusCredencialImpressao = [
+    { label: 'Ativas', value: 'ATIVA' as StatusCredencial | null },
+    { label: 'Todas', value: null as StatusCredencial | null },
+    { label: 'Inativas', value: 'INATIVA' as StatusCredencial },
+    { label: 'Canceladas', value: 'CANCELADA' as StatusCredencial }
+  ];
+
+  readonly totalPrevistoImpressao = computed(() => {
+    const tipo = this.tipoCredencialImpressaoSelecionado();
+    const status = this.statusCredencialImpressaoSelecionado();
+
+    return this.credenciais()
+      .filter(credencial => !tipo || credencial.tipo === tipo)
+      .filter(credencial => !status || credencial.status === status)
+      .length;
+  });
+
+  readonly podeEmitirImpressao = computed(() => this.totalPrevistoImpressao() > 0 && !this.baixandoImpressao());
 
   readonly totalPrevistoRelatorio = computed(() => {
     const tipo = this.tipoRelatorioSelecionado();
@@ -546,6 +614,7 @@ export class EventoOperacaoComponent implements OnInit {
     this.carregarSobrinhos();
     this.carregarVinculos();
     this.carregarCadernos();
+    this.carregarCredenciais();
 
     window.setTimeout(() => this.carregando.set(false), 600);
   }
@@ -556,6 +625,16 @@ export class EventoOperacaoComponent implements OnInit {
       error: erro => {
         console.error('Erro ao carregar cadernos de mensagens', erro);
         this.toastError('Não foi possível carregar os cadernos de mensagens.');
+      }
+    });
+  }
+
+  private carregarCredenciais(): void {
+    this.service.listarCredenciais(this.eventoId).subscribe({
+      next: credenciais => this.credenciais.set(credenciais),
+      error: erro => {
+        console.error('Erro ao carregar credenciais', erro);
+        this.toastError('Não foi possível carregar as credenciais.');
       }
     });
   }
@@ -589,6 +668,29 @@ export class EventoOperacaoComponent implements OnInit {
     this.equipeRelatorioSelecionada.set(null);
     this.statusCadernoRelatorioSelecionado.set(null);
     this.somenteAtivosRelatorio.set(true);
+  }
+
+  alterarTipoImpressao(tipo: TipoImpressaoOperacao): void {
+    this.tipoImpressaoSelecionado.set(tipo);
+  }
+
+  alterarModeloEtiquetaQr(modelo: ModeloEtiquetaQr): void {
+    this.modeloEtiquetaQrSelecionado.set(modelo);
+  }
+
+  alterarTipoCredencialImpressao(tipo: TipoCredencial | null): void {
+    this.tipoCredencialImpressaoSelecionado.set(tipo);
+  }
+
+  alterarStatusCredencialImpressao(status: StatusCredencial | null): void {
+    this.statusCredencialImpressaoSelecionado.set(status);
+  }
+
+  limparFiltrosImpressao(): void {
+    this.tipoImpressaoSelecionado.set('ETIQUETAS_QR');
+    this.modeloEtiquetaQrSelecionado.set('A4_3_COLUNAS_24');
+    this.tipoCredencialImpressaoSelecionado.set(null);
+    this.statusCredencialImpressaoSelecionado.set('ATIVA');
   }
 
   alterarFiltroCadernos(valor: string): void {
@@ -630,6 +732,44 @@ export class EventoOperacaoComponent implements OnInit {
 
   alterarFiltroSobrinhosEvento(valor: string): void {
     this.filtroSobrinhosEvento.set(valor);
+  }
+
+  emitirImpressaoOperacao(): void {
+    if (this.baixandoImpressao()) {
+      return;
+    }
+
+    this.baixandoImpressao.set(true);
+
+    const filtros = {
+      modelo: this.modeloEtiquetaQrSelecionado(),
+      tipo: this.tipoCredencialImpressaoSelecionado(),
+      status: this.statusCredencialImpressaoSelecionado()
+    };
+
+    this.service.baixarEtiquetasQrCode(this.eventoId, filtros)
+      .pipe(finalize(() => this.baixandoImpressao.set(false)))
+      .subscribe({
+        next: arquivo => {
+          this.salvarArquivoPdf(arquivo, this.nomeArquivoEtiquetasQr());
+        },
+        error: erro => {
+          console.error('Erro ao gerar etiquetas QR Code', erro);
+          this.toastError(this.mensagemErro(erro, 'Não foi possível gerar as etiquetas QR Code.'));
+        }
+      });
+  }
+
+  private nomeArquivoEtiquetasQr(): string {
+    const eventoNome = this.evento()?.nome || `evento-${this.eventoId}`;
+    const nomeSeguro = eventoNome
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-zA-Z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .toLowerCase();
+
+    return `etiquetas-qr-code-${nomeSeguro || this.eventoId}.pdf`;
   }
 
   baixarListaPresencaEncontristas(): void {
@@ -1774,4 +1914,3 @@ export class EventoOperacaoComponent implements OnInit {
     this.codigoSobrinhoForm.updateValueAndValidity();
   }
 }
-

@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd"
+              name="etiquetas_qr_50x30"
+              language="java"
+              pageWidth="142"
+              pageHeight="85"
+              columnCount="1"
+              columnWidth="136"
+              columnSpacing="0"
+              leftMargin="3"
+              rightMargin="3"
+              topMargin="3"
+              bottomMargin="3">
+
+    <property name="net.sf.jasperreports.awt.ignore.missing.font" value="true"/>
+
+    <style name="Nome" fontName="SansSerif" fontSize="8" isBold="true" forecolor="#111827"/>
+    <style name="Tipo" fontName="SansSerif" fontSize="6" forecolor="#2563EB"/>
+    <style name="Codigo" fontName="SansSerif" fontSize="6" isBold="true" forecolor="#111827"/>
+    <style name="Complemento" fontName="SansSerif" fontSize="5" forecolor="#4B5563"/>
+
+    <parameter name="EVENTO_NOME" class="java.lang.String"/>
+    <parameter name="FILTROS" class="java.lang.String"/>
+    <parameter name="TOTAL_REGISTROS" class="java.lang.Integer"/>
+
+    <field name="qrCode" class="java.awt.Image"/>
+    <field name="codigo" class="java.lang.String"/>
+    <field name="nome" class="java.lang.String"/>
+    <field name="tipo" class="java.lang.String"/>
+    <field name="complemento" class="java.lang.String"/>
+    <field name="evento" class="java.lang.String"/>
+
+    <detail>
+        <band height="79" splitType="Prevent">
+            <rectangle>
+                <reportElement x="0" y="0" width="136" height="75" forecolor="#D1D5DB"/>
+                <graphicElement>
+                    <pen lineWidth="0.35" lineColor="#D1D5DB"/>
+                </graphicElement>
+            </rectangle>
+
+            <image scaleImage="RetainShape" hAlign="Center" vAlign="Middle">
+                <reportElement x="4" y="5" width="48" height="48"/>
+                <imageExpression><![CDATA[$F{qrCode}]]></imageExpression>
+            </image>
+
+            <textField isStretchWithOverflow="true">
+                <reportElement style="Nome" x="56" y="6" width="78" height="13"/>
+                <textElement verticalAlignment="Top"/>
+                <textFieldExpression><![CDATA[$F{nome}]]></textFieldExpression>
+            </textField>
+
+            <textField>
+                <reportElement style="Tipo" x="56" y="20" width="78" height="11"/>
+                <textFieldExpression><![CDATA[$F{tipo}]]></textFieldExpression>
+            </textField>
+
+            <textField>
+                <reportElement style="Codigo" x="56" y="34" width="78" height="12"/>
+                <textFieldExpression><![CDATA[$F{codigo}]]></textFieldExpression>
+            </textField>
+
+            <textField isStretchWithOverflow="true">
+                <reportElement style="Complemento" x="56" y="48" width="78" height="23"/>
+                <textFieldExpression><![CDATA[$F{complemento}]]></textFieldExpression>
+            </textField>
+        </band>
+    </detail>
+</jasperReport>

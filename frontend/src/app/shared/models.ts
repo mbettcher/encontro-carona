@@ -324,6 +324,13 @@ export interface EquipeMontagemKitIntegranteRequest {
 }
 
 
+
+export type ModeloEtiquetaQr =
+  | 'A4_3_COLUNAS_24'
+  | 'A4_2_COLUNAS_14'
+  | 'ETIQUETA_70X37'
+  | 'ETIQUETA_50X30';
+
 export type TipoCredencial =
   'TIO_CARONA'
   | 'SOBRINHO';

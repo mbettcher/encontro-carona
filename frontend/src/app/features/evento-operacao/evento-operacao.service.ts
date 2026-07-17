@@ -14,6 +14,10 @@ import {
   CadernoChoroGeracaoResponse,
   CadernoChoroHistorico,
   StatusCadernoChoro,
+  ModeloEtiquetaQr,
+  TipoCredencial,
+  StatusCredencial,
+  CredencialEvento,
 } from '../../shared/models';
 
 @Injectable({
@@ -81,8 +85,36 @@ export class EventoOperacaoService {
     return this.http.get<CadernoChoro[]>(`${this.apiUrl}/eventos/${eventoId}/cadernos`);
   }
 
+  listarCredenciais(eventoId: number): Observable<CredencialEvento[]> {
+    return this.http.get<CredencialEvento[]>(`${this.apiUrl}/eventos/${eventoId}/credenciais`);
+  }
+
   listarHistoricoCaderno(eventoId: number, cadernoId: number): Observable<CadernoChoroHistorico[]> {
     return this.http.get<CadernoChoroHistorico[]>(`${this.apiUrl}/eventos/${eventoId}/cadernos/${cadernoId}/historico`);
+  }
+
+  baixarEtiquetasQrCode(
+    eventoId: number,
+    filtros: { modelo: ModeloEtiquetaQr; tipo?: TipoCredencial | null; status?: StatusCredencial | null }
+  ): Observable<Blob> {
+    let params = new HttpParams()
+      .set('modelo', filtros.modelo);
+
+    if (filtros.tipo) {
+      params = params.set('tipo', filtros.tipo);
+    }
+
+    if (filtros.status) {
+      params = params.set('status', filtros.status);
+    }
+
+    return this.http.get(
+      `${this.apiUrl}/eventos/${eventoId}/relatorios/etiquetas-qr-code.pdf`,
+      {
+        params,
+        responseType: 'blob'
+      }
+    );
   }
 
   baixarRelatorioCadernosEquipes(
