@@ -340,6 +340,10 @@ export type ModeloCrachaCredencial =
   | 'A4_1_COLUNA_2'
   | 'CRACHA_90X130';
 
+export type ModeloCarteirinhaCredencial =
+  | 'A4_10_CARTEIRINHAS'
+  | 'CARTEIRINHA_CR80_86X54';
+
 export type TipoCredencial =
   'TIO_CARONA'
   | 'SOBRINHO';

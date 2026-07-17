@@ -28,6 +28,7 @@ import {
   Sobrinho,
   SobrinhoDupla,
   StatusCadernoChoro,
+  ModeloCarteirinhaCredencial,
   ModeloCrachaCredencial,
   ModeloEtiquetaQr,
   StatusCredencial,
@@ -47,7 +48,7 @@ type OperacaoCadernoChoro =
 
 type TipoListaPresenca = 'ENCONTRISTAS' | 'TIOS_CARONA';
 type TipoRelatorioOperacao = 'ENCONTRISTAS' | 'TIOS_CARONA' | 'CADERNOS';
-type TipoImpressaoOperacao = 'ETIQUETAS_QR' | 'CRACHAS';
+type TipoImpressaoOperacao = 'ETIQUETAS_QR' | 'CRACHAS' | 'CARTEIRINHAS';
 
 type AbaOperacao =
   | 'VISAO_GERAL'
@@ -144,6 +145,7 @@ export class EventoOperacaoComponent implements OnInit {
   readonly tipoImpressaoSelecionado = signal<TipoImpressaoOperacao>('ETIQUETAS_QR');
   readonly modeloEtiquetaQrSelecionado = signal<ModeloEtiquetaQr>('PIMACO_A4356_63X25_33');
   readonly modeloCrachaSelecionado = signal<ModeloCrachaCredencial>('A4_2_COLUNAS_4');
+  readonly modeloCarteirinhaSelecionado = signal<ModeloCarteirinhaCredencial>('A4_10_CARTEIRINHAS');
   readonly tipoCredencialImpressaoSelecionado = signal<TipoCredencial | null>(null);
   readonly statusCredencialImpressaoSelecionado = signal<StatusCredencial | null>('ATIVA');
   readonly baixandoImpressao = signal(false);
@@ -294,6 +296,11 @@ export class EventoOperacaoComponent implements OnInit {
       label: 'Crachás / Credenciais',
       value: 'CRACHAS' as TipoImpressaoOperacao,
       descricao: 'Crachás oficiais com QR Code e identificação visual'
+    },
+    {
+      label: 'Carteirinhas operacionais',
+      value: 'CARTEIRINHAS' as TipoImpressaoOperacao,
+      descricao: 'Credenciais em formato horizontal tipo cartão'
     }
   ];
 
@@ -355,6 +362,19 @@ export class EventoOperacaoComponent implements OnInit {
       label: 'Crachá unitário 90 x 130 mm',
       value: 'CRACHA_90X130' as ModeloCrachaCredencial,
       descricao: 'Modelo unitário para impressão individual'
+    }
+  ];
+
+  readonly opcoesModelosCarteirinha = [
+    {
+      label: 'A4 - 10 carteirinhas',
+      value: 'A4_10_CARTEIRINHAS' as ModeloCarteirinhaCredencial,
+      descricao: 'Modelo horizontal em folha A4 para corte manual'
+    },
+    {
+      label: 'Carteirinha unitária CR80 - 86 x 54 mm',
+      value: 'CARTEIRINHA_CR80_86X54' as ModeloCarteirinhaCredencial,
+      descricao: 'Modelo unitário em tamanho padrão de cartão'
     }
   ];
 
@@ -727,6 +747,10 @@ export class EventoOperacaoComponent implements OnInit {
     this.modeloCrachaSelecionado.set(modelo);
   }
 
+  alterarModeloCarteirinha(modelo: ModeloCarteirinhaCredencial): void {
+    this.modeloCarteirinhaSelecionado.set(modelo);
+  }
+
   alterarTipoCredencialImpressao(tipo: TipoCredencial | null): void {
     this.tipoCredencialImpressaoSelecionado.set(tipo);
   }
@@ -797,15 +821,26 @@ export class EventoOperacaoComponent implements OnInit {
       status: this.statusCredencialImpressaoSelecionado()
     };
 
-    const requisicao = tipoImpressao === 'CRACHAS'
-      ? this.service.baixarCrachasCredenciais(this.eventoId, {
-        ...filtrosComuns,
-        modelo: this.modeloCrachaSelecionado()
-      })
-      : this.service.baixarEtiquetasQrCode(this.eventoId, {
+    const requisicao = (() => {
+      if (tipoImpressao === 'CRACHAS') {
+        return this.service.baixarCrachasCredenciais(this.eventoId, {
+          ...filtrosComuns,
+          modelo: this.modeloCrachaSelecionado()
+        });
+      }
+
+      if (tipoImpressao === 'CARTEIRINHAS') {
+        return this.service.baixarCarteirinhasCredenciais(this.eventoId, {
+          ...filtrosComuns,
+          modelo: this.modeloCarteirinhaSelecionado()
+        });
+      }
+
+      return this.service.baixarEtiquetasQrCode(this.eventoId, {
         ...filtrosComuns,
         modelo: this.modeloEtiquetaQrSelecionado()
       });
+    })();
 
     requisicao
       .pipe(finalize(() => this.baixandoImpressao.set(false)))
@@ -815,6 +850,8 @@ export class EventoOperacaoComponent implements OnInit {
             arquivo,
             tipoImpressao === 'CRACHAS'
               ? this.nomeArquivoCrachas()
+              : tipoImpressao === 'CARTEIRINHAS'
+              ? this.nomeArquivoCarteirinhas()
               : this.nomeArquivoEtiquetasQr()
           );
         },
@@ -847,6 +884,18 @@ export class EventoOperacaoComponent implements OnInit {
       .toLowerCase();
 
     return `crachas-credenciais-${nomeSeguro || this.eventoId}.pdf`;
+  }
+
+  private nomeArquivoCarteirinhas(): string {
+    const eventoNome = this.evento()?.nome || `evento-${this.eventoId}`;
+    const nomeSeguro = eventoNome
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-zA-Z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .toLowerCase();
+
+    return `carteirinhas-credenciais-${nomeSeguro || this.eventoId}.pdf`;
   }
 
   baixarListaPresencaEncontristas(): void {

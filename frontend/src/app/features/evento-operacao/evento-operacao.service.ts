@@ -14,6 +14,7 @@ import {
   CadernoChoroGeracaoResponse,
   CadernoChoroHistorico,
   StatusCadernoChoro,
+  ModeloCarteirinhaCredencial,
   ModeloCrachaCredencial,
   ModeloEtiquetaQr,
   TipoCredencial,
@@ -135,6 +136,30 @@ export class EventoOperacaoService {
 
     return this.http.get(
       `${this.apiUrl}/eventos/${eventoId}/relatorios/crachas-credenciais.pdf`,
+      {
+        params,
+        responseType: 'blob'
+      }
+    );
+  }
+
+  baixarCarteirinhasCredenciais(
+    eventoId: number,
+    filtros: { modelo: ModeloCarteirinhaCredencial; tipo?: TipoCredencial | null; status?: StatusCredencial | null }
+  ): Observable<Blob> {
+    let params = new HttpParams()
+      .set('modelo', filtros.modelo);
+
+    if (filtros.tipo) {
+      params = params.set('tipo', filtros.tipo);
+    }
+
+    if (filtros.status) {
+      params = params.set('status', filtros.status);
+    }
+
+    return this.http.get(
+      `${this.apiUrl}/eventos/${eventoId}/relatorios/carteirinhas-credenciais.pdf`,
       {
         params,
         responseType: 'blob'
