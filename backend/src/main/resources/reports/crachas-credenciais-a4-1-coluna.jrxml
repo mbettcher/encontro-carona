@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd"
+              name="crachas_credenciais_a4_1_coluna"
+              language="java"
+              pageWidth="595"
+              pageHeight="842"
+              columnCount="1"
+              columnWidth="360"
+              columnSpacing="0"
+              leftMargin="117"
+              rightMargin="118"
+              topMargin="35"
+              bottomMargin="35">
+
+    <property name="net.sf.jasperreports.awt.ignore.missing.font" value="true"/>
+
+    <style name="Evento" fontName="SansSerif" fontSize="8" isBold="true" forecolor="#FFFFFF"/>
+    <style name="Nome" fontName="SansSerif" fontSize="13" isBold="true" forecolor="#111827"/>
+    <style name="NomeGrande" fontName="SansSerif" fontSize="18" isBold="true" forecolor="#111827"/>
+    <style name="Tipo" fontName="SansSerif" fontSize="9" isBold="true" forecolor="#0EA5E9"/>
+    <style name="TipoGrande" fontName="SansSerif" fontSize="11" isBold="true" forecolor="#0EA5E9"/>
+    <style name="Complemento" fontName="SansSerif" fontSize="8" forecolor="#374151"/>
+    <style name="ComplementoGrande" fontName="SansSerif" fontSize="10" forecolor="#374151"/>
+    <style name="Codigo" fontName="SansSerif" fontSize="8" isBold="true" forecolor="#111827"/>
+    <style name="CodigoGrande" fontName="SansSerif" fontSize="9" isBold="true" forecolor="#111827"/>
+    <style name="Detalhe" fontName="SansSerif" fontSize="8" forecolor="#4B5563"/>
+    <style name="Rodape" fontName="SansSerif" fontSize="9" isBold="true" forecolor="#FFFFFF"/>
+    <style name="RodapeGrande" fontName="SansSerif" fontSize="11" isBold="true" forecolor="#FFFFFF"/>
+
+    <parameter name="EVENTO_NOME" class="java.lang.String"/>
+    <parameter name="FILTROS" class="java.lang.String"/>
+    <parameter name="TOTAL_REGISTROS" class="java.lang.Integer"/>
+
+    <field name="qrCode" class="java.awt.Image"/>
+    <field name="codigo" class="java.lang.String"/>
+    <field name="nome" class="java.lang.String"/>
+    <field name="tipo" class="java.lang.String"/>
+    <field name="complemento" class="java.lang.String"/>
+    <field name="evento" class="java.lang.String"/>
+    <field name="detalhe" class="java.lang.String"/>
+    <field name="rodape" class="java.lang.String"/>
+
+    <detail>
+        <band height="390" splitType="Prevent">
+
+            <rectangle>
+                <reportElement mode="Opaque" x="0" y="0" width="360" height="370" backcolor="#FFFFFF"/>
+                <graphicElement>
+                    <pen lineWidth="0.4" lineColor="#CBD5E1"/>
+                </graphicElement>
+            </rectangle>
+
+            <rectangle>
+                <reportElement mode="Opaque" x="0" y="0" width="360" height="40" backcolor="#111827"/>
+            </rectangle>
+
+            <textField isStretchWithOverflow="true">
+                <reportElement style="Evento" x="18" y="10" width="324" height="16"/>
+                <textElement textAlignment="Center" verticalAlignment="Middle"/>
+                <textFieldExpression><![CDATA[$F{evento}]]></textFieldExpression>
+            </textField>
+
+            <textField isStretchWithOverflow="true">
+                <reportElement style="NomeGrande" x="18" y="64" width="324" height="36"/>
+                <textElement textAlignment="Center" verticalAlignment="Top"/>
+                <textFieldExpression><![CDATA[$F{nome}]]></textFieldExpression>
+            </textField>
+
+            <textField>
+                <reportElement style="TipoGrande" x="18" y="104" width="324" height="16"/>
+                <textElement textAlignment="Center"/>
+                <textFieldExpression><![CDATA[$F{tipo}]]></textFieldExpression>
+            </textField>
+
+            <textField isStretchWithOverflow="true">
+                <reportElement style="ComplementoGrande" x="18" y="126" width="324" height="22"/>
+                <textElement textAlignment="Center"/>
+                <textFieldExpression><![CDATA[$F{complemento}]]></textFieldExpression>
+            </textField>
+
+            <image scaleImage="RetainShape" hAlign="Center" vAlign="Middle">
+                <reportElement x="114" y="160" width="132" height="132"/>
+                <imageExpression><![CDATA[$F{qrCode}]]></imageExpression>
+            </image>
+
+            <textField>
+                <reportElement style="CodigoGrande" x="18" y="300" width="324" height="14"/>
+                <textElement textAlignment="Center"/>
+                <textFieldExpression><![CDATA[$F{codigo}]]></textFieldExpression>
+            </textField>
+
+            <textField>
+                <reportElement style="Detalhe" x="18" y="322" width="324" height="14"/>
+                <textElement textAlignment="Center"/>
+                <textFieldExpression><![CDATA[$F{detalhe}]]></textFieldExpression>
+            </textField>
+
+            <rectangle>
+                <reportElement mode="Opaque" x="0" y="328" width="360" height="42" backcolor="#0EA5E9"/>
+            </rectangle>
+
+            <textField>
+                <reportElement style="RodapeGrande" x="18" y="342" width="324" height="14"/>
+                <textElement textAlignment="Center" verticalAlignment="Middle"/>
+                <textFieldExpression><![CDATA[$F{rodape}]]></textFieldExpression>
+            </textField>
+
+        </band>
+    </detail>
+</jasperReport>

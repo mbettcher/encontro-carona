@@ -335,6 +335,11 @@ export type ModeloEtiquetaQr =
   | 'PIMACO_A4362_99X34_16'
   | 'PIMACO_A4355_63X47_18';
 
+export type ModeloCrachaCredencial =
+  | 'A4_2_COLUNAS_4'
+  | 'A4_1_COLUNA_2'
+  | 'CRACHA_90X130';
+
 export type TipoCredencial =
   'TIO_CARONA'
   | 'SOBRINHO';

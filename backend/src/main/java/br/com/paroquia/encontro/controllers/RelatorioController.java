@@ -1,10 +1,12 @@
 package br.com.paroquia.encontro.controllers;
 
+import br.com.paroquia.encontro.domain.enums.ModeloCrachaCredencial;
 import br.com.paroquia.encontro.domain.enums.ModeloEtiquetaQr;
 import br.com.paroquia.encontro.domain.enums.StatusCadernoChoro;
 import br.com.paroquia.encontro.domain.enums.StatusCredencial;
 import br.com.paroquia.encontro.domain.enums.TipoCredencial;
 import br.com.paroquia.encontro.services.RelatorioCadernoEquipeService;
+import br.com.paroquia.encontro.services.RelatorioCrachaCredencialService;
 import br.com.paroquia.encontro.services.RelatorioEtiquetaQrService;
 import br.com.paroquia.encontro.services.RelatorioListaPresencaService;
 import org.springframework.http.ContentDisposition;
@@ -21,15 +23,18 @@ public class RelatorioController {
     private final RelatorioCadernoEquipeService cadernoEquipeService;
     private final RelatorioListaPresencaService listaPresencaService;
     private final RelatorioEtiquetaQrService etiquetaQrService;
+    private final RelatorioCrachaCredencialService crachaCredencialService;
 
     public RelatorioController(
             RelatorioCadernoEquipeService cadernoEquipeService,
             RelatorioListaPresencaService listaPresencaService,
-            RelatorioEtiquetaQrService etiquetaQrService
+            RelatorioEtiquetaQrService etiquetaQrService,
+            RelatorioCrachaCredencialService crachaCredencialService
     ) {
         this.cadernoEquipeService = cadernoEquipeService;
         this.listaPresencaService = listaPresencaService;
         this.etiquetaQrService = etiquetaQrService;
+        this.crachaCredencialService = crachaCredencialService;
     }
 
     @GetMapping(value = "/cadernos-equipes.pdf", produces = MediaType.APPLICATION_PDF_VALUE)
@@ -73,6 +78,18 @@ public class RelatorioController {
     ) {
         var pdf = etiquetaQrService.gerarEtiquetasQr(eventoId, modelo, tipo, status);
         return pdfResponse(pdf, "etiquetas-qr-code-evento-" + eventoId + ".pdf");
+    }
+
+
+    @GetMapping(value = "/crachas-credenciais.pdf", produces = MediaType.APPLICATION_PDF_VALUE)
+    public ResponseEntity<byte[]> crachasCredenciais(
+            @PathVariable Long eventoId,
+            @RequestParam(required = false, defaultValue = "A4_2_COLUNAS_4") ModeloCrachaCredencial modelo,
+            @RequestParam(required = false) TipoCredencial tipo,
+            @RequestParam(required = false) StatusCredencial status
+    ) {
+        var pdf = crachaCredencialService.gerarCrachas(eventoId, modelo, tipo, status);
+        return pdfResponse(pdf, "crachas-credenciais-evento-" + eventoId + ".pdf");
     }
 
     private ResponseEntity<byte[]> pdfResponse(byte[] pdf, String filename) {

@@ -14,6 +14,7 @@ import {
   CadernoChoroGeracaoResponse,
   CadernoChoroHistorico,
   StatusCadernoChoro,
+  ModeloCrachaCredencial,
   ModeloEtiquetaQr,
   TipoCredencial,
   StatusCredencial,
@@ -110,6 +111,30 @@ export class EventoOperacaoService {
 
     return this.http.get(
       `${this.apiUrl}/eventos/${eventoId}/relatorios/etiquetas-qr-code.pdf`,
+      {
+        params,
+        responseType: 'blob'
+      }
+    );
+  }
+
+  baixarCrachasCredenciais(
+    eventoId: number,
+    filtros: { modelo: ModeloCrachaCredencial; tipo?: TipoCredencial | null; status?: StatusCredencial | null }
+  ): Observable<Blob> {
+    let params = new HttpParams()
+      .set('modelo', filtros.modelo);
+
+    if (filtros.tipo) {
+      params = params.set('tipo', filtros.tipo);
+    }
+
+    if (filtros.status) {
+      params = params.set('status', filtros.status);
+    }
+
+    return this.http.get(
+      `${this.apiUrl}/eventos/${eventoId}/relatorios/crachas-credenciais.pdf`,
       {
         params,
         responseType: 'blob'

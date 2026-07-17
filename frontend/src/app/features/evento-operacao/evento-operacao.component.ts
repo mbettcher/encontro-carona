@@ -28,6 +28,7 @@ import {
   Sobrinho,
   SobrinhoDupla,
   StatusCadernoChoro,
+  ModeloCrachaCredencial,
   ModeloEtiquetaQr,
   StatusCredencial,
   TipoCredencial,
@@ -46,7 +47,7 @@ type OperacaoCadernoChoro =
 
 type TipoListaPresenca = 'ENCONTRISTAS' | 'TIOS_CARONA';
 type TipoRelatorioOperacao = 'ENCONTRISTAS' | 'TIOS_CARONA' | 'CADERNOS';
-type TipoImpressaoOperacao = 'ETIQUETAS_QR';
+type TipoImpressaoOperacao = 'ETIQUETAS_QR' | 'CRACHAS';
 
 type AbaOperacao =
   | 'VISAO_GERAL'
@@ -142,6 +143,7 @@ export class EventoOperacaoComponent implements OnInit {
   readonly somenteAtivosRelatorio = signal(true);
   readonly tipoImpressaoSelecionado = signal<TipoImpressaoOperacao>('ETIQUETAS_QR');
   readonly modeloEtiquetaQrSelecionado = signal<ModeloEtiquetaQr>('PIMACO_A4356_63X25_33');
+  readonly modeloCrachaSelecionado = signal<ModeloCrachaCredencial>('A4_2_COLUNAS_4');
   readonly tipoCredencialImpressaoSelecionado = signal<TipoCredencial | null>(null);
   readonly statusCredencialImpressaoSelecionado = signal<StatusCredencial | null>('ATIVA');
   readonly baixandoImpressao = signal(false);
@@ -287,6 +289,11 @@ export class EventoOperacaoComponent implements OnInit {
       label: 'Etiquetas QR Code',
       value: 'ETIQUETAS_QR' as TipoImpressaoOperacao,
       descricao: 'Etiquetas oficiais com QR Code das credenciais'
+    },
+    {
+      label: 'Crachás / Credenciais',
+      value: 'CRACHAS' as TipoImpressaoOperacao,
+      descricao: 'Crachás oficiais com QR Code e identificação visual'
     }
   ];
 
@@ -330,6 +337,24 @@ export class EventoOperacaoComponent implements OnInit {
       label: 'Etiqueta 50 x 30 mm',
       value: 'ETIQUETA_50X30' as ModeloEtiquetaQr,
       descricao: 'Modelo unitário compacto'
+    }
+  ];
+
+  readonly opcoesModelosCracha = [
+    {
+      label: 'A4 - 2 colunas / 4 crachás',
+      value: 'A4_2_COLUNAS_4' as ModeloCrachaCredencial,
+      descricao: 'Boa opção para impressão em folha A4 com corte manual'
+    },
+    {
+      label: 'A4 - 1 coluna / 2 crachás grandes',
+      value: 'A4_1_COLUNA_2' as ModeloCrachaCredencial,
+      descricao: 'Crachá maior, visual mais premium'
+    },
+    {
+      label: 'Crachá unitário 90 x 130 mm',
+      value: 'CRACHA_90X130' as ModeloCrachaCredencial,
+      descricao: 'Modelo unitário para impressão individual'
     }
   ];
 
@@ -698,6 +723,10 @@ export class EventoOperacaoComponent implements OnInit {
     this.modeloEtiquetaQrSelecionado.set(modelo);
   }
 
+  alterarModeloCracha(modelo: ModeloCrachaCredencial): void {
+    this.modeloCrachaSelecionado.set(modelo);
+  }
+
   alterarTipoCredencialImpressao(tipo: TipoCredencial | null): void {
     this.tipoCredencialImpressaoSelecionado.set(tipo);
   }
@@ -708,7 +737,8 @@ export class EventoOperacaoComponent implements OnInit {
 
   limparFiltrosImpressao(): void {
     this.tipoImpressaoSelecionado.set('ETIQUETAS_QR');
-    this.modeloEtiquetaQrSelecionado.set('A4_3_COLUNAS_24');
+    this.modeloEtiquetaQrSelecionado.set('PIMACO_A4356_63X25_33');
+    this.modeloCrachaSelecionado.set('A4_2_COLUNAS_4');
     this.tipoCredencialImpressaoSelecionado.set(null);
     this.statusCredencialImpressaoSelecionado.set('ATIVA');
   }
@@ -761,21 +791,36 @@ export class EventoOperacaoComponent implements OnInit {
 
     this.baixandoImpressao.set(true);
 
-    const filtros = {
-      modelo: this.modeloEtiquetaQrSelecionado(),
+    const tipoImpressao = this.tipoImpressaoSelecionado();
+    const filtrosComuns = {
       tipo: this.tipoCredencialImpressaoSelecionado(),
       status: this.statusCredencialImpressaoSelecionado()
     };
 
-    this.service.baixarEtiquetasQrCode(this.eventoId, filtros)
+    const requisicao = tipoImpressao === 'CRACHAS'
+      ? this.service.baixarCrachasCredenciais(this.eventoId, {
+        ...filtrosComuns,
+        modelo: this.modeloCrachaSelecionado()
+      })
+      : this.service.baixarEtiquetasQrCode(this.eventoId, {
+        ...filtrosComuns,
+        modelo: this.modeloEtiquetaQrSelecionado()
+      });
+
+    requisicao
       .pipe(finalize(() => this.baixandoImpressao.set(false)))
       .subscribe({
         next: arquivo => {
-          this.salvarArquivoPdf(arquivo, this.nomeArquivoEtiquetasQr());
+          this.salvarArquivoPdf(
+            arquivo,
+            tipoImpressao === 'CRACHAS'
+              ? this.nomeArquivoCrachas()
+              : this.nomeArquivoEtiquetasQr()
+          );
         },
         error: erro => {
-          console.error('Erro ao gerar etiquetas QR Code', erro);
-          this.toastError(this.mensagemErro(erro, 'Não foi possível gerar as etiquetas QR Code.'));
+          console.error('Erro ao gerar impressão oficial', erro);
+          this.toastError(this.mensagemErro(erro, 'Não foi possível gerar a impressão oficial.'));
         }
       });
   }
@@ -790,6 +835,18 @@ export class EventoOperacaoComponent implements OnInit {
       .toLowerCase();
 
     return `etiquetas-qr-code-${nomeSeguro || this.eventoId}.pdf`;
+  }
+
+  private nomeArquivoCrachas(): string {
+    const eventoNome = this.evento()?.nome || `evento-${this.eventoId}`;
+    const nomeSeguro = eventoNome
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-zA-Z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .toLowerCase();
+
+    return `crachas-credenciais-${nomeSeguro || this.eventoId}.pdf`;
   }
 
   baixarListaPresencaEncontristas(): void {
