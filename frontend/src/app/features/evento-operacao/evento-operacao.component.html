@@ -1384,7 +1384,7 @@
 
               <div class="col-12 col-md-4">
                 <div class="status-mini-card h-100">
-                  <div class="small text-body-secondary">{{ tipoImpressaoSelecionado() === 'CRACHAS' ? 'Crachás previstos' : tipoImpressaoSelecionado() === 'CARTEIRINHAS' ? 'Carteirinhas previstas' : 'Etiquetas previstas' }}</div>
+                  <div class="small text-body-secondary">{{ tituloTotalImpressao() }}</div>
                   <div class="fs-4 fw-bold">{{ totalPrevistoImpressao() }}</div>
                 </div>
               </div>
@@ -1394,7 +1394,32 @@
                   <div class="small text-body-secondary">Saída</div>
                   <div class="fw-semibold">
                     <i class="fa-solid fa-qrcode me-2 text-primary"></i>
-                    {{ tipoImpressaoSelecionado() === 'CRACHAS' ? 'PDF com crachás' : tipoImpressaoSelecionado() === 'CARTEIRINHAS' ? 'PDF com carteirinhas' : 'PDF com QR Code' }}
+                    {{ saidaImpressao() }}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="impressao-preview-card mt-4">
+              <div class="row g-3">
+                <div class="col-12 col-lg-5">
+                  <div class="small text-body-secondary mb-1">Modelo selecionado</div>
+                  <div class="fw-semibold">{{ modeloImpressaoAtual()?.label }}</div>
+                  <div class="small text-body-secondary mt-1">{{ modeloImpressaoAtual()?.descricao }}</div>
+                </div>
+
+                <div class="col-12 col-lg-3">
+                  <div class="small text-body-secondary mb-1">Filtros</div>
+                  <div class="fw-semibold">{{ filtroPublicoImpressao() }}</div>
+                  <div class="small text-body-secondary">{{ filtroStatusImpressao() }}</div>
+                </div>
+
+                <div class="col-12 col-lg-4">
+                  <div class="small text-body-secondary mb-1">Resumo do filtro</div>
+                  <div class="d-flex flex-wrap gap-2">
+                    <span class="badge text-bg-success">Ativas: {{ resumoCredenciaisImpressao().ativas }}</span>
+                    <span class="badge text-bg-warning">Inativas: {{ resumoCredenciaisImpressao().inativas }}</span>
+                    <span class="badge text-bg-danger">Canceladas: {{ resumoCredenciaisImpressao().canceladas }}</span>
                   </div>
                 </div>
               </div>

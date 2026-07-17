@@ -541,3 +541,13 @@
 
 
 }
+
+
+.evento-operacao-page {
+  .impressao-preview-card {
+    border: 1px solid var(--bs-border-color);
+    border-radius: 1rem;
+    background: var(--bs-body-bg);
+    padding: 1rem;
+  }
+}

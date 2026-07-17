@@ -391,14 +391,97 @@ export class EventoOperacaoComponent implements OnInit {
     { label: 'Canceladas', value: 'CANCELADA' as StatusCredencial }
   ];
 
-  readonly totalPrevistoImpressao = computed(() => {
+  readonly credenciaisImpressaoFiltradas = computed(() => {
     const tipo = this.tipoCredencialImpressaoSelecionado();
     const status = this.statusCredencialImpressaoSelecionado();
 
     return this.credenciais()
       .filter(credencial => !tipo || credencial.tipo === tipo)
-      .filter(credencial => !status || credencial.status === status)
-      .length;
+      .filter(credencial => !status || credencial.status === status);
+  });
+
+  readonly totalPrevistoImpressao = computed(() => this.credenciaisImpressaoFiltradas().length);
+
+  readonly tipoImpressaoAtual = computed(() =>
+    this.opcoesTiposImpressao.find(opcao => opcao.value === this.tipoImpressaoSelecionado())
+  );
+
+  readonly modeloImpressaoAtual = computed(() => {
+    const tipo = this.tipoImpressaoSelecionado();
+
+    if (tipo === 'CRACHAS') {
+      return this.opcoesModelosCracha.find(opcao => opcao.value === this.modeloCrachaSelecionado());
+    }
+
+    if (tipo === 'CARTEIRINHAS') {
+      return this.opcoesModelosCarteirinha.find(opcao => opcao.value === this.modeloCarteirinhaSelecionado());
+    }
+
+    return this.opcoesModelosEtiquetaQr.find(opcao => opcao.value === this.modeloEtiquetaQrSelecionado());
+  });
+
+  readonly tituloTotalImpressao = computed(() => {
+    switch (this.tipoImpressaoSelecionado()) {
+      case 'CRACHAS':
+        return 'Crachás previstos';
+      case 'CARTEIRINHAS':
+        return 'Carteirinhas previstas';
+      default:
+        return 'Etiquetas previstas';
+    }
+  });
+
+  readonly saidaImpressao = computed(() => {
+    switch (this.tipoImpressaoSelecionado()) {
+      case 'CRACHAS':
+        return 'PDF com crachás';
+      case 'CARTEIRINHAS':
+        return 'PDF com carteirinhas';
+      default:
+        return 'PDF com QR Code';
+    }
+  });
+
+  readonly filtroPublicoImpressao = computed(() => {
+    const tipo = this.tipoCredencialImpressaoSelecionado();
+
+    if (tipo === 'SOBRINHO') {
+      return 'Encontristas';
+    }
+
+    if (tipo === 'TIO_CARONA') {
+      return 'Tios carona';
+    }
+
+    return 'Todos os públicos';
+  });
+
+  readonly filtroStatusImpressao = computed(() => {
+    const status = this.statusCredencialImpressaoSelecionado();
+
+    if (status === 'ATIVA') {
+      return 'Credenciais ativas';
+    }
+
+    if (status === 'INATIVA') {
+      return 'Credenciais inativas';
+    }
+
+    if (status === 'CANCELADA') {
+      return 'Credenciais canceladas';
+    }
+
+    return 'Todos os status';
+  });
+
+  readonly resumoCredenciaisImpressao = computed(() => {
+    const credenciais = this.credenciaisImpressaoFiltradas();
+
+    return {
+      ativas: credenciais.filter(credencial => credencial.status === 'ATIVA').length,
+      inativas: credenciais.filter(credencial => credencial.status === 'INATIVA').length,
+      canceladas: credenciais.filter(credencial => credencial.status === 'CANCELADA').length
+    };
   });
 
   readonly podeEmitirImpressao = computed(() => this.totalPrevistoImpressao() > 0 && !this.baixandoImpressao());
@@ -763,6 +846,7 @@ export class EventoOperacaoComponent implements OnInit {
     this.tipoImpressaoSelecionado.set('ETIQUETAS_QR');
     this.modeloEtiquetaQrSelecionado.set('PIMACO_A4356_63X25_33');
     this.modeloCrachaSelecionado.set('A4_2_COLUNAS_4');
+    this.modeloCarteirinhaSelecionado.set('A4_10_CARTEIRINHAS');
     this.tipoCredencialImpressaoSelecionado.set(null);
     this.statusCredencialImpressaoSelecionado.set('ATIVA');
   }
