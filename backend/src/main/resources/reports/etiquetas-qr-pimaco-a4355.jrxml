@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd"
+              name="etiquetas_qr_pimaco_a4355"
+              language="java"
+              pageWidth="595"
+              pageHeight="842"
+              columnCount="3"
+              columnWidth="180"
+              columnSpacing="4"
+              leftMargin="23"
+              rightMargin="24"
+              topMargin="25"
+              bottomMargin="25">
+
+    <property name="net.sf.jasperreports.awt.ignore.missing.font" value="true"/>
+
+    <style name="Evento" fontName="SansSerif" fontSize="5" isBold="true" forecolor="#FFFFFF"/>
+    <style name="NomeGrande" fontName="SansSerif" fontSize="8" isBold="true" forecolor="#111827"/>
+    <style name="NomeMedio" fontName="SansSerif" fontSize="6" isBold="true" forecolor="#111827"/>
+    <style name="NomePequeno" fontName="SansSerif" fontSize="4" isBold="true" forecolor="#111827"/>
+    <style name="Tipo" fontName="SansSerif" fontSize="6" isBold="true" forecolor="#2563EB"/>
+    <style name="Codigo" fontName="SansSerif" fontSize="5" isBold="true" forecolor="#111827"/>
+    <style name="CodigoPequeno" fontName="SansSerif" fontSize="4" isBold="true" forecolor="#111827"/>
+    <style name="Complemento" fontName="SansSerif" fontSize="5" forecolor="#4B5563"/>
+    <style name="ComplementoPequeno" fontName="SansSerif" fontSize="4" forecolor="#4B5563"/>
+
+    <parameter name="EVENTO_NOME" class="java.lang.String"/>
+    <parameter name="FILTROS" class="java.lang.String"/>
+    <parameter name="TOTAL_REGISTROS" class="java.lang.Integer"/>
+
+
+    <field name="qrCode" class="java.awt.Image"/>
+    <field name="codigo" class="java.lang.String"/>
+    <field name="nome" class="java.lang.String"/>
+    <field name="tipo" class="java.lang.String"/>
+    <field name="complemento" class="java.lang.String"/>
+    <field name="evento" class="java.lang.String"/>
+
+    <detail>
+        <band height="132" splitType="Prevent">
+
+            <rectangle>
+                <reportElement mode="Opaque" x="0" y="0" width="180" height="130" backcolor="#FFFFFF"/>
+                <graphicElement>
+                    <pen lineWidth="0.25" lineColor="#D1D5DB"/>
+                </graphicElement>
+            </rectangle>
+
+            <rectangle>
+                <reportElement mode="Opaque" x="0" y="0" width="180" height="18" backcolor="#111827"/>
+            </rectangle>
+
+            <textField>
+                <reportElement style="Evento" x="6" y="4" width="168" height="9"/>
+                <textElement textAlignment="Center" verticalAlignment="Middle"/>
+                <textFieldExpression><![CDATA[$F{evento}]]></textFieldExpression>
+            </textField>
+
+            <textField isStretchWithOverflow="true">
+                <reportElement style="NomeGrande" x="8" y="25" width="164" height="16"/>
+                <textElement textAlignment="Center" verticalAlignment="Top"/>
+                <textFieldExpression><![CDATA[$F{nome}]]></textFieldExpression>
+            </textField>
+
+            <textField>
+                <reportElement style="Tipo" x="8" y="43" width="164" height="10"/>
+                <textElement textAlignment="Center"/>
+                <textFieldExpression><![CDATA[$F{tipo}]]></textFieldExpression>
+            </textField>
+
+            <image scaleImage="RetainShape" hAlign="Center" vAlign="Middle">
+                <reportElement x="52" y="56" width="76" height="50"/>
+                <imageExpression><![CDATA[$F{qrCode}]]></imageExpression>
+            </image>
+
+            <textField>
+                <reportElement style="Codigo" x="8" y="108" width="164" height="8"/>
+                <textElement textAlignment="Center"/>
+                <textFieldExpression><![CDATA[$F{codigo}]]></textFieldExpression>
+            </textField>
+
+            <rectangle>
+                <reportElement mode="Opaque" x="0" y="120" width="180" height="10" backcolor="#0EA5E9"/>
+            </rectangle>
+
+        </band>
+    </detail>
+</jasperReport>

@@ -141,7 +141,7 @@ export class EventoOperacaoComponent implements OnInit {
   readonly statusCadernoRelatorioSelecionado = signal<StatusCadernoChoro | null>(null);
   readonly somenteAtivosRelatorio = signal(true);
   readonly tipoImpressaoSelecionado = signal<TipoImpressaoOperacao>('ETIQUETAS_QR');
-  readonly modeloEtiquetaQrSelecionado = signal<ModeloEtiquetaQr>('A4_3_COLUNAS_24');
+  readonly modeloEtiquetaQrSelecionado = signal<ModeloEtiquetaQr>('PIMACO_A4356_63X25_33');
   readonly tipoCredencialImpressaoSelecionado = signal<TipoCredencial | null>(null);
   readonly statusCredencialImpressaoSelecionado = signal<StatusCredencial | null>('ATIVA');
   readonly baixandoImpressao = signal(false);
@@ -292,14 +292,34 @@ export class EventoOperacaoComponent implements OnInit {
 
   readonly opcoesModelosEtiquetaQr = [
     {
+      label: 'Pimaco A4348 - 31,0 x 17,0 mm / 96 etiquetas',
+      value: 'PIMACO_A4348_31X17_96' as ModeloEtiquetaQr,
+      descricao: 'Folha A4 compacta para grande volume de QR Codes'
+    },
+    {
+      label: 'Pimaco A4356 - 63,5 x 25,4 mm / 33 etiquetas',
+      value: 'PIMACO_A4356_63X25_33' as ModeloEtiquetaQr,
+      descricao: 'Folha A4 intermediária com QR e identificação'
+    },
+    {
+      label: 'Pimaco A4362 - 99,0 x 33,9 mm / 16 etiquetas',
+      value: 'PIMACO_A4362_99X34_16' as ModeloEtiquetaQr,
+      descricao: 'Folha A4 maior, mais confortável para leitura'
+    },
+    {
+      label: 'Pimaco A4355 - 63,5 x 46,6 mm / 18 etiquetas',
+      value: 'PIMACO_A4355_63X47_18' as ModeloEtiquetaQr,
+      descricao: 'Folha A4 alta, com visual premium tipo minicrachá'
+    },
+    {
       label: 'A4 - 3 colunas / 24 etiquetas',
       value: 'A4_3_COLUNAS_24' as ModeloEtiquetaQr,
-      descricao: 'Modelo para folha A4 com etiquetas menores'
+      descricao: 'Modelo genérico para folha A4 com etiquetas menores'
     },
     {
       label: 'A4 - 2 colunas / 14 etiquetas',
       value: 'A4_2_COLUNAS_14' as ModeloEtiquetaQr,
-      descricao: 'Modelo para folha A4 com etiquetas maiores'
+      descricao: 'Modelo genérico para folha A4 com etiquetas maiores'
     },
     {
       label: 'Etiqueta 70 x 37 mm',

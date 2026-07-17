@@ -144,6 +144,10 @@ public class RelatorioEtiquetaQrService {
             case A4_2_COLUNAS_14 -> "A4 - 2 colunas / 14 etiquetas";
             case ETIQUETA_70X37 -> "Etiqueta 70 x 37 mm";
             case ETIQUETA_50X30 -> "Etiqueta 50 x 30 mm";
+            case PIMACO_A4348_31X17_96 -> "Pimaco A4348 - 31,0 x 17,0 mm / 96 etiquetas";
+            case PIMACO_A4356_63X25_33 -> "Pimaco A4356 - 63,5 x 25,4 mm / 33 etiquetas";
+            case PIMACO_A4362_99X34_16 -> "Pimaco A4362 - 99,0 x 33,9 mm / 16 etiquetas";
+            case PIMACO_A4355_63X47_18 -> "Pimaco A4355 - 63,5 x 46,6 mm / 18 etiquetas";
         };
     }
 
@@ -165,6 +169,10 @@ public class RelatorioEtiquetaQrService {
             case A4_2_COLUNAS_14 -> "/reports/etiquetas-qr-a4-2-colunas.jrxml";
             case ETIQUETA_70X37 -> "/reports/etiquetas-qr-70x37.jrxml";
             case ETIQUETA_50X30 -> "/reports/etiquetas-qr-50x30.jrxml";
+            case PIMACO_A4348_31X17_96 -> "/reports/etiquetas-qr-pimaco-a4348.jrxml";
+            case PIMACO_A4356_63X25_33 -> "/reports/etiquetas-qr-pimaco-a4356.jrxml";
+            case PIMACO_A4362_99X34_16 -> "/reports/etiquetas-qr-pimaco-a4362.jrxml";
+            case PIMACO_A4355_63X47_18 -> "/reports/etiquetas-qr-pimaco-a4355.jrxml";
         };
     }
 
