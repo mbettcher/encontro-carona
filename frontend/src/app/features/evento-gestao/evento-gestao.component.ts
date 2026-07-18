@@ -23,6 +23,7 @@ import {
   DuplaTioCarona,
   Evento,
   EquipeMontagemKit,
+  Paroquia,
   Pessoa,
   Sobrinho,
   SobrinhoDupla,
@@ -98,6 +99,7 @@ export class EventoGestaoComponent implements OnInit {
   ];
 
   readonly evento = signal<Evento | null>(null);
+  readonly paroquiasComunidades = signal<Paroquia[]>([]);
   readonly pessoas = signal<Pessoa[]>([]);
   readonly tiosCarona = signal<TioCaronaEvento[]>([]);
   readonly duplas = signal<DuplaTioCarona[]>([]);
@@ -158,6 +160,7 @@ export class EventoGestaoComponent implements OnInit {
   readonly duplaForm = this.fb.nonNullable.group({
     tio1Id: [0, [Validators.required, Validators.min(1)]],
     tio2Id: [0, [Validators.required, Validators.min(1)]],
+    paroquiaComunidadeId: [0, [Validators.required, Validators.min(1)]],
     apelido: ['', [Validators.maxLength(120)]]
   });
 
@@ -199,7 +202,8 @@ export class EventoGestaoComponent implements OnInit {
   });
 
   readonly duplaEdicaoForm = this.fb.nonNullable.group({
-    apelido: ['', [Validators.maxLength(120)]]
+    apelido: ['', [Validators.maxLength(120)]],
+    paroquiaComunidadeId: [0, [Validators.required, Validators.min(1)]]
   });
 
   readonly sobrinhoEdicaoForm = this.fb.nonNullable.group({
@@ -285,6 +289,15 @@ export class EventoGestaoComponent implements OnInit {
       }))
   );
 
+  readonly opcoesParoquiasComunidades = computed<OpcaoNumerica[]>(() =>
+    this.paroquiasComunidades()
+      .map(paroquia => ({
+        label: paroquia.nome,
+        descricao: [paroquia.cidade, paroquia.uf].filter(Boolean).join(' / '),
+        value: paroquia.id
+      }))
+  );
+
   readonly opcoesTiosDisponiveisParaDupla = computed<OpcaoNumerica[]>(() => {
     const idsJaUsados = this.idsTiosEmDuplasAtivas();
 
@@ -315,7 +328,7 @@ export class EventoGestaoComponent implements OnInit {
       .filter(dupla => dupla.status === 'ATIVA')
       .map(dupla => ({
         label: dupla.apelido || dupla.codigo,
-        descricao: `${dupla.tio1Nome} e ${dupla.tio2Nome}`,
+        descricao: `${dupla.tio1Nome} e ${dupla.tio2Nome} • ${dupla.paroquiaComunidadeNome || 'Sem paróquia/comunidade'}`,
         value: dupla.id
       }))
   );
@@ -328,7 +341,7 @@ export class EventoGestaoComponent implements OnInit {
       .filter(dupla => dupla.id !== vinculo?.duplaId)
       .map(dupla => ({
         label: dupla.apelido || dupla.codigo,
-        descricao: `${dupla.tio1Nome} e ${dupla.tio2Nome}`,
+        descricao: `${dupla.tio1Nome} e ${dupla.tio2Nome} • ${dupla.paroquiaComunidadeNome || 'Sem paróquia/comunidade'}`,
         value: dupla.id
       }));
   });
@@ -426,6 +439,7 @@ export class EventoGestaoComponent implements OnInit {
       this.contemFiltro(dupla.apelido, filtro) ||
       this.contemFiltro(dupla.tio1Nome, filtro) ||
       this.contemFiltro(dupla.tio2Nome, filtro) ||
+      this.contemFiltro(dupla.paroquiaComunidadeNome, filtro) ||
       this.contemFiltro(dupla.status, filtro)
     );
   });
@@ -493,7 +507,7 @@ export class EventoGestaoComponent implements OnInit {
       .filter(dupla => !vinculo || dupla.id !== vinculo.duplaId)
       .map(dupla => ({
         label: dupla.apelido || dupla.codigo,
-        descricao: `${dupla.tio1Nome} e ${dupla.tio2Nome}`,
+        descricao: `${dupla.tio1Nome} e ${dupla.tio2Nome} • ${dupla.paroquiaComunidadeNome || 'Sem paróquia/comunidade'}`,
         value: dupla.id
       }));
   });
@@ -506,6 +520,7 @@ export class EventoGestaoComponent implements OnInit {
     this.carregando.set(true);
 
     this.carregarEvento();
+    this.carregarParoquiasComunidades();
     this.carregarPessoas();
     this.carregarTiosCarona();
     this.carregarDuplas();
@@ -666,7 +681,7 @@ export class EventoGestaoComponent implements OnInit {
 
     if (this.duplaForm.invalid) {
       this.duplaForm.markAllAsTouched();
-      this.toastWarn('Selecione os dois tios carona para formar a dupla.');
+      this.toastWarn('Selecione os dois tios carona e a paróquia/comunidade da dupla.');
       return;
     }
 
@@ -684,6 +699,7 @@ export class EventoGestaoComponent implements OnInit {
     this.service.criarDupla(this.eventoId, {
       tio1Id: Number(valor.tio1Id),
       tio2Id: Number(valor.tio2Id),
+      paroquiaComunidadeId: Number(valor.paroquiaComunidadeId),
       apelido: this.normalizarTextoOpcional(valor.apelido)
     }).subscribe({
       next: () => {
@@ -1019,7 +1035,8 @@ export class EventoGestaoComponent implements OnInit {
   abrirEdicaoDupla(dupla: DuplaTioCarona): void {
     this.duplaEmEdicao.set(dupla);
     this.duplaEdicaoForm.reset({
-      apelido: dupla.apelido ?? ''
+      apelido: dupla.apelido ?? '',
+      paroquiaComunidadeId: dupla.paroquiaComunidadeId ?? this.evento()?.paroquiaId ?? 0
     });
     this.duplaEdicaoVisivel.set(true);
   }
@@ -1027,7 +1044,7 @@ export class EventoGestaoComponent implements OnInit {
   fecharEdicaoDupla(): void {
     this.duplaEdicaoVisivel.set(false);
     this.duplaEmEdicao.set(null);
-    this.duplaEdicaoForm.reset({ apelido: '' });
+    this.duplaEdicaoForm.reset({ apelido: '', paroquiaComunidadeId: 0 });
   }
 
   salvarEdicaoDupla(): void {
@@ -1039,7 +1056,7 @@ export class EventoGestaoComponent implements OnInit {
 
     if (this.duplaEdicaoForm.invalid) {
       this.duplaEdicaoForm.markAllAsTouched();
-      this.toastWarn('Revise o apelido da dupla antes de salvar.');
+      this.toastWarn('Revise o apelido e a paróquia/comunidade da dupla antes de salvar.');
       return;
     }
 
@@ -1050,7 +1067,8 @@ export class EventoGestaoComponent implements OnInit {
     this.salvandoEdicaoDupla.set(true);
 
     this.service.atualizarDupla(this.eventoId, dupla.id, {
-      apelido: this.normalizarTextoOpcional(valor.apelido)
+      apelido: this.normalizarTextoOpcional(valor.apelido),
+      paroquiaComunidadeId: Number(valor.paroquiaComunidadeId)
     }).pipe(finalize(() => this.salvandoEdicaoDupla.set(false)))
       .subscribe({
         next: duplaAtualizada => {
@@ -1548,10 +1566,35 @@ export class EventoGestaoComponent implements OnInit {
 
   private carregarEvento(): void {
     this.service.buscarEvento(this.eventoId).subscribe({
-      next: evento => this.evento.set(evento),
+      next: evento => {
+        this.evento.set(evento);
+
+        if (!this.duplaForm.controls.paroquiaComunidadeId.value && evento.paroquiaId) {
+          this.duplaForm.controls.paroquiaComunidadeId.setValue(evento.paroquiaId);
+        }
+      },
       error: erro => {
         console.error('Erro ao carregar evento', erro);
         this.toastError('Não foi possível carregar os dados do evento.');
+      }
+    });
+  }
+
+  private carregarParoquiasComunidades(): void {
+    this.service.listarParoquiasComunidades().subscribe({
+      next: paroquias => {
+        this.paroquiasComunidades.set(paroquias);
+
+        const eventoParoquiaId = this.evento()?.paroquiaId ?? 0;
+        const valorAtual = this.duplaForm.controls.paroquiaComunidadeId.value;
+
+        if (!valorAtual && eventoParoquiaId > 0) {
+          this.duplaForm.controls.paroquiaComunidadeId.setValue(eventoParoquiaId);
+        }
+      },
+      error: erro => {
+        console.error('Erro ao carregar Paróquia/Comunidade/comunidades', erro);
+        this.toastError('Não foi possível carregar as Paróquia/Comunidade/comunidades.');
       }
     });
   }
@@ -1804,6 +1847,7 @@ export class EventoGestaoComponent implements OnInit {
     this.customFormHelper.resetarFormulario(this.duplaForm, {
       tio1Id: 0,
       tio2Id: 0,
+      paroquiaComunidadeId: this.evento()?.paroquiaId ?? 0,
       apelido: ''
     });
   }

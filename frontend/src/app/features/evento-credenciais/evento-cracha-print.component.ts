@@ -214,7 +214,7 @@ export class EventoCrachaPrintComponent implements OnInit, OnDestroy {
     private async montarItens(credenciais: CredencialEvento[]): Promise<CredencialCrachaPrint[]> {
         const evento = this.evento();
         const eventoNome = evento?.nome || credenciais[0]?.eventoNome || 'Encontro Paroquial';
-        const paroquiaNome = evento?.paroquiaNome || 'Paróquia do evento';
+        const paroquiaNome = evento?.paroquiaNome || 'Paróquia/Comunidade do evento';
 
         const itens = await Promise.all(
             credenciais.map(async credencial => ({

@@ -15,6 +15,7 @@ import {
   EquipeMontagemKitIntegranteRequest,
   EquipeMontagemKitRequest,
   CadernoChoro,
+  Paroquia,
   Pessoa,
   Sobrinho,
   SobrinhoDupla,
@@ -58,6 +59,10 @@ export class EventoGestaoService {
 
   listarPessoas(): Observable<Pessoa[]> {
     return this.http.get<Pessoa[]>(`${this.apiUrl}/pessoas`);
+  }
+
+  listarParoquiasComunidades(): Observable<Paroquia[]> {
+    return this.http.get<Paroquia[]>(`${this.apiUrl}/paroquias`);
   }
 
   listarTiosCarona(eventoId: number): Observable<TioCaronaEvento[]> {

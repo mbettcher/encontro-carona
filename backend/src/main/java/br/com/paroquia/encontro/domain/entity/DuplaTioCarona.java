@@ -31,6 +31,10 @@ public class DuplaTioCarona {
     @Column(name = "apelido", length = 120)
     private String apelido;
 
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @JoinColumn(name = "paroquia_comunidade_id", nullable = false)
+    private Paroquia paroquiaComunidade;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 30)
     private DuplaStatus status = DuplaStatus.ATIVA;
@@ -41,12 +45,20 @@ public class DuplaTioCarona {
     protected DuplaTioCarona() {
     }
 
-    public DuplaTioCarona(Evento evento, TioCaronaEvento tio1, TioCaronaEvento tio2, String codigo, String apelido) {
+    public DuplaTioCarona(
+            Evento evento,
+            TioCaronaEvento tio1,
+            TioCaronaEvento tio2,
+            String codigo,
+            String apelido,
+            Paroquia paroquiaComunidade
+    ) {
         this.evento = evento;
         this.tio1 = tio1;
         this.tio2 = tio2;
         this.codigo = codigo;
         this.apelido = apelido;
+        this.paroquiaComunidade = paroquiaComunidade;
     }
 
     public void inativar() {
@@ -65,10 +77,11 @@ public class DuplaTioCarona {
         this.status = DuplaStatus.ATIVA;
     }
 
-    public void atualizarApelido(String apelido) {
+    public void atualizar(String apelido, Paroquia paroquiaComunidade) {
         this.apelido = apelido == null || apelido.isBlank()
                 ? null
                 : apelido.trim();
+        this.paroquiaComunidade = paroquiaComunidade;
     }
 
     public Long getId() {
@@ -93,6 +106,10 @@ public class DuplaTioCarona {
 
     public String getApelido() {
         return apelido;
+    }
+
+    public Paroquia getParoquiaComunidade() {
+        return paroquiaComunidade;
     }
 
     public DuplaStatus getStatus() {

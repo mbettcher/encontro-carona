@@ -2,8 +2,10 @@
 package br.com.paroquia.encontro.dto.response;
 
 import br.com.paroquia.encontro.domain.entity.CredencialEvento;
+import br.com.paroquia.encontro.domain.entity.DuplaTioCarona;
 import br.com.paroquia.encontro.domain.entity.TioCaronaEvento;
 import br.com.paroquia.encontro.domain.entity.TioCaronaEventoOperacao;
+import br.com.paroquia.encontro.domain.enums.DuplaStatus;
 import br.com.paroquia.encontro.domain.enums.StatusCredencial;
 import br.com.paroquia.encontro.domain.enums.TioCaronaStatus;
 import br.com.paroquia.encontro.domain.enums.TipoOperacaoTioCarona;
@@ -89,5 +91,35 @@ public record TioCaronaEventoResponse(
         }
 
         return "AGUARDANDO_CHECKIN";
+    }
+
+    public static record DuplaTioCaronaResponse(
+            Long id,
+            Long eventoId,
+            String codigo,
+            String apelido,
+            Long tio1Id,
+            String tio1Nome,
+            Long tio2Id,
+            String tio2Nome,
+            Long paroquiaComunidadeId,
+            String paroquiaComunidadeNome,
+            String paroquiaComunidadeEndereco,
+            DuplaStatus status) {
+                public static DuplaTioCaronaResponse from(DuplaTioCarona d) {
+                    return new DuplaTioCaronaResponse(
+                            d.getId(),
+                            d.getEvento().getId(),
+                            d.getCodigo(),
+                            d.getApelido(),
+                            d.getTio1().getId(),
+                            d.getTio1().getPessoa().getNome(),
+                            d.getTio2().getId(),
+                            d.getTio2().getPessoa().getNome(),
+                            d.getParoquiaComunidade().getId(),
+                            d.getParoquiaComunidade().getNome(),
+                            d.getParoquiaComunidade().getEndereco(),
+                            d.getStatus());
+                }
     }
 }

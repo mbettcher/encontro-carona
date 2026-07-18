@@ -1,12 +1,14 @@
 package br.com.paroquia.encontro.services;
 
 import br.com.paroquia.encontro.common.ResourceNotFoundException;
+import br.com.paroquia.encontro.domain.entity.DuplaTioCarona;
 import br.com.paroquia.encontro.domain.entity.Evento;
 import br.com.paroquia.encontro.domain.entity.SobrinhoDupla;
 import br.com.paroquia.encontro.domain.entity.TioCaronaEvento;
 import br.com.paroquia.encontro.domain.enums.SobrinhoStatus;
 import br.com.paroquia.encontro.domain.enums.TioCaronaStatus;
 import br.com.paroquia.encontro.domain.enums.VinculoStatus;
+import br.com.paroquia.encontro.dto.relatorio.ListaPresencaDuplaTioCaronaItem;
 import br.com.paroquia.encontro.dto.relatorio.ListaPresencaEncontristaItem;
 import br.com.paroquia.encontro.dto.relatorio.ListaPresencaTioCaronaItem;
 import br.com.paroquia.encontro.repository.DuplaTioCaronaRepository;
@@ -129,56 +131,30 @@ public class RelatorioListaPresencaService {
         );
     }
 
-    private List<ListaPresencaTioCaronaItem> montarTiosCarona(Long eventoId, boolean somenteAtivos, Long duplaId) {
+    private List<ListaPresencaDuplaTioCaronaItem> montarTiosCarona(Long eventoId, boolean somenteAtivos, Long duplaId) {
         var contador = new java.util.concurrent.atomic.AtomicInteger(1);
 
-        var tiosDaDupla = idsTiosDaDupla(eventoId, duplaId);
-
-        return tioCaronaEventoRepository.findByEventoIdOrderByPessoaNomeAsc(eventoId).stream()
-                .filter(tio -> !somenteAtivos || tio.getStatus() == TioCaronaStatus.ATIVO)
-                .filter(tio -> tiosDaDupla == null || tiosDaDupla.contains(tio.getId()))
-                .map(tio -> toTioCaronaItem(contador.getAndIncrement(), tio))
+        return duplaTioCaronaRepository.findByEventoIdOrderByCodigo(eventoId).stream()
+                .filter(dupla -> duplaId == null || Objects.equals(dupla.getId(), duplaId))
+                .filter(dupla -> !somenteAtivos || dupla.getStatus().name().equals("ATIVA"))
+                .map(dupla -> toDuplaTioCaronaItem(contador.getAndIncrement(), dupla))
                 .toList();
     }
 
-    private HashSet<Long> idsTiosDaDupla(Long eventoId, Long duplaId) {
-        if (duplaId == null) {
-            return null;
-        }
+    private ListaPresencaDuplaTioCaronaItem toDuplaTioCaronaItem(Integer numero, DuplaTioCarona dupla) {
+        var paroquiaComunidade = dupla.getParoquiaComunidade();
 
-        var dupla = duplaTioCaronaRepository.findByIdAndEventoId(duplaId, eventoId)
-                .orElseThrow(() -> new ResourceNotFoundException("Dupla não encontrada neste evento."));
-
-        var ids = new HashSet<Long>();
-        ids.add(dupla.getTio1().getId());
-        ids.add(dupla.getTio2().getId());
-
-        return ids;
-    }
-
-    private ListaPresencaTioCaronaItem toTioCaronaItem(Integer numero, TioCaronaEvento tio) {
-        return new ListaPresencaTioCaronaItem(
+        return new ListaPresencaDuplaTioCaronaItem(
                 numero,
-                texto(tio.getPessoa().getNome()),
-                texto(tio.getCodigoIdentificacao()),
-                labelStatusTio(tio.getStatus()),
-                situacaoOperacional(tio),
-                texto(tio.getObservacoes())
+                texto(dupla.getApelido() == null || dupla.getApelido().isBlank()
+                        ? dupla.getCodigo()
+                        : dupla.getApelido()),
+                paroquiaComunidade == null ? "-" : texto(paroquiaComunidade.getNome()),
+                paroquiaComunidade == null ? "-" : texto(paroquiaComunidade.getEndereco()),
+                texto(dupla.getTio1().getPessoa().getNome()),
+                texto(dupla.getTio2().getPessoa().getNome())
         );
     }
-
-    private String situacaoOperacional(TioCaronaEvento tio) {
-        if (tio.isCheckinRealizado() && !tio.isCheckoutRealizado()) {
-            return "Com check-in";
-        }
-
-        if (tio.isCheckoutRealizado()) {
-            return "Com checkout";
-        }
-
-        return "Aguardando check-in";
-    }
-
 
     private String descricaoFiltroEncontristas(boolean somenteAtivos, Long duplaId) {
         var filtros = new java.util.ArrayList<String>();

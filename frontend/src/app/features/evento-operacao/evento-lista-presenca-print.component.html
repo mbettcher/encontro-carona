@@ -48,7 +48,7 @@
       </div>
 
       <div class="lista-identificacao">
-        <div class="lista-paroquia">{{ evento()?.paroquiaNome || 'Paróquia do evento' }}</div>
+        <div class="lista-paroquia">{{ evento()?.paroquiaNome || 'Paróquia/Comunidade do evento' }}</div>
         <div class="lista-evento">{{ evento()?.nome || 'Encontro Paroquial' }}</div>
         @if (periodoEvento()) {
         <div class="lista-periodo">Período: {{ periodoEvento() }}</div>

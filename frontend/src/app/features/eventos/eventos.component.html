@@ -4,7 +4,7 @@
     <div>
       <h1 class="h3 mb-1">Eventos</h1>
       <p class="text-body-secondary mb-0">
-        Cadastre os encontros da paróquia e configure a base operacional do evento.
+        Cadastre os encontros da paróquia/comunidade e configure a base operacional do evento.
       </p>
     </div>
 
@@ -13,7 +13,7 @@
         <label for="filtroEventos" class="form-label small mb-1">Pesquisar</label>
         <span class="p-input-icon-left w-100">
           <i class="fa-solid fa-magnifying-glass"></i>
-          <input id="filtroEventos" pInputText type="text" class="w-100" placeholder="Evento, paróquia, status, local ou período"
+          <input id="filtroEventos" pInputText type="text" class="w-100" placeholder="Evento, paróquia/comunidade, status, local ou período"
             [ngModel]="filtroTexto()" (ngModelChange)="atualizarFiltroTexto($event)" />
         </span>
       </div>
@@ -35,14 +35,14 @@
 
         <form [formGroup]="form" (ngSubmit)="salvar()" class="d-grid gap-3">
           <div>
-            <label for="paroquiaId" class="form-label">Paróquia *</label>
+            <label for="paroquiaId" class="form-label">Paróquia/Comunidade *</label>
 
             <p-select inputId="paroquiaId" [options]="paroquias()" optionLabel="nome" optionValue="id"
-              formControlName="paroquiaId" placeholder="Selecione a paróquia" styleClass="w-100" />
+              formControlName="paroquiaId" placeholder="Selecione a paróquia/comunidade" styleClass="w-100" />
 
             @if (form.controls.paroquiaId.touched && form.controls.paroquiaId.invalid) {
             <div class="form-text text-danger">
-              Selecione a paróquia do evento.
+              Selecione a paróquia/comunidade do evento.
             </div>
             }
           </div>
@@ -200,7 +200,7 @@
             <ng-template pTemplate="header">
               <tr>
                 <th>Evento</th>
-                <th>Paróquia</th>
+                <th>Paróquia/Comunidade</th>
                 <th>Período</th>
                 <th>Status</th>
                 <th>Monitoramento</th>

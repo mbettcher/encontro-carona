@@ -48,7 +48,7 @@ type OperacaoCadernoChoro =
 
 type TipoListaPresenca = 'ENCONTRISTAS' | 'TIOS_CARONA';
 type TipoRelatorioOperacao = 'ENCONTRISTAS' | 'TIOS_CARONA' | 'CADERNOS';
-type TipoImpressaoOperacao = 'ETIQUETAS_QR' | 'CRACHAS' | 'CARTEIRINHAS';
+type TipoImpressaoOperacao = 'ETIQUETAS_QR' | 'CRACHAS' | 'CARTEIRINHAS' | 'LISTA_ENCONTRISTAS' | 'LISTA_TIOS_CARONA';
 
 type AbaOperacao =
   | 'VISAO_GERAL'
@@ -302,6 +302,16 @@ export class EventoOperacaoComponent implements OnInit {
       label: 'Carteirinhas operacionais',
       value: 'CARTEIRINHAS' as TipoImpressaoOperacao,
       descricao: 'Credenciais em formato horizontal tipo cartão'
+    },
+    {
+      label: 'Lista de presença — Encontristas',
+      value: 'LISTA_ENCONTRISTAS' as TipoImpressaoOperacao,
+      descricao: 'Lista oficial de presença dos encontristas'
+    },
+    {
+      label: 'Lista de presença — Tios carona',
+      value: 'LISTA_TIOS_CARONA' as TipoImpressaoOperacao,
+      descricao: 'Lista oficial dos tios carona organizada por duplas'
     }
   ];
 
@@ -416,7 +426,19 @@ export class EventoOperacaoComponent implements OnInit {
       });
   });
 
-  readonly totalPrevistoImpressao = computed(() => this.credenciaisImpressaoFiltradas().length);
+  readonly totalPrevistoImpressao = computed(() => {
+    const tipo = this.tipoImpressaoSelecionado();
+
+    if (tipo === 'LISTA_ENCONTRISTAS') {
+      return this.vinculosAtivos().length;
+    }
+
+    if (tipo === 'LISTA_TIOS_CARONA') {
+      return this.duplasAtivas().length;
+    }
+
+    return this.credenciaisImpressaoFiltradas().length;
+  });
 
   readonly tipoImpressaoAtual = computed(() =>
     this.opcoesTiposImpressao.find(opcao => opcao.value === this.tipoImpressaoSelecionado())
@@ -433,6 +455,10 @@ export class EventoOperacaoComponent implements OnInit {
       return this.opcoesModelosCarteirinha.find(opcao => opcao.value === this.modeloCarteirinhaSelecionado());
     }
 
+    if (tipo === 'LISTA_ENCONTRISTAS' || tipo === 'LISTA_TIOS_CARONA') {
+      return this.tipoImpressaoAtual();
+    }
+
     return this.opcoesModelosEtiquetaQr.find(opcao => opcao.value === this.modeloEtiquetaQrSelecionado());
   });
 
@@ -442,6 +468,10 @@ export class EventoOperacaoComponent implements OnInit {
         return 'Crachás previstos';
       case 'CARTEIRINHAS':
         return 'Carteirinhas previstas';
+      case 'LISTA_ENCONTRISTAS':
+        return 'Encontristas previstos';
+      case 'LISTA_TIOS_CARONA':
+        return 'Duplas previstas';
       default:
         return 'Etiquetas previstas';
     }
@@ -453,12 +483,24 @@ export class EventoOperacaoComponent implements OnInit {
         return 'PDF com crachás';
       case 'CARTEIRINHAS':
         return 'PDF com carteirinhas';
+      case 'LISTA_ENCONTRISTAS':
+        return 'PDF da lista de encontristas';
+      case 'LISTA_TIOS_CARONA':
+        return 'PDF da lista de tios por dupla';
       default:
         return 'PDF com QR Code';
     }
   });
 
   readonly filtroPublicoImpressao = computed(() => {
+    if (this.tipoImpressaoSelecionado() === 'LISTA_ENCONTRISTAS') {
+      return 'Encontristas ativos';
+    }
+
+    if (this.tipoImpressaoSelecionado() === 'LISTA_TIOS_CARONA') {
+      return 'Duplas ativas';
+    }
+
     const tipo = this.tipoCredencialImpressaoSelecionado();
 
     if (tipo === 'SOBRINHO') {
@@ -473,6 +515,10 @@ export class EventoOperacaoComponent implements OnInit {
   });
 
   readonly filtroStatusImpressao = computed(() => {
+    if (this.tipoImpressaoSelecionado() === 'LISTA_ENCONTRISTAS' || this.tipoImpressaoSelecionado() === 'LISTA_TIOS_CARONA') {
+      return 'Somente ativos';
+    }
+
     const status = this.statusCredencialImpressaoSelecionado();
 
     if (status === 'ATIVA') {
@@ -942,6 +988,18 @@ export class EventoOperacaoComponent implements OnInit {
         });
       }
 
+      if (tipoImpressao === 'LISTA_ENCONTRISTAS') {
+        return this.service.baixarListaPresencaEncontristas(this.eventoId, {
+          somenteAtivos: true
+        });
+      }
+
+      if (tipoImpressao === 'LISTA_TIOS_CARONA') {
+        return this.service.baixarListaPresencaTiosCarona(this.eventoId, {
+          somenteAtivos: true
+        });
+      }
+
       return this.service.baixarEtiquetasQrCode(this.eventoId, {
         ...filtrosComuns,
         modelo: this.modeloEtiquetaQrSelecionado()
@@ -958,6 +1016,10 @@ export class EventoOperacaoComponent implements OnInit {
               ? this.nomeArquivoCrachas()
               : tipoImpressao === 'CARTEIRINHAS'
               ? this.nomeArquivoCarteirinhas()
+              : tipoImpressao === 'LISTA_ENCONTRISTAS'
+              ? this.nomeArquivoListaPresenca('ENCONTRISTAS')
+              : tipoImpressao === 'LISTA_TIOS_CARONA'
+              ? this.nomeArquivoListaPresenca('TIOS_CARONA')
               : this.nomeArquivoEtiquetasQr()
           );
         },

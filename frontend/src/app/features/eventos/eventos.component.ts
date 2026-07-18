@@ -109,12 +109,12 @@ export class EventosComponent implements OnInit {
     this.service.listarParoquias().subscribe({
       next: paroquias => this.paroquias.set(paroquias),
       error: erro => {
-        console.error('Erro ao carregar paróquias', erro);
+        console.error('Erro ao carregar Paróquia/Comunidade', erro);
 
         this.messageService.add({
           severity: 'error',
           summary: 'Erro ao carregar',
-          detail: 'Não foi possível carregar as paróquias.',
+          detail: 'Não foi possível carregar as Paróquia/Comunidade.',
           life: 5000
         });
       }
@@ -269,7 +269,7 @@ export class EventosComponent implements OnInit {
     }
 
     const paroquia = this.paroquias().find(item => item.id === evento.paroquiaId);
-    return paroquia?.nome ?? `Paróquia #${evento.paroquiaId}`;
+    return paroquia?.nome ?? `Paróquia/Comunidade #${evento.paroquiaId}`;
   }
 
   limparFormulario(): void {

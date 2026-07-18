@@ -63,7 +63,7 @@ export class ParoquiasComponent implements OnInit {
   });
 
   readonly tituloFormulario = computed(() =>
-    this.paroquiaEmEdicao() ? 'Editar paróquia' : 'Nova paróquia'
+    this.paroquiaEmEdicao() ? 'Editar paróquia/comunidade' : 'Nova paróquia/comunidade'
   );
 
   readonly form = this.fb.nonNullable.group({
@@ -89,12 +89,12 @@ export class ParoquiasComponent implements OnInit {
         this.carregando.set(false);
       },
       error: erro => {
-        console.error('Erro ao carregar paróquias', erro);
+        console.error('Erro ao carregar Paróquia/Comunidade', erro);
 
         this.messageService.add({
           severity: 'error',
           summary: 'Erro ao carregar',
-          detail: 'Não foi possível carregar as paróquias.',
+          detail: 'Não foi possível carregar as Paróquia/Comunidade.',
           life: 5000
         });
 
@@ -110,7 +110,7 @@ export class ParoquiasComponent implements OnInit {
       this.messageService.add({
         severity: 'warn',
         summary: 'Formulário incompleto',
-        detail: 'Informe ao menos o nome da paróquia e corrija os campos inválidos.',
+        detail: 'Informe ao menos o nome da paróquia/comunidade e corrija os campos inválidos.',
         life: 4500
       });
 
@@ -133,7 +133,7 @@ export class ParoquiasComponent implements OnInit {
         this.messageService.add({
           severity: 'success',
           summary: 'Sucesso',
-          detail: paroquiaAtual ? 'Paróquia atualizada com sucesso.' : 'Paróquia cadastrada com sucesso.',
+          detail: paroquiaAtual ? 'Paróquia/Comunidade atualizada com sucesso.' : 'Paróquia/Comunidade cadastrada com sucesso.',
           life: 4000
         });
 
@@ -142,12 +142,12 @@ export class ParoquiasComponent implements OnInit {
         this.carregarParoquias();
       },
       error: erro => {
-        console.error('Erro ao salvar paróquia', erro);
+        console.error('Erro ao salvar paróquia/comunidade', erro);
 
         this.messageService.add({
           severity: 'error',
           summary: 'Erro ao salvar',
-          detail: 'Não foi possível salvar a paróquia. Confira os dados informados.',
+          detail: 'Não foi possível salvar a paróquia/comunidade. Confira os dados informados.',
           life: 6000
         });
 

@@ -143,17 +143,22 @@ export interface DuplaTioCarona {
   tio1Nome: string;
   tio2Id: number;
   tio2Nome: string;
+  paroquiaComunidadeId: number;
+  paroquiaComunidadeNome?: string;
+  paroquiaComunidadeEndereco?: string;
   status: DuplaStatus;
 }
 
 export interface DuplaTioCaronaRequest {
   tio1Id: number;
   tio2Id: number;
+  paroquiaComunidadeId: number;
   apelido?: string;
 }
 
 export interface AtualizarDuplaTioCaronaRequest {
   apelido?: string;
+  paroquiaComunidadeId: number;
 }
 
 export type OperacaoPresencaSobrinho =

@@ -299,6 +299,23 @@
           </div>
 
           <div>
+            <label for="paroquiaComunidadeId" class="form-label">
+              Paróquia/Comunidade da dupla <span class="text-danger">*</span>
+            </label>
+
+            <p-select inputId="paroquiaComunidadeId" [options]="opcoesParoquiasComunidades()" optionLabel="label"
+              optionValue="value" formControlName="paroquiaComunidadeId" placeholder="Selecione"
+              styleClass="w-100 vinculo-select" panelStyleClass="vinculo-select-panel" appendTo="body" [filter]="true"
+              filterBy="label,descricao" [disabled]="!seguranca.podeEscrever()" />
+
+            @if (duplaForm.controls.paroquiaComunidadeId.touched && duplaForm.controls.paroquiaComunidadeId.invalid) {
+            <div class="form-text text-danger">
+              Selecione a paróquia/comunidade da dupla.
+            </div>
+            }
+          </div>
+
+          <div>
             <label for="apelido" class="form-label">Apelido da dupla</label>
 
             <input id="apelido" pInputText type="text" class="w-100" formControlName="apelido"
@@ -333,7 +350,7 @@
                 <span class="p-input-icon-left w-100">
                   <i class="fa-solid fa-magnifying-glass"></i>
                   <input pInputText type="text" class="w-100"
-                    placeholder="Pesquisar por código, dupla, apelido ou status..." [value]="filtroDuplas()"
+                    placeholder="Pesquisar por código, dupla, apelido, paróquia/comunidade ou status..." [value]="filtroDuplas()"
                     (input)="alterarFiltroDuplas($any($event.target).value)" />
                 </span>
               </div>
@@ -362,6 +379,7 @@
                 <th>Código</th>
                 <th>Dupla</th>
                 <th>Apelido</th>
+                <th>Paróquia/Comunidade</th>
                 <th>Status</th>
                 <th class="text-end">Ações</th>
               </tr>
@@ -382,12 +400,18 @@
                   }
                 </td>
                 <td>
+                  <div>{{ dupla.paroquiaComunidadeNome || 'Não informada' }}</div>
+                  @if (dupla.paroquiaComunidadeEndereco) {
+                  <div class="small text-body-secondary">{{ dupla.paroquiaComunidadeEndereco }}</div>
+                  }
+                </td>
+                <td>
                   <p-tag [value]="labelStatusDupla(dupla.status)" [severity]="severityStatusDupla(dupla.status)" />
                 </td>
                 <td class="text-end">
                   <div class="d-flex justify-content-end gap-2">
                     <p-button icon="fa-solid fa-pen-to-square" size="small" severity="secondary"
-                      [disabled]="!seguranca.podeEscrever()" pTooltip="Editar apelido" tooltipPosition="top" ariaLabel="Editar dupla"
+                      [disabled]="!seguranca.podeEscrever()" pTooltip="Editar dupla" tooltipPosition="top" ariaLabel="Editar dupla"
                       (onClick)="abrirEdicaoDupla(dupla)" />
 
                     @if (dupla.status === 'ATIVA') {
@@ -1345,6 +1369,24 @@
         @if (duplaEdicaoForm.controls.apelido.touched && duplaEdicaoForm.controls.apelido.invalid) {
         <div class="form-text text-danger">
           O apelido deve ter no máximo 120 caracteres.
+        </div>
+        }
+      </div>
+
+      <div>
+        <label for="paroquiaComunidadeDuplaEdicao" class="form-label">
+          Paróquia/Comunidade da dupla <span class="text-danger">*</span>
+        </label>
+
+        <p-select inputId="paroquiaComunidadeDuplaEdicao" [options]="opcoesParoquiasComunidades()" optionLabel="label"
+          optionValue="value" formControlName="paroquiaComunidadeId" placeholder="Selecione"
+          styleClass="w-100 vinculo-select" panelStyleClass="vinculo-select-panel" appendTo="body" [filter]="true"
+          filterBy="label,descricao" />
+
+        @if (duplaEdicaoForm.controls.paroquiaComunidadeId.touched &&
+        duplaEdicaoForm.controls.paroquiaComunidadeId.invalid) {
+        <div class="form-text text-danger">
+          Selecione a paróquia/comunidade da dupla.
         </div>
         }
       </div>

@@ -75,7 +75,7 @@ export class SobreVersaoComponent {
       cor: 'success',
       itens: [
         {
-          label: 'Paróquias',
+          label: 'Paróquia/Comunidade',
           status: 'OK',
           detalhe: 'Cadastro, listagem, edição e filtro visual revisados.'
         },

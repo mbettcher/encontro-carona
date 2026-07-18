@@ -12,6 +12,7 @@ import br.com.paroquia.encontro.dto.response.DuplaTioCaronaResponse;
 import br.com.paroquia.encontro.repository.CadernoChoroRepository;
 import br.com.paroquia.encontro.repository.DuplaTioCaronaRepository;
 import br.com.paroquia.encontro.repository.EventoRepository;
+import br.com.paroquia.encontro.repository.ParoquiaRepository;
 import br.com.paroquia.encontro.repository.SobrinhoDuplaRepository;
 import br.com.paroquia.encontro.repository.TioCaronaEventoRepository;
 import br.com.paroquia.encontro.dto.request.AtualizarDuplaTioCaronaRequest;
@@ -26,6 +27,7 @@ public class DuplaTioCaronaService {
     private final DuplaTioCaronaRepository repository;
     private final EventoRepository eventoRepository;
     private final TioCaronaEventoRepository tioRepository;
+    private final ParoquiaRepository paroquiaRepository;
     private final SobrinhoDuplaRepository sobrinhoDuplaRepository;
     private final CadernoChoroRepository cadernoChoroRepository;
 
@@ -33,12 +35,14 @@ public class DuplaTioCaronaService {
             DuplaTioCaronaRepository repository,
             EventoRepository eventoRepository,
             TioCaronaEventoRepository tioRepository,
+            ParoquiaRepository paroquiaRepository,
             SobrinhoDuplaRepository sobrinhoDuplaRepository,
             CadernoChoroRepository cadernoChoroRepository
     ) {
         this.repository = repository;
         this.eventoRepository = eventoRepository;
         this.tioRepository = tioRepository;
+        this.paroquiaRepository = paroquiaRepository;
         this.sobrinhoDuplaRepository = sobrinhoDuplaRepository;
         this.cadernoChoroRepository = cadernoChoroRepository;
     }
@@ -66,6 +70,9 @@ public class DuplaTioCaronaService {
         var tio2 = tioRepository.findByIdAndEventoId(request.tio2Id(), eventoId)
                 .orElseThrow(() -> new ResourceNotFoundException("Tio carona 2 não encontrado neste evento."));
 
+        var paroquiaComunidade = paroquiaRepository.findById(request.paroquiaComunidadeId())
+                .orElseThrow(() -> new ResourceNotFoundException("Paróquia/Comunidade da dupla não encontrada."));
+
         validarTioPodeFormarDupla(eventoId, tio1, "Tio carona 1");
         validarTioPodeFormarDupla(eventoId, tio2, "Tio carona 2");
 
@@ -77,7 +84,8 @@ public class DuplaTioCaronaService {
                         tio1,
                         tio2,
                         codigo,
-                        normalizarTextoOpcional(request.apelido())
+                        normalizarTextoOpcional(request.apelido()),
+                        paroquiaComunidade
                 ))
         );
     }
@@ -119,7 +127,10 @@ public class DuplaTioCaronaService {
     ) {
         var dupla = buscarDupla(eventoId, duplaId);
 
-        dupla.atualizarApelido(request.apelido());
+        var paroquiaComunidade = paroquiaRepository.findById(request.paroquiaComunidadeId())
+                .orElseThrow(() -> new ResourceNotFoundException("Paróquia/Comunidade da dupla não encontrada."));
+
+        dupla.atualizar(request.apelido(), paroquiaComunidade);
 
         return DuplaTioCaronaResponse.from(dupla);
     }

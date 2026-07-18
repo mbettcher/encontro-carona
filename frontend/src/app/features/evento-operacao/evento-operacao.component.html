@@ -1,7 +1,12 @@
 <div class="container-fluid py-4 evento-operacao-page">
   <div class="d-flex flex-column flex-xl-row justify-content-between gap-3 mb-4">
     <div>
-      <h1 class="h3 mb-1">Operação do Evento</h1>
+      <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
+        <h1 class="h3 mb-0">Operação do Evento</h1>
+        <span class="versao-sistema-badge">
+          v1.1.0
+        </span>
+      </div>
 
       @if (evento()) {
       <p class="text-body-secondary mb-1">
@@ -258,10 +263,92 @@
           </div>
         </div>
 
+        <p-card styleClass="operacao-atalhos-card mt-4">
+          <div class="d-flex flex-column flex-xl-row justify-content-between gap-3 mb-3">
+            <div>
+              <h2 class="h5 mb-1">Atalhos da operação</h2>
+              <p class="text-body-secondary small mb-0">
+                Acesse rapidamente as áreas mais usadas durante o encontro.
+              </p>
+            </div>
+          </div>
 
+          <div class="row g-3">
+            <div class="col-12 col-md-6 col-xl-4">
+              <button type="button" class="operacao-atalho-item" (click)="alterarAbaOperacao('LEITURAS_QR')">
+                <span class="operacao-atalho-icon">
+                  <i class="fa-solid fa-qrcode"></i>
+                </span>
+                <span>
+                  <strong>Leituras QR</strong>
+                  <small>Check-in, checkout e presença por código.</small>
+                </span>
+              </button>
+            </div>
 
-</div>
-</p-tabpanel>
+            <div class="col-12 col-md-6 col-xl-4">
+              <button type="button" class="operacao-atalho-item" (click)="alterarAbaOperacao('TIOS_CARONA')">
+                <span class="operacao-atalho-icon">
+                  <i class="fa-solid fa-car-side"></i>
+                </span>
+                <span>
+                  <strong>Tios carona</strong>
+                  <small>Acompanhar status e ações manuais.</small>
+                </span>
+              </button>
+            </div>
+
+            <div class="col-12 col-md-6 col-xl-4">
+              <button type="button" class="operacao-atalho-item" (click)="alterarAbaOperacao('SOBRINHOS')">
+                <span class="operacao-atalho-icon">
+                  <i class="fa-solid fa-child-reaching"></i>
+                </span>
+                <span>
+                  <strong>Encontristas</strong>
+                  <small>Conferir presença e vínculos.</small>
+                </span>
+              </button>
+            </div>
+
+            <div class="col-12 col-md-6 col-xl-4">
+              <button type="button" class="operacao-atalho-item" (click)="alterarAbaOperacao('CADERNO_CHORO')">
+                <span class="operacao-atalho-icon">
+                  <i class="fa-solid fa-book-bible"></i>
+                </span>
+                <span>
+                  <strong>Caderno de Mensagens</strong>
+                  <small>Entregas, conferências e kits.</small>
+                </span>
+              </button>
+            </div>
+
+            <div class="col-12 col-md-6 col-xl-4">
+              <button type="button" class="operacao-atalho-item" (click)="alterarAbaOperacao('RELATORIOS')">
+                <span class="operacao-atalho-icon">
+                  <i class="fa-solid fa-file-pdf"></i>
+                </span>
+                <span>
+                  <strong>Relatórios</strong>
+                  <small>Listas de presença e cadernos em PDF.</small>
+                </span>
+              </button>
+            </div>
+
+            <div class="col-12 col-md-6 col-xl-4">
+              <button type="button" class="operacao-atalho-item" (click)="alterarAbaOperacao('IMPRESSOES')">
+                <span class="operacao-atalho-icon">
+                  <i class="fa-solid fa-print"></i>
+                </span>
+                <span>
+                  <strong>Impressões</strong>
+                  <small>Etiquetas, crachás e carteirinhas.</small>
+                </span>
+              </button>
+            </div>
+          </div>
+        </p-card>
+      </div>
+      </p-tabpanel>
 
 <p-tabpanel value="LEITURAS_QR">
   <div class="operacao-tab-content">
@@ -1350,15 +1437,24 @@
                   optionLabel="label" optionValue="value" [ngModel]="modeloCrachaSelecionado()"
                   (ngModelChange)="alterarModeloCracha($event)" appendTo="body" />
               </div>
-              } @else {
+              } @else if (tipoImpressaoSelecionado() === 'CARTEIRINHAS') {
               <div class="col-12 col-lg-4">
                 <label for="modeloCarteirinha" class="form-label">Modelo da carteirinha</label>
                 <p-select inputId="modeloCarteirinha" [options]="opcoesModelosCarteirinha"
                   optionLabel="label" optionValue="value" [ngModel]="modeloCarteirinhaSelecionado()"
                   (ngModelChange)="alterarModeloCarteirinha($event)" appendTo="body" />
               </div>
+              } @else {
+              <div class="col-12 col-lg-4">
+                <label class="form-label">Modelo</label>
+                <div class="alert alert-warning py-2 px-3 mb-0 small">
+                  <i class="fa-solid fa-circle-info me-2"></i>
+                  Esta lista usa layout oficial Jasper.
+                </div>
+              </div>
               }
 
+              @if (tipoImpressaoSelecionado() !== 'LISTA_ENCONTRISTAS' && tipoImpressaoSelecionado() !== 'LISTA_TIOS_CARONA') {
               <div class="col-12 col-lg-4">
                 <label for="tipoCredencialImpressao" class="form-label">Público</label>
                 <p-select inputId="tipoCredencialImpressao" [options]="opcoesTiposCredencialImpressao"
@@ -1380,6 +1476,7 @@
                   [ngModel]="filtroTextoImpressao()"
                   (ngModelChange)="alterarFiltroTextoImpressao($event)" />
               </div>
+              }
             </div>
 
             <div class="row g-3 mt-4">
@@ -1427,11 +1524,18 @@
 
                 <div class="col-12 col-lg-4">
                   <div class="small text-body-secondary mb-1">Resumo do filtro</div>
+
+                  @if (tipoImpressaoSelecionado() === 'LISTA_ENCONTRISTAS' || tipoImpressaoSelecionado() === 'LISTA_TIOS_CARONA') {
+                  <div class="d-flex flex-wrap gap-2">
+                    <span class="badge text-bg-primary">Registros: {{ totalPrevistoImpressao() }}</span>
+                  </div>
+                  } @else {
                   <div class="d-flex flex-wrap gap-2">
                     <span class="badge text-bg-success">Ativas: {{ resumoCredenciaisImpressao().ativas }}</span>
                     <span class="badge text-bg-warning">Inativas: {{ resumoCredenciaisImpressao().inativas }}</span>
                     <span class="badge text-bg-danger">Canceladas: {{ resumoCredenciaisImpressao().canceladas }}</span>
                   </div>
+                  }
                 </div>
               </div>
             </div>
@@ -1444,7 +1548,7 @@
             @if (totalPrevistoImpressao() === 0) {
             <div class="alert alert-warning py-2 px-3 mt-3 mb-0 small">
               <i class="fa-solid fa-circle-info me-2"></i>
-              Não há credenciais para os filtros selecionados.
+              Não há registros para os filtros selecionados.
             </div>
             }
           </p-card>

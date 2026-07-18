@@ -12,6 +12,9 @@ public record DuplaTioCaronaResponse(
         String tio1Nome,
         Long tio2Id,
         String tio2Nome,
+        Long paroquiaComunidadeId,
+        String paroquiaComunidadeNome,
+        String paroquiaComunidadeEndereco,
         DuplaStatus status) {
             public static DuplaTioCaronaResponse from(DuplaTioCarona d) {
                 return new DuplaTioCaronaResponse(
@@ -23,6 +26,9 @@ public record DuplaTioCaronaResponse(
                         d.getTio1().getPessoa().getNome(),
                         d.getTio2().getId(),
                         d.getTio2().getPessoa().getNome(),
+                        d.getParoquiaComunidade().getId(),
+                        d.getParoquiaComunidade().getNome(),
+                        d.getParoquiaComunidade().getEndereco(),
                         d.getStatus());
             }
 }
