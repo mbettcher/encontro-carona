@@ -131,8 +131,8 @@
               <p-card styleClass="operation-summary-card">
                 <div class="d-flex align-items-center justify-content-between">
                   <div>
-                    <div class="text-body-secondary small">Encontristas</div>
-                    <div class="fs-3 fw-bold">{{ sobrinhos().length }}</div>
+                    <div class="text-body-secondary small">Encontristas ativos</div>
+                    <div class="fs-3 fw-bold">{{ sobrinhosAtivos().length }}</div>
                   </div>
 
                   <i class="fa-solid fa-child-reaching"></i>
@@ -161,13 +161,13 @@
                   <div class="px-4 pt-4">
                     <h2 class="h5 mb-1">Preparação dos vínculos</h2>
                     <p class="text-body-secondary small mb-0">
-                      Percentual de encontristas já vinculados a uma dupla.
+                      Percentual de encontristas ativos já vinculados a uma dupla.
                     </p>
                   </div>
                 </ng-template>
 
                 <div class="mb-2 d-flex justify-content-between small">
-                  <span>{{ vinculosAtivos().length }} vínculo(s) ativo(s)</span>
+                  <span>{{ vinculosAtivos().length }} vínculo(s) de encontristas ativos</span>
                   <strong>{{ percentualVinculados() }}%</strong>
                 </div>
 
@@ -175,7 +175,7 @@
 
                 @if (percentualVinculados() < 100) { <div class="alert alert-warning py-2 px-3 mt-3 mb-0 small">
                   <i class="fa-solid fa-circle-info me-2"></i>
-                  Ainda há encontristas sem vínculo ativo com uma dupla.
+                  Ainda há encontristas ativos sem vínculo ativo com uma dupla.
             </div>
             }
             </p-card>
@@ -187,7 +187,7 @@
                 <div class="px-4 pt-4">
                   <h2 class="h5 mb-1">Presença dos encontristas</h2>
                   <p class="text-body-secondary small mb-0">
-                    Indicador geral de presença dos encontristas.
+                    Indicador geral de presença dos encontristas ativos.
                   </p>
                 </div>
               </ng-template>

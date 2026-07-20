@@ -38,7 +38,7 @@ import { AuthService } from '../../core/auth/auth.service';
 import { TelefoneMaskDirective } from '../../shared/directives/telefone-mask.directive';
 import { EventoGestaoService } from './evento-gestao.service';
 
-type AbaGestao = 'TIOS' | 'DUPLAS' | 'SOBRINHOS' | 'VINCULOS' | 'EQUIPES';
+type AbaGestao = 'TIOS' | 'DUPLAS' | 'SOBRINHOS' | 'VINCULOS' | 'EQUIPES' | 'CADERNOS';
 
 interface OpcaoNumerica {
   label: string;
@@ -380,15 +380,44 @@ export class EventoGestaoComponent implements OnInit {
   });
 
 
-  readonly opcoesPessoasEquipe = computed<OpcaoNumerica[]>(() =>
-    this.pessoas()
+  readonly idsPessoasEmEquipesDoKit = computed<Set<number>>(() => {
+    const ids = new Set<number>();
+
+    this.equipesMontagemKit()
+      .forEach(equipe =>
+        equipe.integrantes.forEach(integrante => ids.add(integrante.pessoaId))
+      );
+
+    return ids;
+  });
+
+  readonly opcoesPessoasEquipe = computed<OpcaoNumerica[]>(() => {
+    const idsJaVinculados = this.idsPessoasEmEquipesDoKit();
+
+    return this.pessoas()
       .filter(pessoa => pessoa.tipo === 'EQUIPE')
+      .filter(pessoa => !idsJaVinculados.has(pessoa.id))
       .map(pessoa => ({
         label: pessoa.nome,
         descricao: pessoa.telefone || pessoa.email || 'Pessoa cadastrada como Equipe',
         value: pessoa.id
-      }))
-  );
+      }));
+  });
+
+  readonly opcoesPessoasEquipeEdicao = computed<OpcaoNumerica[]>(() => {
+    const equipe = this.equipeEmEdicao();
+    const idsDaEquipeAtual = new Set(equipe?.integrantes.map(integrante => integrante.pessoaId) ?? []);
+    const idsJaVinculados = this.idsPessoasEmEquipesDoKit();
+
+    return this.pessoas()
+      .filter(pessoa => pessoa.tipo === 'EQUIPE')
+      .filter(pessoa => !idsJaVinculados.has(pessoa.id) || idsDaEquipeAtual.has(pessoa.id))
+      .map(pessoa => ({
+        label: pessoa.nome,
+        descricao: pessoa.telefone || pessoa.email || 'Pessoa cadastrada como Equipe',
+        value: pessoa.id
+      }));
+  });
 
 
   readonly idsSobrinhosComVinculoAtivo = computed<Set<number>>(() => {
@@ -1423,6 +1452,11 @@ export class EventoGestaoComponent implements OnInit {
 
     const valor = this.equipeForm.getRawValue();
 
+    if (this.possuiIntegranteEmOutraEquipe(valor.integranteIds)) {
+      this.toastWarn('Uma pessoa só pode participar de uma equipe do kit por evento.');
+      return;
+    }
+
     this.salvandoEquipe.set(true);
 
     this.service.criarEquipeMontagemKit(this.eventoId, {
@@ -1487,6 +1521,11 @@ export class EventoGestaoComponent implements OnInit {
     this.formatarEdicaoEquipe();
 
     const valor = this.equipeEdicaoForm.getRawValue();
+
+    if (this.possuiIntegranteEmOutraEquipe(valor.integranteIds, equipe.id)) {
+      this.toastWarn('Uma pessoa só pode participar de uma equipe do kit por evento.');
+      return;
+    }
 
     this.salvandoEdicaoEquipe.set(true);
 
@@ -1593,8 +1632,8 @@ export class EventoGestaoComponent implements OnInit {
         }
       },
       error: erro => {
-        console.error('Erro ao carregar Paróquia/Comunidade/comunidades', erro);
-        this.toastError('Não foi possível carregar as Paróquia/Comunidade/comunidades.');
+        console.error('Erro ao carregar paróquia/comunidades/comunidades/comunidades', erro);
+        this.toastError('Não foi possível carregar as paróquia/comunidades/comunidades/comunidades.');
       }
     });
   }
@@ -1795,6 +1834,20 @@ export class EventoGestaoComponent implements OnInit {
     const ultimo = campos.pop();
 
     return `Informe ${campos.join(', ')} e ${ultimo}.`;
+  }
+
+  private possuiIntegranteEmOutraEquipe(pessoaIds: number[], equipeIdIgnorada?: number): boolean {
+    const idsSelecionados = new Set(pessoaIds ?? []);
+
+    if (idsSelecionados.size === 0) {
+      return false;
+    }
+
+    return this.equipesMontagemKit()
+      .filter(equipe => !equipeIdIgnorada || equipe.id !== equipeIdIgnorada)
+      .some(equipe =>
+        equipe.integrantes.some(integrante => idsSelecionados.has(integrante.pessoaId))
+      );
   }
 
   private normalizarFiltro(valor: string): string {

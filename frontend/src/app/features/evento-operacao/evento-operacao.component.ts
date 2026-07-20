@@ -205,28 +205,36 @@ export class EventoOperacaoComponent implements OnInit {
     this.duplas().filter(dupla => dupla.status === 'ATIVA')
   );
 
-  readonly sobrinhosInscritos = computed(() =>
-    this.sobrinhos().filter(sobrinho => this.statusPresencaSobrinho(sobrinho) === 'INSCRITO')
-  );
-
-  readonly sobrinhosPresentes = computed(() =>
-    this.sobrinhos().filter(sobrinho => this.statusPresencaSobrinho(sobrinho) === 'PRESENTE')
-  );
-
-  readonly sobrinhosAusentes = computed(() =>
-    this.sobrinhos().filter(sobrinho => this.statusPresencaSobrinho(sobrinho) === 'AUSENTE')
-  );
-
   readonly sobrinhosDesistentes = computed(() =>
     this.sobrinhos().filter(sobrinho => this.statusPresencaSobrinho(sobrinho) === 'DESISTENTE')
   );
 
-  readonly vinculosAtivos = computed(() =>
-    this.vinculos().filter(vinculo => vinculo.status === 'ATIVO')
+  readonly sobrinhosAtivos = computed(() =>
+    this.sobrinhos().filter(sobrinho => this.statusPresencaSobrinho(sobrinho) !== 'DESISTENTE')
   );
 
+  readonly sobrinhosInscritos = computed(() =>
+    this.sobrinhosAtivos().filter(sobrinho => this.statusPresencaSobrinho(sobrinho) === 'INSCRITO')
+  );
+
+  readonly sobrinhosPresentes = computed(() =>
+    this.sobrinhosAtivos().filter(sobrinho => this.statusPresencaSobrinho(sobrinho) === 'PRESENTE')
+  );
+
+  readonly sobrinhosAusentes = computed(() =>
+    this.sobrinhosAtivos().filter(sobrinho => this.statusPresencaSobrinho(sobrinho) === 'AUSENTE')
+  );
+
+  readonly vinculosAtivos = computed(() => {
+    const idsSobrinhosAtivos = new Set(this.sobrinhosAtivos().map(sobrinho => sobrinho.id));
+
+    return this.vinculos()
+      .filter(vinculo => vinculo.status === 'ATIVO')
+      .filter(vinculo => idsSobrinhosAtivos.has(vinculo.sobrinhoId));
+  });
+
   readonly percentualVinculados = computed(() => {
-    const total = this.sobrinhos().length;
+    const total = this.sobrinhosAtivos().length;
 
     if (total === 0) {
       return 0;
@@ -236,7 +244,7 @@ export class EventoOperacaoComponent implements OnInit {
   });
 
   readonly percentualPresentes = computed(() => {
-    const total = this.sobrinhos().length;
+    const total = this.sobrinhosAtivos().length;
 
     if (total === 0) {
       return 0;
