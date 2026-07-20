@@ -1,4 +1,17 @@
 .evento-credenciais-page {
+    .versao-sistema-badge {
+        display: inline-flex;
+        align-items: center;
+        border-radius: 999px;
+        border: 1px solid rgba(var(--bs-primary-rgb), 0.22);
+        background: rgba(var(--bs-primary-rgb), 0.08);
+        color: var(--bs-primary);
+        font-size: 0.78rem;
+        font-weight: 700;
+        line-height: 1;
+        padding: 0.35rem 0.65rem;
+    }
+
     .credenciais-summary-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -9,36 +22,36 @@
         --summary-accent: var(--bs-primary);
         --summary-accent-rgb: var(--bs-primary-rgb);
 
-        position: relative;
+        width: 100%;
+        min-height: 7.25rem;
         border: 1px solid var(--bs-border-color);
         border-left: 0.28rem solid var(--summary-accent);
-        border-radius: 0.75rem;
-        padding: 1.15rem 1.25rem;
+        border-radius: 1rem;
+        background: var(--bs-body-bg);
         color: var(--bs-body-color);
-        background: #fff;
+        padding: 1.1rem 1.2rem;
         display: flex;
         align-items: center;
         justify-content: space-between;
         gap: 1rem;
         text-align: left;
-        width: 100%;
-        min-height: 7.25rem;
         cursor: pointer;
-        overflow: hidden;
-        transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
         box-shadow: 0 0.125rem 0.75rem rgba(15, 23, 42, 0.06);
+        transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
 
-        &:hover {
-            transform: translateY(-2px);
-            border-color: rgba(var(--summary-accent-rgb), 0.32);
+        &:hover,
+        &:focus-visible {
+            transform: translateY(-1px);
+            border-color: rgba(var(--summary-accent-rgb), 0.34);
             border-left-color: var(--summary-accent);
-            box-shadow: 0 0.35rem 1rem rgba(15, 23, 42, 0.1);
+            box-shadow: 0 0.5rem 1rem rgba(15, 23, 42, 0.08);
+            outline: none;
         }
 
         &.active {
             border-color: rgba(var(--summary-accent-rgb), 0.42);
             border-left-color: var(--summary-accent);
-            box-shadow: 0 0 0 3px rgba(var(--summary-accent-rgb), 0.12), 0 0.35rem 1rem rgba(15, 23, 42, 0.1);
+            box-shadow: 0 0 0 3px rgba(var(--summary-accent-rgb), 0.12), 0 0.5rem 1rem rgba(15, 23, 42, 0.08);
         }
 
         .stat-icon {
@@ -47,25 +60,21 @@
             height: 3rem;
             min-width: 3rem;
             border-radius: 999px;
-            background: var(--summary-accent);
-            border: 0;
+            background: rgba(var(--summary-accent-rgb), 0.12);
+            color: var(--summary-accent);
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 0.35rem 0.8rem rgba(var(--summary-accent-rgb), 0.22);
 
             i {
                 font-size: 1.18rem;
-                color: #fff;
             }
         }
 
         .stat-content {
-            position: relative;
-            z-index: 1;
+            order: 1;
             min-width: 0;
             flex: 1;
-            order: 1;
         }
 
         .stat-title {
@@ -107,22 +116,82 @@
         }
 
         &.sobrinhos {
-            --summary-accent: var(--bs-purple-500);
-            --summary-accent-rgb: var(--bs-purple-rgb);
+            --summary-accent: #7c3aed;
+            --summary-accent-rgb: 124, 58, 237;
         }
 
         &.inativas {
             --summary-accent: var(--bs-warning);
             --summary-accent-rgb: var(--bs-warning-rgb);
-
-            .stat-icon i {
-                color: var(--bs-gray-900);
-            }
         }
 
         &.canceladas {
             --summary-accent: var(--bs-danger);
             --summary-accent-rgb: var(--bs-danger-rgb);
+        }
+    }
+
+    .credenciais-impressao-card {
+        display: block;
+
+        ::ng-deep .p-card {
+            border: 1px solid var(--bs-border-color);
+            border-radius: 1rem;
+            box-shadow: 0 0.125rem 0.75rem rgba(15, 23, 42, 0.06);
+        }
+
+        ::ng-deep .p-card-body {
+            padding: 1.25rem;
+        }
+    }
+
+    .impressao-card-icon {
+        width: 2.8rem;
+        height: 2.8rem;
+        border-radius: 999px;
+        background: rgba(var(--bs-danger-rgb), 0.1);
+        color: var(--bs-danger);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 auto;
+        font-size: 1.1rem;
+    }
+
+    .quick-filter-area {
+        border-top: 1px solid var(--bs-border-color);
+    }
+
+    .quick-filter-button {
+        border-radius: 999px;
+
+        &.active {
+            box-shadow: 0 0 0 3px rgba(var(--bs-primary-rgb), 0.12);
+        }
+    }
+
+    .credencial-actions {
+        display: inline-flex;
+        justify-content: flex-end;
+        flex-wrap: wrap;
+        gap: 0.35rem;
+    }
+
+    .credencial-icon-button {
+        min-width: 2.15rem;
+    }
+
+    .table-empty-state {
+        min-height: 5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.65rem;
+        color: var(--bs-secondary-color);
+        font-size: 0.9rem;
+
+        i {
+            font-size: 1rem;
         }
     }
 }

@@ -812,7 +812,25 @@ export class EventoOperacaoComponent implements OnInit {
   });
 
   ngOnInit(): void {
+    this.aplicarAbaInicialDaRota();
     this.carregarDados();
+  }
+
+  private aplicarAbaInicialDaRota(): void {
+    const aba = this.route.snapshot.queryParamMap.get('aba') as AbaOperacao | null;
+    const abasValidas: AbaOperacao[] = [
+      'VISAO_GERAL',
+      'LEITURAS_QR',
+      'TIOS_CARONA',
+      'SOBRINHOS',
+      'CADERNO_CHORO',
+      'RELATORIOS',
+      'IMPRESSOES'
+    ];
+
+    if (aba && abasValidas.includes(aba)) {
+      this.abaOperacaoAtiva.set(aba);
+    }
   }
 
   carregarDados(): void {

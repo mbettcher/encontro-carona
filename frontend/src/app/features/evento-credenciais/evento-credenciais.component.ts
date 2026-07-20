@@ -31,14 +31,6 @@ type FiltroRapidoCredencial =
     | 'CANCELADAS'
     | 'PERSONALIZADO';
 
-interface CardResumoCredencial {
-    titulo: string;
-    valor: number;
-    subtitulo: string;
-    icone: string;
-    tema: 'total' | 'success' | 'info' | 'primary' | 'warn' | 'danger';
-    filtro: FiltroRapidoCredencial;
-}
 
 @Component({
     selector: 'app-evento-credenciais',
@@ -62,7 +54,7 @@ export class EventoCredenciaisComponent implements OnInit {
     private readonly route = inject(ActivatedRoute);
     readonly seguranca = inject(AuthService);
 
-  private readonly service = inject(EventoCredenciaisService);
+    private readonly service = inject(EventoCredenciaisService);
     private readonly messageService = inject(MessageService);
     private readonly router = inject(Router);
 
@@ -112,56 +104,6 @@ export class EventoCredenciaisComponent implements OnInit {
         this.credenciais().filter(credencial => credencial.tipo === 'SOBRINHO')
     );
 
-    readonly cardsResumoCredenciais = computed<CardResumoCredencial[]>(() => [
-        {
-            titulo: 'Total',
-            valor: this.credenciais().length,
-            subtitulo: 'credenciais geradas',
-            icone: 'fa-solid fa-id-card',
-            tema: 'total',
-            filtro: 'TODAS'
-        },
-        {
-            titulo: 'Ativas',
-            valor: this.credenciaisAtivas().length,
-            subtitulo: 'prontas para impressão',
-            icone: 'fa-solid fa-circle-check',
-            tema: 'success',
-            filtro: 'ATIVAS'
-        },
-        {
-            titulo: 'Tios carona',
-            valor: this.credenciaisTios().length,
-            subtitulo: 'credenciais de tios',
-            icone: 'fa-solid fa-car-side',
-            tema: 'info',
-            filtro: 'TIOS'
-        },
-        {
-            titulo: 'Encontristas',
-            valor: this.credenciaisSobrinhos().length,
-            subtitulo: 'credenciais de encontristas',
-            icone: 'fa-solid fa-child-reaching',
-            tema: 'primary',
-            filtro: 'SOBRINHOS'
-        },
-        {
-            titulo: 'Inativas',
-            valor: this.credenciaisInativas().length,
-            subtitulo: 'temporariamente suspensas',
-            icone: 'fa-solid fa-pause',
-            tema: 'warn',
-            filtro: 'INATIVAS'
-        },
-        {
-            titulo: 'Canceladas',
-            valor: this.credenciaisCanceladas().length,
-            subtitulo: 'fora de uso',
-            icone: 'fa-solid fa-ban',
-            tema: 'danger',
-            filtro: 'CANCELADAS'
-        }
-    ]);
 
     readonly credenciaisFiltradas = computed(() => {
         const filtro = this.normalizarFiltro(this.filtroTexto());
@@ -393,87 +335,12 @@ export class EventoCredenciaisComponent implements OnInit {
             });
     }
 
-    imprimirQrCodes(tipo?: TipoCredencial): void {
-        const queryParams = tipo ? { tipo } : {};
-
+    abrirCentralImpressao(): void {
         this.router.navigate(
-            ['/eventos', this.eventoId, 'credenciais', 'impressao-qrcode'],
-            { queryParams }
-        );
-    }
-
-    imprimirQrCodeIndividual(credencial: CredencialEvento): void {
-        if (credencial.status !== 'ATIVA') {
-            this.toastError('Somente credenciais ativas podem ser impressas.');
-            return;
-        }
-
-        this.router.navigate(
-            ['/eventos', this.eventoId, 'credenciais', 'impressao-qrcode'],
+            ['/eventos', this.eventoId, 'operacao'],
             {
                 queryParams: {
-                    credencialId: credencial.id
-                }
-            }
-        );
-    }
-
-    imprimirCrachas(tipo?: TipoCredencial): void {
-        const queryParams = tipo ? { tipo } : {};
-
-        this.router.navigate(
-            ['/eventos', this.eventoId, 'credenciais', 'impressao-crachas'],
-            { queryParams }
-        );
-    }
-
-    imprimirQrCodesFiltrados(): void {
-        const ids = this.idsCredenciaisAtivasFiltradas();
-
-        if (ids.length === 0) {
-            this.toastError('Não há credenciais ativas nos filtros atuais para imprimir QR Codes.');
-            return;
-        }
-
-        this.router.navigate(
-            ['/eventos', this.eventoId, 'credenciais', 'impressao-qrcode'],
-            {
-                queryParams: {
-                    ids: ids.join(',')
-                }
-            }
-        );
-    }
-
-    imprimirCrachasFiltrados(): void {
-        const ids = this.idsCredenciaisAtivasFiltradas();
-
-        if (ids.length === 0) {
-            this.toastError('Não há credenciais ativas nos filtros atuais para imprimir crachás.');
-            return;
-        }
-
-        this.router.navigate(
-            ['/eventos', this.eventoId, 'credenciais', 'impressao-crachas'],
-            {
-                queryParams: {
-                    ids: ids.join(',')
-                }
-            }
-        );
-    }
-
-    imprimirCrachaIndividual(credencial: CredencialEvento): void {
-        if (credencial.status !== 'ATIVA') {
-            this.toastError('Somente credenciais ativas podem ser impressas.');
-            return;
-        }
-
-        this.router.navigate(
-            ['/eventos', this.eventoId, 'credenciais', 'impressao-crachas'],
-            {
-                queryParams: {
-                    credencialId: credencial.id
+                    aba: 'IMPRESSOES'
                 }
             }
         );
@@ -551,9 +418,6 @@ export class EventoCredenciaisComponent implements OnInit {
         }
     }
 
-    private idsCredenciaisAtivasFiltradas(): number[] {
-        return this.credenciaisFiltradasAtivas().map(credencial => credencial.id);
-    }
 
     private gerarPorTipo(tipo: TipoCredencial): void {
         this.gerando.set(true);

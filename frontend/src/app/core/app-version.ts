@@ -1,6 +1,6 @@
 import { environment } from '../../environments/environment';
 
-export const APP_VERSION = '1.0.0';
+export const APP_VERSION = '1.1.0';
 export const APP_NAME = 'EAC - Tio Carona';
 export const APP_RELEASE_LABEL = `v${APP_VERSION}`;
 export const APP_RELEASE_DATE = '2026-07-14';

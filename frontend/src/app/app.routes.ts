@@ -10,9 +10,6 @@ import { OperacaoComponent } from './features/operacao/operacao.component';
 import { ParoquiasComponent } from './features/paroquias/paroquias.component';
 import { PessoasComponent } from './features/pessoas/pessoas.component';
 import { EventoCredenciaisComponent } from './features/evento-credenciais/evento-credenciais.component';
-import { EventoQrCodePrintComponent } from './features/evento-credenciais/evento-qrcode-print.component';
-import { EventoCrachaPrintComponent } from './features/evento-credenciais/evento-cracha-print.component';
-import { EventoListaPresencaPrintComponent } from './features/evento-operacao/evento-lista-presenca-print.component';
 import { LoginComponent } from './features/auth/login.component';
 import { UsuariosSistemaComponent } from './features/usuarios-sistema/usuarios-sistema.component';
 import { AlterarSenhaComponent } from './features/minha-conta/alterar-senha.component';
@@ -29,29 +26,6 @@ import {
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
-
-  /*
-   * Rotas de impressão ficam fora do layout principal para não exibir menu/sidebar
-   * durante impressão de QR Codes, crachás ou listas de presença.
-   */
-  {
-    path: 'eventos/:eventoId/operacao/impressao-presenca',
-    component: EventoListaPresencaPrintComponent,
-    canActivate: [authGuard],
-    data: { perfis: PERFIS_IMPRESSAO }
-  },
-  {
-    path: 'eventos/:eventoId/credenciais/impressao-qrcode',
-    component: EventoQrCodePrintComponent,
-    canActivate: [authGuard],
-    data: { perfis: PERFIS_IMPRESSAO }
-  },
-  {
-    path: 'eventos/:eventoId/credenciais/impressao-crachas',
-    component: EventoCrachaPrintComponent,
-    canActivate: [authGuard],
-    data: { perfis: PERFIS_IMPRESSAO }
-  },
 
   {
     path: '',

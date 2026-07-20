@@ -1,7 +1,10 @@
 <div class="container-fluid py-4 evento-credenciais-page">
     <div class="d-flex flex-column flex-xl-row justify-content-between gap-3 mb-4">
         <div>
-            <h1 class="h3 mb-1">Credenciais do Evento</h1>
+            <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
+                <h1 class="h3 mb-0">Credenciais do Evento</h1>
+                <span class="versao-sistema-badge">v1.1.0</span>
+            </div>
 
             @if (evento()) {
             <p class="text-body-secondary mb-1">
@@ -38,32 +41,8 @@
 
     <div class="alert alert-warning py-2 px-3 mb-4 small">
         <i class="fa-solid fa-circle-info me-2"></i>
-        As credenciais ativas poderão ser impressas como crachá, QR Code avulso ou adesivo para colar atrás do crachá.
+        As impressões oficiais foram centralizadas em <strong>Operação do Evento &gt; Impressões</strong>, usando PDF Jasper.
     </div>
-
-    <!--div class="row g-3 mb-4">
-        @for (card of cardsResumoCredenciais(); track card.filtro) {
-        <div class="col-12 col-md-6 col-xl-4 col-xxl-2">
-            <p-card class="summary-card">
-                <button type="button" class="summary-card-button" [class.active]="filtroRapidoAtivo() === card.filtro"
-                    [class.summary-total]="card.tema === 'total'" [class.summary-success]="card.tema === 'success'"
-                    [class.summary-info]="card.tema === 'info'" [class.summary-primary]="card.tema === 'primary'"
-                    [class.summary-warn]="card.tema === 'warn'" [class.summary-danger]="card.tema === 'danger'"
-                    (click)="aplicarFiltroRapido(card.filtro)">
-                    <span class="summary-icon">
-                        <i [class]="card.icone"></i>
-                    </span>
-
-                    <span class="summary-content">
-                        <span class="summary-label">{{ card.titulo }}</span>
-                        <span class="summary-value">{{ card.valor }}</span>
-                        <span class="summary-subtitle">{{ card.subtitulo }}</span>
-                    </span>
-                </button>
-            </p-card>
-        </div>
-        }
-    </div-->
 
     <div class="credenciais-summary-grid mb-4">
         <button type="button" class="credencial-stat-card total" [class.active]="filtroRapidoAtivo() === 'TODAS'"
@@ -150,6 +129,26 @@
             </div>
         </button>
     </div>
+
+    <p-card styleClass="credenciais-impressao-card mb-4">
+        <div class="d-flex flex-column flex-xl-row justify-content-between gap-3 align-items-xl-center">
+            <div class="d-flex align-items-start gap-3">
+                <div class="impressao-card-icon">
+                    <i class="fa-solid fa-print"></i>
+                </div>
+
+                <div>
+                    <h2 class="h5 mb-1">Impressões oficiais</h2>
+                    <p class="text-body-secondary small mb-0">
+                        Etiquetas QR Code, crachás e carteirinhas agora são gerados na Central de Impressão com Jasper.
+                    </p>
+                </div>
+            </div>
+
+            <p-button label="Abrir Central de Impressão" icon="fa-solid fa-arrow-up-right-from-square" severity="danger"
+                size="small" (onClick)="abrirCentralImpressao()" />
+        </div>
+    </p-card>
 
     <p-card class="shadow-sm border-0 mb-4">
         <ng-template pTemplate="header">
@@ -263,27 +262,9 @@
                 </div>
 
                 <div class="d-flex flex-column flex-sm-row gap-2">
-                    <p-button label="QR filtradas" icon="fa-solid fa-qrcode" severity="secondary" size="small"
-                        pTooltip="Imprime somente as credenciais ativas que aparecem nos filtros atuais"
-                        tooltipPosition="top" [disabled]="credenciaisFiltradasAtivas().length === 0"
-                        (onClick)="imprimirQrCodesFiltrados()" />
-
-                    <p-button label="Crachás filtrados" icon="fa-solid fa-id-card" severity="help" size="small"
-                        pTooltip="Imprime somente os crachás ativos que aparecem nos filtros atuais"
-                        tooltipPosition="top" [disabled]="credenciaisFiltradasAtivas().length === 0"
-                        (onClick)="imprimirCrachasFiltrados()" />
-
-                    <p-button label="QR todos" icon="fa-solid fa-qrcode" severity="secondary" size="small"
-                        [disabled]="credenciaisAtivas().length === 0" (onClick)="imprimirQrCodes()" />
-
-                    <p-button label="QR Encontristas" icon="fa-solid fa-child-reaching" severity="success" size="small"
-                        [disabled]="credenciaisSobrinhos().length === 0" (onClick)="imprimirQrCodes('SOBRINHO')" />
-
-                    <p-button label="QR Tios" icon="fa-solid fa-car-side" severity="info" size="small"
-                        [disabled]="credenciaisTios().length === 0" (onClick)="imprimirQrCodes('TIO_CARONA')" />
-
-                    <p-button label="Crachás todos" icon="fa-solid fa-id-card" severity="help" size="small"
-                        [disabled]="credenciaisAtivas().length === 0" (onClick)="imprimirCrachas()" />
+                    <p-button label="Abrir Central de Impressão" icon="fa-solid fa-print" severity="danger" size="small"
+                        pTooltip="Use a central para gerar etiquetas, crachás e carteirinhas oficiais"
+                        tooltipPosition="top" (onClick)="abrirCentralImpressao()" />
                 </div>
             </div>
         </ng-template>
@@ -362,17 +343,6 @@
 
                         <td class="text-end">
                             <div class="credencial-actions">
-                                <p-button icon="fa-solid fa-qrcode" size="small" severity="secondary"
-                                    styleClass="credencial-icon-button me-1" pTooltip="Imprimir QR Code individual"
-                                    tooltipPosition="top" ariaLabel="Imprimir QR Code individual"
-                                    [disabled]="credencial.status !== 'ATIVA'"
-                                    (onClick)="imprimirQrCodeIndividual(credencial)" />
-
-                                <p-button icon="fa-solid fa-print" size="small" severity="info"
-                                    styleClass="credencial-icon-button me-1" pTooltip="Imprimir crachá individual"
-                                    tooltipPosition="top" ariaLabel="Imprimir crachá individual"
-                                    [disabled]="credencial.status !== 'ATIVA'"
-                                    (onClick)="imprimirCrachaIndividual(credencial)" />
 
                                 @if (seguranca.podeEscrever() && credencial.status === 'ATIVA') {
                                 <p-button icon="fa-solid fa-pause" size="small" severity="warn"
@@ -421,6 +391,17 @@
                                     [disabled]="processandoCredencialId() === credencial.id"
                                     (onClick)="reemitir(credencial)" />
                                 }
+                            </div>
+                        </td>
+                    </tr>
+                </ng-template>
+
+                <ng-template pTemplate="emptymessage">
+                    <tr>
+                        <td colspan="6">
+                            <div class="table-empty-state">
+                                <i class="fa-solid fa-magnifying-glass"></i>
+                                <span>Nenhuma credencial encontrada para os filtros atuais.</span>
                             </div>
                         </td>
                     </tr>
