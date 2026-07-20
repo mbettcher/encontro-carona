@@ -11,6 +11,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
 import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
+import { TooltipModule } from 'primeng/tooltip';
 
 import { Evento, EventoRequest, EventoStatus, ParoquiaResumo } from '../../shared/models';
 import { CustomFormHelperService } from '../../shared/services/custom-form-helper.service';
@@ -36,7 +37,8 @@ interface StatusOpcao {
     InputTextModule,
     SelectModule,
     TableModule,
-    TagModule
+    TagModule,
+    TooltipModule
   ],
   templateUrl: './eventos.component.html',
   styleUrl: './eventos.component.scss'

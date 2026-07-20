@@ -210,7 +210,8 @@
 
                 <td class="text-end">
                   @if (seguranca.podeEscrever()) {
-                  <p-button type="button" label="Editar" icon="fa-solid fa-pen-to-square" size="small" severity="warn"
+                  <p-button type="button" icon="fa-solid fa-pen-to-square" size="small" severity="warn"
+                    pTooltip="Editar paróquia/comunidade" tooltipPosition="top" ariaLabel="Editar paróquia/comunidade"
                     (onClick)="editar(paroquia)" />
                   } @else {
                   <span class="small text-body-secondary">Consulta</span>

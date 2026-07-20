@@ -199,18 +199,22 @@
 
                 <td class="text-end">
                   <div class="d-flex justify-content-end gap-2 flex-wrap">
-                    <p-button type="button" label="Editar" icon="fa-solid fa-pen-to-square" size="small"
-                      severity="warn" (onClick)="editar(usuario)" />
+                    <p-button type="button" icon="fa-solid fa-pen-to-square" size="small" severity="warn"
+                      pTooltip="Editar usuário" tooltipPosition="top" ariaLabel="Editar usuário"
+                      (onClick)="editar(usuario)" />
 
-                    <p-button type="button" label="Senha" icon="fa-solid fa-key" size="small"
-                      severity="info" (onClick)="prepararResetSenha(usuario)" />
+                    <p-button type="button" icon="fa-solid fa-key" size="small" severity="info"
+                      pTooltip="Resetar senha" tooltipPosition="top" ariaLabel="Resetar senha"
+                      (onClick)="prepararResetSenha(usuario)" />
 
                     @if (usuario.ativo) {
-                    <p-button type="button" label="Desativar" icon="fa-solid fa-user-slash" size="small"
-                      severity="danger" (onClick)="confirmarAtivacao(usuario)" />
+                    <p-button type="button" icon="fa-solid fa-user-slash" size="small" severity="danger"
+                      pTooltip="Desativar usuário" tooltipPosition="top" ariaLabel="Desativar usuário"
+                      (onClick)="confirmarAtivacao(usuario)" />
                     } @else {
-                    <p-button type="button" label="Ativar" icon="fa-solid fa-user-check" size="small"
-                      severity="success" (onClick)="confirmarAtivacao(usuario)" />
+                    <p-button type="button" icon="fa-solid fa-user-check" size="small" severity="success"
+                      pTooltip="Ativar usuário" tooltipPosition="top" ariaLabel="Ativar usuário"
+                      (onClick)="confirmarAtivacao(usuario)" />
                     }
                   </div>
                 </td>

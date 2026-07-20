@@ -7,6 +7,7 @@ import { CardModule } from 'primeng/card';
 import { InputTextModule } from 'primeng/inputtext';
 import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
+import { TooltipModule } from 'primeng/tooltip';
 
 import { Paroquia, ParoquiaRequest } from '../../shared/models';
 import { CustomFormHelperService } from '../../shared/services/custom-form-helper.service';
@@ -25,7 +26,8 @@ import { ParoquiasService } from './paroquias.service';
     InputTextModule,
     TableModule,
     TagModule,
-    TelefoneMaskDirective
+    TelefoneMaskDirective,
+    TooltipModule
   ],
   templateUrl: './paroquias.component.html',
   styleUrl: './paroquias.component.scss'

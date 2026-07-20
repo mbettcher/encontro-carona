@@ -27,7 +27,9 @@
         border: 1px solid var(--bs-border-color);
         border-left: 0.28rem solid var(--summary-accent);
         border-radius: 1rem;
-        background: var(--bs-body-bg);
+        background:
+            linear-gradient(135deg, rgba(var(--summary-accent-rgb), 0.16), rgba(var(--summary-accent-rgb), 0.045)),
+            var(--bs-body-bg);
         color: var(--bs-body-color);
         padding: 1.1rem 1.2rem;
         display: flex;
@@ -60,7 +62,7 @@
             height: 3rem;
             min-width: 3rem;
             border-radius: 999px;
-            background: rgba(var(--summary-accent-rgb), 0.12);
+            background: rgba(var(--summary-accent-rgb), 0.18);
             color: var(--summary-accent);
             display: flex;
             align-items: center;

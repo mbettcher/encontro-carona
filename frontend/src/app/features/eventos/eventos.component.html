@@ -246,19 +246,22 @@
                 </td>
 
                 <td class="text-end">
-                  <div class="d-flex flex-column flex-lg-row justify-content-end gap-2">
+                  <div class="d-flex justify-content-end gap-2 flex-wrap">
                     @if (seguranca.podeEscrever()) {
-                    <p-button type="button" label="Editar" icon="fa-solid fa-pen-to-square" size="small" severity="warn"
+                    <p-button type="button" icon="fa-solid fa-pen-to-square" size="small" severity="warn"
+                      pTooltip="Editar evento" tooltipPosition="top" ariaLabel="Editar evento"
                       (onClick)="editar(evento)" />
                     }
 
                     @if (seguranca.podeVerCadastros()) {
-                    <p-button label="Gestão" icon="fa-solid fa-users-gear" size="small" severity="info"
+                    <p-button icon="fa-solid fa-users-gear" size="small" severity="info"
+                      pTooltip="Abrir gestão do evento" tooltipPosition="top" ariaLabel="Abrir gestão do evento"
                       [routerLink]="['/eventos', evento.id, 'gestao']" />
                     }
 
                     @if (seguranca.podeVerOperacao()) {
-                    <p-button label="Operação" icon="fa-solid fa-clipboard-check" size="small" severity="success"
+                    <p-button icon="fa-solid fa-clipboard-check" size="small" severity="success"
+                      pTooltip="Abrir operação do evento" tooltipPosition="top" ariaLabel="Abrir operação do evento"
                       [routerLink]="['/eventos', evento.id, 'operacao']" />
                     }
                   </div>

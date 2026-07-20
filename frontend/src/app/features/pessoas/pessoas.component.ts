@@ -7,6 +7,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
 import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
+import { TooltipModule } from 'primeng/tooltip';
 import { TextareaModule } from 'primeng/textarea';
 import { MessageService } from 'primeng/api';
 
@@ -41,7 +42,8 @@ interface TipoFiltroOpcao {
     TableModule,
     TagModule,
     TextareaModule,
-    TelefoneMaskDirective
+    TelefoneMaskDirective,
+    TooltipModule
   ],
   templateUrl: './pessoas.component.html',
   styleUrl: './pessoas.component.scss'

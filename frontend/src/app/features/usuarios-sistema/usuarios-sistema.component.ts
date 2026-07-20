@@ -9,6 +9,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
 import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
+import { TooltipModule } from 'primeng/tooltip';
 
 import { AuthService } from '../../core/auth/auth.service';
 import { PerfilUsuario } from '../../core/auth/auth.models';
@@ -36,7 +37,8 @@ interface PerfilOpcao {
     InputTextModule,
     SelectModule,
     TableModule,
-    TagModule
+    TagModule,
+    TooltipModule
   ],
   templateUrl: './usuarios-sistema.component.html',
   styleUrl: './usuarios-sistema.component.scss'
