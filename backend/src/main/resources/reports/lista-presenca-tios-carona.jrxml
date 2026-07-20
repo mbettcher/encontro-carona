@@ -13,12 +13,13 @@
               topMargin="20"
               bottomMargin="20">
 
-    <style name="Titulo" fontName="SansSerif" fontSize="16" isBold="true" forecolor="#FFFFFF"/>
-    <style name="Subtitulo" fontName="SansSerif" fontSize="9" forecolor="#E5E7EB"/>
-    <style name="Cabecalho" fontName="SansSerif" fontSize="10" isBold="true" forecolor="#FFFFFF"/>
-    <style name="Texto" fontName="SansSerif" fontSize="10" forecolor="#111827"/>
-    <style name="TextoPequeno" fontName="SansSerif" fontSize="7" isItalic="true" forecolor="#111827"/>
-    <style name="Numero" fontName="SansSerif" fontSize="10" forecolor="#111827"/>
+    <style name="Titulo" fontName="SansSerif" fontSize="16" isBold="false" forecolor="#FFFFFF"/>
+    <style name="Subtitulo" fontName="SansSerif" fontSize="8" forecolor="#FFFFFF"/>
+    <style name="Info" fontName="SansSerif" fontSize="7" forecolor="#111827"/>
+    <style name="Cabecalho" fontName="SansSerif" fontSize="8" forecolor="#111827"/>
+    <style name="Texto" fontName="SansSerif" fontSize="9" forecolor="#111827"/>
+    <style name="TextoPequeno" fontName="SansSerif" fontSize="6" isItalic="true" forecolor="#111827"/>
+    <style name="Numero" fontName="SansSerif" fontSize="8" forecolor="#111827"/>
 
     <parameter name="EVENTO_NOME" class="java.lang.String"/>
     <parameter name="PAROQUIA_NOME" class="java.lang.String"/>
@@ -36,121 +37,145 @@
     <field name="tio2Nome" class="java.lang.String"/>
 
     <title>
-        <band height="95">
+        <band height="110">
             <rectangle>
-                <reportElement mode="Opaque" x="0" y="0" width="802" height="52" backcolor="#0B6FA4"/>
+                <reportElement mode="Opaque" x="0" y="0" width="802" height="52" backcolor="#1F2937"/>
+                <graphicElement>
+                    <pen lineWidth="0.5" lineColor="#111827"/>
+                </graphicElement>
             </rectangle>
 
             <staticText>
-                <reportElement style="Titulo" x="16" y="8" width="500" height="22"/>
-                <textElement verticalAlignment="Middle"/>
+                <reportElement style="Titulo" x="18" y="9" width="500" height="22" forecolor="#FFFFFF"/>
                 <text><![CDATA[Lista de Presença — Tios Carona por Dupla]]></text>
             </staticText>
 
             <textField>
-                <reportElement style="Subtitulo" x="16" y="31" width="500" height="13"/>
+                <reportElement style="Subtitulo" x="18" y="33" width="430" height="12" forecolor="#FFFFFF"/>
                 <textFieldExpression><![CDATA["Evento: " + $P{EVENTO_NOME}]]></textFieldExpression>
             </textField>
 
             <textField>
-                <reportElement style="Subtitulo" x="580" y="10" width="205" height="13"/>
+                <reportElement style="Subtitulo" x="600" y="11" width="188" height="12" forecolor="#FFFFFF"/>
                 <textElement textAlignment="Right"/>
                 <textFieldExpression><![CDATA["Emitido em " + $P{EMITIDO_EM}]]></textFieldExpression>
             </textField>
 
             <textField>
-                <reportElement style="Subtitulo" x="580" y="29" width="205" height="13"/>
+                <reportElement style="Subtitulo" x="600" y="33" width="188" height="12" forecolor="#FFFFFF"/>
                 <textElement textAlignment="Right"/>
                 <textFieldExpression><![CDATA["Total: " + $P{TOTAL_REGISTROS} + " dupla(s)"]]></textFieldExpression>
             </textField>
 
             <rectangle>
-                <reportElement mode="Opaque" x="0" y="63" width="802" height="22" backcolor="#F9FAFB"/>
+                <reportElement mode="Opaque" x="0" y="64" width="802" height="42" backcolor="#F9FAFB"/>
                 <graphicElement>
-                    <pen lineWidth="0.5" lineColor="#D1D5DB"/>
+                    <pen lineWidth="0.35" lineColor="#CBD5E1"/>
                 </graphicElement>
             </rectangle>
 
             <textField>
-                <reportElement style="TextoPequeno" x="10" y="69" width="780" height="10"/>
-                <textFieldExpression><![CDATA["Paróquia/Comunidade do evento: " + $P{PAROQUIA_NOME} + " | Período: " + $P{EVENTO_PERIODO} + " | Filtros: " + $P{FILTROS}]]></textFieldExpression>
+                <reportElement style="Info" x="12" y="72" width="380" height="10"/>
+                <textFieldExpression><![CDATA["Paróquia/Comunidade: " + $P{PAROQUIA_NOME}]]></textFieldExpression>
+            </textField>
+
+            <textField>
+                <reportElement style="Info" x="12" y="90" width="380" height="10"/>
+                <textFieldExpression><![CDATA["Período: " + $P{EVENTO_PERIODO}]]></textFieldExpression>
+            </textField>
+
+            <textField>
+                <reportElement style="Info" x="410" y="72" width="380" height="10"/>
+                <textFieldExpression><![CDATA["Local: " + $P{EVENTO_LOCAL}]]></textFieldExpression>
+            </textField>
+
+            <textField>
+                <reportElement style="Info" x="410" y="90" width="380" height="10"/>
+                <textFieldExpression><![CDATA["Filtros: " + $P{FILTROS}]]></textFieldExpression>
             </textField>
         </band>
     </title>
 
     <columnHeader>
-        <band height="30">
+        <band height="24">
             <rectangle>
-                <reportElement mode="Opaque" x="0" y="0" width="802" height="28" backcolor="#0B6FA4"/>
+                <reportElement mode="Opaque" x="0" y="0" width="802" height="22" backcolor="#E5E7EB"/>
                 <graphicElement>
-                    <pen lineWidth="0.5" lineColor="#000000"/>
+                    <pen lineWidth="0.35" lineColor="#CBD5E1"/>
                 </graphicElement>
             </rectangle>
-
-            <staticText><reportElement style="Cabecalho" x="0" y="7" width="38" height="14"/><textElement textAlignment="Center"/><text><![CDATA[Ord.]]></text></staticText>
-            <staticText><reportElement style="Cabecalho" x="38" y="7" width="150" height="14"/><textElement textAlignment="Center"/><text><![CDATA[Apelido da Dupla]]></text></staticText>
-            <staticText><reportElement style="Cabecalho" x="188" y="7" width="235" height="14"/><textElement textAlignment="Center"/><text><![CDATA[Paróquia/Comunidade]]></text></staticText>
-            <staticText><reportElement style="Cabecalho" x="423" y="7" width="205" height="14"/><textElement textAlignment="Center"/><text><![CDATA[Integrantes]]></text></staticText>
-            <staticText><reportElement style="Cabecalho" x="628" y="7" width="174" height="14"/><textElement textAlignment="Center"/><text><![CDATA[Assinaturas]]></text></staticText>
+            <staticText><reportElement style="Cabecalho" x="6" y="7" width="35" height="8"/><text><![CDATA[Ord.]]></text></staticText>
+            <staticText><reportElement style="Cabecalho" x="55" y="7" width="160" height="8"/><text><![CDATA[Apelido da Dupla]]></text></staticText>
+            <staticText><reportElement style="Cabecalho" x="230" y="7" width="235" height="8"/><text><![CDATA[Paróquia/Comunidade]]></text></staticText>
+            <staticText><reportElement style="Cabecalho" x="480" y="7" width="165" height="8"/><text><![CDATA[Integrantes]]></text></staticText>
+            <staticText><reportElement style="Cabecalho" x="660" y="7" width="130" height="8"/><text><![CDATA[Assinaturas]]></text></staticText>
         </band>
     </columnHeader>
 
     <detail>
         <band height="58" splitType="Stretch">
-            <rectangle>
-                <reportElement x="0" y="0" width="802" height="56"/>
-                <graphicElement>
-                    <pen lineWidth="0.5" lineColor="#000000"/>
-                </graphicElement>
-            </rectangle>
-
-            <line><reportElement x="38" y="0" width="1" height="56" forecolor="#000000"/></line>
-            <line><reportElement x="188" y="0" width="1" height="56" forecolor="#000000"/></line>
-            <line><reportElement x="423" y="0" width="1" height="56" forecolor="#000000"/></line>
-            <line><reportElement x="628" y="0" width="1" height="56" forecolor="#000000"/></line>
-            <line><reportElement x="423" y="28" width="379" height="1" forecolor="#000000"/></line>
-
             <textField>
-                <reportElement style="Numero" x="0" y="18" width="38" height="14"/>
-                <textElement textAlignment="Center" verticalAlignment="Middle"/>
+                <reportElement style="Numero" x="6" y="22" width="30" height="10"/>
+                <textElement textAlignment="Center"/>
                 <textFieldExpression><![CDATA[$F{numero}]]></textFieldExpression>
             </textField>
 
-            <textField isStretchWithOverflow="true">
-                <reportElement style="Texto" x="41" y="17" width="144" height="18"/>
-                <textElement verticalAlignment="Middle"/>
+            <textField textAdjust="StretchHeight">
+                <reportElement style="Texto" x="55" y="19" width="160" height="14"/>
                 <textFieldExpression><![CDATA[$F{apelidoDupla}]]></textFieldExpression>
             </textField>
 
-            <textField isStretchWithOverflow="true">
-                <reportElement style="Texto" x="191" y="5" width="228" height="18"/>
+            <textField textAdjust="StretchHeight">
+                <reportElement style="Texto" x="230" y="12" width="235" height="12"/>
                 <textFieldExpression><![CDATA[$F{paroquiaComunidadeNome}]]></textFieldExpression>
             </textField>
 
-            <textField isStretchWithOverflow="true">
-                <reportElement style="TextoPequeno" x="191" y="27" width="228" height="22"/>
+            <textField textAdjust="StretchHeight">
+                <reportElement style="TextoPequeno" x="230" y="31" width="235" height="14"/>
                 <textFieldExpression><![CDATA[$F{paroquiaComunidadeEndereco}]]></textFieldExpression>
             </textField>
 
             <textField>
-                <reportElement style="Texto" x="426" y="4" width="198" height="18"/>
+                <reportElement style="Texto" x="480" y="9" width="165" height="12"/>
                 <textFieldExpression><![CDATA[$F{tio1Nome}]]></textFieldExpression>
             </textField>
 
+            <line>
+                <reportElement x="480" y="28" width="300" height="1" forecolor="#E5E7EB"/>
+            </line>
+
             <textField>
-                <reportElement style="Texto" x="426" y="32" width="198" height="18"/>
+                <reportElement style="Texto" x="480" y="36" width="165" height="12"/>
                 <textFieldExpression><![CDATA[$F{tio2Nome}]]></textFieldExpression>
             </textField>
+
+            <line>
+                <reportElement x="660" y="23" width="120" height="1" forecolor="#6B7280"/>
+            </line>
+
+            <line>
+                <reportElement x="660" y="50" width="120" height="1" forecolor="#6B7280"/>
+            </line>
+
+            <line>
+                <reportElement x="0" y="56" width="802" height="1" forecolor="#E5E7EB"/>
+            </line>
         </band>
     </detail>
 
-    <pageFooter>
-        <band height="18">
+    <summary>
+        <band height="24">
+            <rectangle>
+                <reportElement mode="Opaque" x="0" y="3" width="802" height="20" backcolor="#F9FAFB"/>
+                <graphicElement>
+                    <pen lineWidth="0.35" lineColor="#CBD5E1"/>
+                </graphicElement>
+            </rectangle>
             <textField>
-                <reportElement style="TextoPequeno" x="650" y="3" width="152" height="12"/>
+                <reportElement style="Info" x="600" y="9" width="188" height="10"/>
                 <textElement textAlignment="Right"/>
-                <textFieldExpression><![CDATA["Página " + $V{PAGE_NUMBER}]]></textFieldExpression>
+                <textFieldExpression><![CDATA["Total de duplas listadas: " + $P{TOTAL_REGISTROS}]]></textFieldExpression>
             </textField>
         </band>
-    </pageFooter>
+    </summary>
 </jasperReport>
