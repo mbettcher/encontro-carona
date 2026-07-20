@@ -626,3 +626,20 @@
     padding: 0.35rem 0.65rem;
   }
 }
+
+
+.evento-operacao-page {
+  .table-empty-state {
+    min-height: 5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.65rem;
+    color: var(--bs-secondary-color);
+    font-size: 0.9rem;
+
+    i {
+      font-size: 1rem;
+    }
+  }
+}
