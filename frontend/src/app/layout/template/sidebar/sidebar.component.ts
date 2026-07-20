@@ -39,7 +39,7 @@ export class SidebarComponent {
       visible: () => true
     },
     {
-      label: 'Paróquia/Comunidades',
+      label: 'Paróquias/Comunidades',
       icon: 'fa-solid fa-church',
       route: '/paroquias',
       visible: () => this.auth.podeVerCadastros()

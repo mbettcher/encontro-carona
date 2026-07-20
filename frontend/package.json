@@ -1,6 +1,6 @@
 {
   "name": "encontro-carona-web",
-  "version": "0.0.1",
+  "version": "1.1.0",
   "scripts": {
     "start": "ng serve --open",
     "build": "ng build",

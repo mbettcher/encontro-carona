@@ -45,12 +45,12 @@ export class SobreVersaoComponent {
         {
           label: 'Login/JWT',
           status: 'OK',
-          detalhe: 'Login autenticado, token enviado no Authorization Bearer e logout validado.'
+          detalhe: 'Login autenticado, token Bearer, logout e refresh token com rotação validados.'
         },
         {
           label: 'Sessão expirada',
           status: 'OK',
-          detalhe: 'Token expirado limpa sessão e redireciona para a tela de login.'
+          detalhe: 'Sessão expirada limpa dados locais e redireciona para login sem quebrar navegação.'
         },
         {
           label: 'Perfis',
@@ -61,97 +61,87 @@ export class SobreVersaoComponent {
           label: 'Administração de usuários',
           status: 'OK',
           detalhe: 'ADMIN lista, cria, edita perfil, ativa/desativa e reseta senha.'
-        },
-        {
-          label: 'Refresh token',
-          status: 'OK',
-          detalhe: 'Refresh token com rotação implementado para renovar a sessão durante operações longas.'
         }
       ]
     },
     {
-      titulo: 'Cadastros base',
+      titulo: 'Cadastros e gestão',
       icon: 'fa-solid fa-database',
       cor: 'success',
       itens: [
         {
-          label: 'Paróquia/Comunidade',
+          label: 'Paróquias/Comunidades',
           status: 'OK',
-          detalhe: 'Cadastro, listagem, edição e filtro visual revisados.'
+          detalhe: 'Textos de tela ajustados para o contexto Paróquia/Comunidade.'
         },
         {
-          label: 'Pessoas',
+          label: 'Pessoas e eventos',
           status: 'OK',
-          detalhe: 'Cadastro de Tios Carona e Encontristas com busca textual e data formatada.'
+          detalhe: 'Cadastros principais, filtros e formulários revisados.'
         },
         {
-          label: 'Eventos',
+          label: 'Gestão do Evento',
           status: 'OK',
-          detalhe: 'Cadastro, edição de status, listagem e filtro visual revisados.'
+          detalhe: 'Tios, duplas com Paróquia/Comunidade, encontristas, vínculos e equipes do kit validados.'
         },
         {
-          label: 'Usuários do sistema',
+          label: 'Equipes do kit',
           status: 'OK',
-          detalhe: 'Tela administrativa disponível somente para ADMIN.'
+          detalhe: 'Regra de uma pessoa por equipe do kit no evento aplicada no backend e no frontend.'
         }
       ]
     },
     {
-      titulo: 'Evento',
+      titulo: 'Operação do Evento',
       icon: 'fa-solid fa-people-group',
       cor: 'info',
       itens: [
         {
-          label: 'Gestão do Evento',
+          label: 'Visão geral',
           status: 'OK',
-          detalhe: 'Tios, duplas, encontristas e vínculos com cards e permissões revisados.'
+          detalhe: 'Atalhos, cards e indicadores principais revisados para a versão 1.1.0.'
+        },
+        {
+          label: 'Presença',
+          status: 'OK',
+          detalhe: 'Indicadores de presença e preparação consideram somente encontristas ativos.'
         },
         {
           label: 'Credenciais',
           status: 'OK',
-          detalhe: 'Geração, filtros, ações por status, reemissão e impressão validadas.'
-        },
-        {
-          label: 'Operação',
-          status: 'OK',
-          detalhe: 'Check-in/check-out, presença, visão geral e listas de presença validadas.'
+          detalhe: 'Tela alinhada à Central de Impressão Jasper e sem rotas CSS/browser antigas.'
         },
         {
           label: 'Caderno de Mensagens',
-          status: 'OK',
-          detalhe: 'Fluxo operacional e timeline horizontal normalizados.'
+          status: 'VALIDAR',
+          detalhe: 'Fluxo atual mantido na 1.1.0; replanejamento completo recomendado para a versão 1.2.0.'
         }
       ]
     },
     {
-      titulo: 'Impressões e visual',
+      titulo: 'Relatórios e impressões Jasper',
       icon: 'fa-solid fa-print',
       cor: 'warning',
       itens: [
         {
-          label: 'Crachás e QR Codes',
+          label: 'Relatórios',
           status: 'OK',
-          detalhe: 'Impressões revisadas com cabeçalho e quebras de página ajustadas.'
+          detalhe: 'Listas de presença, cadernos por equipe e filtros Jasper validados.'
         },
         {
-          label: 'Listas de presença',
+          label: 'Etiquetas QR Code',
           status: 'OK',
-          detalhe: 'Impressão somente de participantes ativos.'
+          detalhe: 'Modelos A4/Pimaco e filtro textual funcionando na Central de Impressão.'
         },
         {
-          label: 'Dashboard',
+          label: 'Crachás e carteirinhas',
           status: 'OK',
-          detalhe: 'Cards limpos, fonte local e visual menos colorido aplicados.'
+          detalhe: 'Crachás verticais e carteirinhas horizontais gerados por Jasper.'
         },
         {
-          label: 'Layout principal',
-          status: 'OK',
-          detalhe: 'Layout componentizado com sidebar, navbar e footer.'
-        },
-        {
-          label: 'PrimeNG Sidebar/Layout',
+          label: 'Limpeza técnica',
           status: 'VALIDAR',
-          detalhe: 'Pós-release: avaliar migração para componente oficial quando a versão instalada suportar.'
+          detalhe: 'Arquivos físicos das impressões CSS antigas podem ser removidos após aplicar este bloco.'
         }
       ]
     }
