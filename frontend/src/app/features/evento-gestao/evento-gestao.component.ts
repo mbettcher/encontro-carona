@@ -255,16 +255,17 @@ export class EventoGestaoComponent implements OnInit {
   readonly opcoesPessoasTioCarona = computed<OpcaoNumerica[]>(() => {
     const pessoasJaAdicionadas = new Set(
       this.tiosCarona()
-        .filter(tio => tio.status === 'ATIVO')
         .map(tio => tio.pessoaId)
     );
 
     return this.pessoas()
+      .filter(pessoa => pessoa.ativo)
       .filter(pessoa => pessoa.tipo === 'TIO_CARONA')
       .filter(pessoa => !pessoasJaAdicionadas.has(pessoa.id))
       .map(pessoa => ({
         label: pessoa.nome,
-        value: pessoa.id
+        value: pessoa.id,
+        descricao: pessoa.telefone || pessoa.email || 'Pessoa cadastrada como Tio Carona'
       }));
   });
 
@@ -361,6 +362,7 @@ export class EventoGestaoComponent implements OnInit {
     const idsJaAdicionados = this.idsPessoasEncontristasJaAdicionadas();
 
     return this.pessoas()
+      .filter(pessoa => pessoa.ativo)
       .filter(pessoa => pessoa.tipo === 'SOBRINHO')
       .filter(pessoa => !idsJaAdicionados.has(pessoa.id))
       .map(pessoa => ({
@@ -396,6 +398,7 @@ export class EventoGestaoComponent implements OnInit {
     const idsJaVinculados = this.idsPessoasEmEquipesDoKit();
 
     return this.pessoas()
+      .filter(pessoa => pessoa.ativo)
       .filter(pessoa => pessoa.tipo === 'EQUIPE')
       .filter(pessoa => !idsJaVinculados.has(pessoa.id))
       .map(pessoa => ({
@@ -407,17 +410,33 @@ export class EventoGestaoComponent implements OnInit {
 
   readonly opcoesPessoasEquipeEdicao = computed<OpcaoNumerica[]>(() => {
     const equipe = this.equipeEmEdicao();
-    const idsDaEquipeAtual = new Set(equipe?.integrantes.map(integrante => integrante.pessoaId) ?? []);
+
+    const idsDaEquipeAtual = new Set(
+      equipe?.integrantes.map(integrante => integrante.pessoaId) ?? []
+    );
+
     const idsJaVinculados = this.idsPessoasEmEquipesDoKit();
 
     return this.pessoas()
       .filter(pessoa => pessoa.tipo === 'EQUIPE')
-      .filter(pessoa => !idsJaVinculados.has(pessoa.id) || idsDaEquipeAtual.has(pessoa.id))
-      .map(pessoa => ({
-        label: pessoa.nome,
-        descricao: pessoa.telefone || pessoa.email || 'Pessoa cadastrada como Equipe',
-        value: pessoa.id
-      }));
+      .filter(pessoa => pessoa.ativo || idsDaEquipeAtual.has(pessoa.id))
+      .filter(pessoa =>
+        idsDaEquipeAtual.has(pessoa.id) ||
+        !idsJaVinculados.has(pessoa.id)
+      )
+      .map(pessoa => {
+        const inativa = !pessoa.ativo;
+
+        return {
+          label: inativa
+            ? `${pessoa.nome} — Inativa`
+            : pessoa.nome,
+          descricao: inativa
+            ? 'Pessoa inativa já vinculada a esta equipe'
+            : pessoa.telefone || pessoa.email || 'Pessoa cadastrada como Equipe',
+          value: pessoa.id
+        };
+      });
   });
 
 
@@ -938,8 +957,8 @@ export class EventoGestaoComponent implements OnInit {
     this.confirmationService.confirm({
       header: 'Excluir dupla?',
       message:
-        `A dupla ${this.nomeDupla(dupla)} será removida deste evento. ` +
-        `Os tios carona continuarão vinculados individualmente ao evento. ` +
+        `A dupla ${this.nomeDupla(dupla)} será removida deste evento.<br><br> ` +
+        `Os tios carona continuarão vinculados individualmente ao evento.<br> ` +
         `A exclusão será permitida somente se não existirem vínculos ` +
         `com encontristas ou histórico do Caderno de Mensagens.`,
       icon: 'fa-solid fa-triangle-exclamation',

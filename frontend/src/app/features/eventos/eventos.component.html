@@ -1,4 +1,3 @@
-
 <p-confirmDialog />
 
 <div class="container-fluid py-4 eventos-page">
@@ -15,8 +14,9 @@
         <label for="filtroEventos" class="form-label small mb-1">Pesquisar</label>
         <span class="p-input-icon-left w-100">
           <i class="fa-solid fa-magnifying-glass"></i>
-          <input id="filtroEventos" pInputText type="text" class="w-100" placeholder="Evento, paróquia/comunidade, status, local ou período"
-            [ngModel]="filtroTexto()" (ngModelChange)="atualizarFiltroTexto($event)" />
+          <input id="filtroEventos" pInputText type="text" class="w-100"
+            placeholder="Evento, paróquia/comunidade, status, local ou período" [ngModel]="filtroTexto()"
+            (ngModelChange)="atualizarFiltroTexto($event)" />
         </span>
       </div>
     </div>
@@ -40,7 +40,10 @@
             <label for="paroquiaId" class="form-label">Paróquia/Comunidade *</label>
 
             <p-select inputId="paroquiaId" [options]="paroquiasFormulario()" optionLabel="nome" optionValue="id"
-              formControlName="paroquiaId" placeholder="Selecione a paróquia/comunidade" styleClass="w-100" />
+              formControlName="paroquiaId" placeholder="Selecione a paróquia/comunidade" styleClass="w-100"
+              panelStyleClass="evento-paroquia-select-panel" appendTo="body" [filter]="true" filterBy="nome"
+              filterPlaceholder="Pesquisar paróquia/comunidade"
+              emptyFilterMessage="Nenhuma paróquia/comunidade encontrada" />
 
             @if (form.controls.paroquiaId.touched && form.controls.paroquiaId.invalid) {
             <div class="form-text text-danger">
@@ -197,8 +200,7 @@
 
         <div class="table-responsive-wrapper">
           <p-table [value]="eventosFiltrados()" [loading]="carregando()" [paginator]="true" [rows]="10"
-            [rowsPerPageOptions]="[10, 20, 50]" class="p-datatable-sm min-width-table"
-            paginatorDropdownAppendTo="body">
+            [rowsPerPageOptions]="[10, 20, 50]" class="p-datatable-sm min-width-table" paginatorDropdownAppendTo="body">
             <ng-template pTemplate="header">
               <tr>
                 <th>Evento</th>

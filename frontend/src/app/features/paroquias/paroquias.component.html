@@ -156,7 +156,7 @@
 
         <div class="table-responsive-wrapper">
           <p-table [value]="paroquiasFiltradas()" [loading]="carregando()" [paginator]="true" [rows]="10"
-            [rowsPerPageOptions]="[10, 20, 50]" class="p-datatable-sm min-width-table"
+            [rowsPerPageOptions]="[10, 20, 50]" class="p-datatable-sm min-width-table" 
             paginatorDropdownAppendTo="body">
             <ng-template pTemplate="header">
               <tr>
@@ -217,7 +217,7 @@
 
                 <td class="text-end">
                   @if (seguranca.podeEscrever()) {
-                  <div class="d-flex justify-content-end gap-2 flex-wrap">
+                  <div class="d-flex justify-content-end gap-2 flex-wrap acoes-column">
                     <p-button type="button" icon="fa-solid fa-pen-to-square" size="small" severity="warn"
                       pTooltip="Editar paróquia/comunidade" tooltipPosition="top" ariaLabel="Editar paróquia/comunidade"
                       (onClick)="editar(paroquia)" />

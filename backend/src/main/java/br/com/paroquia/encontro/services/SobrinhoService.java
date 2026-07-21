@@ -206,8 +206,18 @@ public class SobrinhoService {
     }
 
     private void validarPessoaEncontrista(Pessoa pessoa) {
+        if (!pessoa.isAtivo()) {
+            throw new BusinessException(
+                    "A pessoa selecionada está inativa e não pode ser adicionada " +
+                            "a um novo vínculo. Reative o cadastro antes de continuar."
+            );
+        }
+
         if (pessoa.getTipo() != PessoaTipo.SOBRINHO) {
-            throw new BusinessException("Somente pessoas do tipo Encontrista podem ser adicionadas como encontristas do evento.");
+            throw new BusinessException(
+                    "Somente pessoas do tipo Encontrista podem ser adicionadas " +
+                            "como encontristas do evento."
+            );
         }
     }
 

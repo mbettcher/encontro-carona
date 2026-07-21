@@ -117,8 +117,16 @@ public class EquipeMontagemKitService {
             EquipeMontagemKitIntegranteRequest request
     ) {
         var equipe = buscarEquipe(eventoId, equipeId);
-        validarIntegranteDisponivelNoEvento(eventoId, request.pessoaId(), equipeId);
-        equipe.adicionarIntegrante(buscarPessoaEquipe(request.pessoaId()));
+
+        var pessoa = buscarPessoaEquipeAtiva(request.pessoaId());
+
+        validarIntegranteNaoEstaEmOutraEquipe(
+                eventoId,
+                pessoa.getId(),
+                equipeId
+        );
+
+        equipe.adicionarIntegrante(pessoa);
 
         return EquipeMontagemKitResponse.from(equipe);
     }
@@ -138,63 +146,151 @@ public class EquipeMontagemKitService {
             Long eventoId,
             Long equipeId
     ) {
-        var idsDesejados = new LinkedHashSet<>(integranteIds == null ? List.<Long>of() : integranteIds);
-        validarIntegrantesDisponiveisNoEvento(eventoId, idsDesejados.stream().toList(), equipeId);
+        var idsDesejados = new LinkedHashSet<>(
+                integranteIds == null
+                        ? List.<Long>of()
+                        : integranteIds
+        );
 
-        var idsAtuais = equipe.getIntegrantes().stream()
-                .map(integrante -> integrante.getPessoa().getId())
+        var idsAtuais = equipe.getIntegrantes()
+                .stream()
+                .map(integrante ->
+                        integrante.getPessoa().getId()
+                )
                 .collect(java.util.stream.Collectors.toSet());
 
-        equipe.getIntegrantes().stream()
-                .filter(integrante -> !idsDesejados.contains(integrante.getPessoa().getId()))
-                .map(br.com.paroquia.encontro.domain.entity.EquipeMontagemKitIntegrante::getId)
+        /*
+         * Somente pessoas acrescentadas nesta edição representam
+         * novos vínculos e precisam estar ativas.
+         *
+         * Integrantes inativos já pertencentes à equipe podem permanecer,
+         * preservando o histórico e permitindo salvar outras alterações.
+         */
+        var idsNovos = idsDesejados.stream()
+                .filter(pessoaId -> !idsAtuais.contains(pessoaId))
+                .toList();
+
+        validarIntegrantesDisponiveisNoEvento(
+                eventoId,
+                idsNovos,
+                equipeId
+        );
+
+        equipe.getIntegrantes()
+                .stream()
+                .filter(integrante ->
+                        !idsDesejados.contains(
+                                integrante.getPessoa().getId()
+                        )
+                )
+                .map(integrante -> integrante.getId())
                 .toList()
                 .forEach(equipe::removerIntegrante);
 
-        idsDesejados.stream()
-                .filter(pessoaId -> !idsAtuais.contains(pessoaId))
-                .forEach(pessoaId -> equipe.adicionarIntegrante(buscarPessoaEquipe(pessoaId)));
+        idsNovos.forEach(pessoaId ->
+                equipe.adicionarIntegrante(
+                        buscarPessoaEquipeAtiva(pessoaId)
+                )
+        );
     }
 
-    private void adicionarIntegrantesIniciais(EquipeMontagemKit equipe, List<Long> integranteIds) {
+    private void adicionarIntegrantesIniciais(
+            EquipeMontagemKit equipe,
+            List<Long> integranteIds
+    ) {
         if (integranteIds == null || integranteIds.isEmpty()) {
             return;
         }
 
-        new LinkedHashSet<>(integranteIds).forEach(pessoaId ->
-                equipe.adicionarIntegrante(buscarPessoaEquipe(pessoaId))
-        );
+        new LinkedHashSet<>(integranteIds)
+                .forEach(pessoaId ->
+                        equipe.adicionarIntegrante(
+                                buscarPessoaEquipeAtiva(pessoaId)
+                        )
+                );
     }
 
 
-    private void validarIntegrantesDisponiveisNoEvento(Long eventoId, List<Long> pessoaIds, Long equipeIdIgnorada) {
+    private void validarIntegrantesDisponiveisNoEvento(
+            Long eventoId,
+            List<Long> pessoaIds,
+            Long equipeIdIgnorada
+    ) {
         if (pessoaIds == null || pessoaIds.isEmpty()) {
             return;
         }
 
-        new LinkedHashSet<>(pessoaIds).forEach(pessoaId ->
-                validarIntegranteDisponivelNoEvento(eventoId, pessoaId, equipeIdIgnorada)
+        new LinkedHashSet<>(pessoaIds)
+                .forEach(pessoaId ->
+                        validarIntegranteDisponivelNoEvento(
+                                eventoId,
+                                pessoaId,
+                                equipeIdIgnorada
+                        )
+                );
+    }
+
+    private void validarIntegranteDisponivelNoEvento(
+            Long eventoId,
+            Long pessoaId,
+            Long equipeIdIgnorada
+    ) {
+        var pessoa = buscarPessoaEquipeAtiva(pessoaId);
+
+        validarIntegranteNaoEstaEmOutraEquipe(
+                eventoId,
+                pessoa.getId(),
+                equipeIdIgnorada
         );
     }
 
-    private void validarIntegranteDisponivelNoEvento(Long eventoId, Long pessoaId, Long equipeIdIgnorada) {
-        var pessoa = buscarPessoaEquipe(pessoaId);
-
+    private void validarIntegranteNaoEstaEmOutraEquipe(
+            Long eventoId,
+            Long pessoaId,
+            Long equipeIdIgnorada
+    ) {
         var jaEstaEmOutraEquipe = equipeIdIgnorada == null
-                ? integranteRepository.existsByEquipe_Evento_IdAndPessoa_Id(eventoId, pessoa.getId())
-                : integranteRepository.existsByEquipe_Evento_IdAndPessoa_IdAndEquipe_IdNot(eventoId, pessoa.getId(), equipeIdIgnorada);
+                ? integranteRepository.existsByEquipe_Evento_IdAndPessoa_Id(
+                eventoId,
+                pessoaId
+        )
+                : integranteRepository
+                .existsByEquipe_Evento_IdAndPessoa_IdAndEquipe_IdNot(
+                        eventoId,
+                        pessoaId,
+                        equipeIdIgnorada
+                );
 
         if (jaEstaEmOutraEquipe) {
-            throw new BusinessException("Esta pessoa já participa de outra equipe de montagem do kit neste evento.");
+            throw new BusinessException(
+                    "Esta pessoa já participa de outra equipe de montagem " +
+                            "do kit neste evento."
+            );
         }
     }
 
-    private br.com.paroquia.encontro.domain.entity.Pessoa buscarPessoaEquipe(Long pessoaId) {
+    private br.com.paroquia.encontro.domain.entity.Pessoa buscarPessoaEquipeAtiva(
+            Long pessoaId
+    ) {
         var pessoa = pessoaRepository.findById(pessoaId)
-                .orElseThrow(() -> new ResourceNotFoundException("Pessoa integrante não encontrada."));
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Pessoa integrante não encontrada."
+                        )
+                );
+
+        if (!pessoa.isAtivo()) {
+            throw new BusinessException(
+                    "A pessoa selecionada está inativa e não pode ser adicionada " +
+                            "a um novo vínculo. Reative o cadastro antes de continuar."
+            );
+        }
 
         if (pessoa.getTipo() != PessoaTipo.EQUIPE) {
-            throw new BusinessException("Somente pessoas cadastradas com o tipo EQUIPE podem integrar equipes de montagem do kit.");
+            throw new BusinessException(
+                    "Somente pessoas cadastradas com o tipo EQUIPE podem " +
+                            "integrar equipes de montagem do kit."
+            );
         }
 
         return pessoa;

@@ -138,7 +138,21 @@
             <label for="pessoaId" class="form-label">Pessoa *</label>
 
             <p-select inputId="pessoaId" [options]="opcoesPessoasTioCarona()" optionLabel="label" optionValue="value"
-              formControlName="pessoaId" placeholder="Selecione o tio carona" class="w-100" />
+              formControlName="pessoaId" placeholder="Selecione o tio carona" styleClass="w-100 vinculo-select"
+              panelStyleClass="vinculo-select-panel" appendTo="body" [filter]="true" filterBy="label,descricao"
+              filterPlaceholder="Pesquisar tio carona" emptyFilterMessage="Nenhum tio carona encontrado">
+              <ng-template pTemplate="item" let-opcao>
+                <div class="select-pessoa-option">
+                  <div class="fw-semibold">{{ opcao.label }}</div>
+
+                  @if (opcao.descricao) {
+                  <div class="small text-body-secondary">
+                    {{ opcao.descricao }}
+                  </div>
+                  }
+                </div>
+              </ng-template>
+            </p-select>
 
             @if (opcoesPessoasTioCarona().length === 0) {
             <div class="alert alert-warning py-2 px-3 mb-0 mt-2 small">

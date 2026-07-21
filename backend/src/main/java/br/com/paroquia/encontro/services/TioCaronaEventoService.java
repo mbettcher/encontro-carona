@@ -2,6 +2,7 @@ package br.com.paroquia.encontro.services;
 
 import br.com.paroquia.encontro.common.BusinessException;
 import br.com.paroquia.encontro.common.ResourceNotFoundException;
+import br.com.paroquia.encontro.domain.entity.Pessoa;
 import br.com.paroquia.encontro.domain.entity.TioCaronaEvento;
 import br.com.paroquia.encontro.domain.entity.TioCaronaEventoOperacao;
 import br.com.paroquia.encontro.domain.enums.OrigemOperacaoTioCarona;
@@ -113,13 +114,17 @@ public class TioCaronaEventoService {
                         new ResourceNotFoundException("Pessoa não encontrada.")
                 );
 
+        validarPessoaAtivaParaNovoVinculo(pessoa);
+
         var entity = new TioCaronaEvento(
                 evento,
                 pessoa,
                 request.observacoes()
         );
 
-        return TioCaronaEventoResponse.from(repository.save(entity));
+        return TioCaronaEventoResponse.from(
+                repository.save(entity)
+        );
     }
 
     @Transactional
@@ -261,6 +266,15 @@ public class TioCaronaEventoService {
 
         repository.delete(tioCarona);
         repository.flush();
+    }
+
+    private void validarPessoaAtivaParaNovoVinculo(Pessoa pessoa) {
+        if (!pessoa.isAtivo()) {
+            throw new BusinessException(
+                    "A pessoa selecionada está inativa e não pode ser adicionada " +
+                            "a um novo vínculo. Reative o cadastro antes de continuar."
+            );
+        }
     }
 
     private void validarTioCaronaPodeSerExcluido(
