@@ -12,5 +12,5 @@ import { RouterLink } from '@angular/router';
 })
 export class FooterComponent {
   readonly anoAtual = signal(new Date().getFullYear());
-  readonly textoVersao = computed(() => `EAC - Tio Carona v1.1.0`);
+  readonly textoVersao = computed(() => `EAC - Tio Carona v1.1.1`);
 }

@@ -353,3 +353,21 @@ Nos templates, usar o control flow moderno do Angular:
 ```
 
 Evitar `*ngIf` e `*ngFor` nos novos templates.
+
+## v1.1.1
+
+### Melhorias
+- exclusão segura de duplas sem utilização;
+- remoção do vínculo de tio carona com o evento;
+- preservação do cadastro global da pessoa;
+- pesquisa nos selects de Paróquia/Comunidade e Tio Carona;
+- bloqueio de pessoas inativas em novos vínculos;
+- preservação de integrantes inativos já vinculados às equipes;
+- validações equivalentes no backend contra chamadas diretas;
+- padronização das confirmações destrutivas com modal PrimeNG.
+
+### Validações
+- regressão da Gestão do Evento aprovada;
+- permissões e mensagens de erro aprovadas;
+- builds de backend e frontend aprovados;
+- fluxos operacionais e regras de histórico aprovados.
