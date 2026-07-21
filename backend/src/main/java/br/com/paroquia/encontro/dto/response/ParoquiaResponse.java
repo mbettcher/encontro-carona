@@ -10,7 +10,8 @@ public record ParoquiaResponse(
         String uf,
         String telefone,
         String email,
-        String responsavel
+        String responsavel,
+        boolean ativo
 ) {
     public static ParoquiaResponse from(Paroquia p) {
         return new ParoquiaResponse(
@@ -21,6 +22,7 @@ public record ParoquiaResponse(
                 p.getUf(),
                 p.getTelefone(),
                 p.getEmail(),
-                p.getResponsavel());
+                p.getResponsavel(),
+                p.isAtivo());
     }
 }

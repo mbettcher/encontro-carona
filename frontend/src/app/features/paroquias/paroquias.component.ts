@@ -1,8 +1,9 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 
-import { MessageService } from 'primeng/api';
+import { ConfirmationService, MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { CardModule } from 'primeng/card';
 import { InputTextModule } from 'primeng/inputtext';
 import { TableModule } from 'primeng/table';
@@ -23,6 +24,7 @@ import { ParoquiasService } from './paroquias.service';
     ReactiveFormsModule,
     ButtonModule,
     CardModule,
+    ConfirmDialogModule,
     InputTextModule,
     TableModule,
     TagModule,
@@ -30,6 +32,7 @@ import { ParoquiasService } from './paroquias.service';
     TooltipModule
   ],
   templateUrl: './paroquias.component.html',
+  providers: [ConfirmationService],
   styleUrl: './paroquias.component.scss'
 })
 export class ParoquiasComponent implements OnInit {
@@ -38,6 +41,7 @@ export class ParoquiasComponent implements OnInit {
   private readonly service = inject(ParoquiasService);
   private readonly fb = inject(FormBuilder);
   private readonly messageService = inject(MessageService);
+  private readonly confirmationService = inject(ConfirmationService);
   private readonly customFormHelper = inject(CustomFormHelperService);
 
   readonly paroquias = signal<Paroquia[]>([]);
@@ -172,6 +176,101 @@ export class ParoquiasComponent implements OnInit {
     });
   }
 
+
+  inativar(paroquia: Paroquia): void {
+    this.confirmationService.confirm({
+      header: 'Confirmar inativação',
+      message: `Inativar a paróquia/comunidade "${paroquia.nome}"?`,
+      icon: 'fa-solid fa-triangle-exclamation',
+      acceptLabel: 'Inativar',
+      rejectLabel: 'Cancelar',
+      acceptButtonStyleClass: 'p-button-warning',
+      rejectButtonStyleClass: 'p-button-secondary p-button-outlined',
+      accept: () => this.executarInativacao(paroquia)
+    });
+  }
+
+  reativar(paroquia: Paroquia): void {
+    this.confirmationService.confirm({
+      header: 'Confirmar reativação',
+      message: `Reativar a paróquia/comunidade "${paroquia.nome}"?`,
+      icon: 'fa-solid fa-circle-check',
+      acceptLabel: 'Reativar',
+      rejectLabel: 'Cancelar',
+      acceptButtonStyleClass: 'p-button-success',
+      rejectButtonStyleClass: 'p-button-secondary p-button-outlined',
+      accept: () => this.executarReativacao(paroquia)
+    });
+  }
+
+  excluir(paroquia: Paroquia): void {
+    this.confirmationService.confirm({
+      header: 'Confirmar exclusão definitiva',
+      message: `Excluir definitivamente a paróquia/comunidade "${paroquia.nome}"?<br><br>A exclusão só será permitida se não houver vínculos. Esta ação não pode ser desfeita.`,
+      icon: 'fa-solid fa-triangle-exclamation',
+      acceptLabel: 'Excluir definitivamente',
+      rejectLabel: 'Cancelar',
+      acceptButtonStyleClass: 'p-button-danger',
+      rejectButtonStyleClass: 'p-button-secondary p-button-outlined',
+      accept: () => this.executarExclusao(paroquia)
+    });
+  }
+
+  private executarInativacao(paroquia: Paroquia): void {
+    this.service.inativar(paroquia.id).subscribe({
+      next: () => {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Paróquia/Comunidade inativada',
+          detail: 'Cadastro inativado com sucesso.',
+          life: 4000
+        });
+
+        this.carregarParoquias();
+      },
+      error: erro => this.exibirErroOperacao(erro, 'Não foi possível inativar a paróquia/comunidade.')
+    });
+  }
+  
+
+  private executarReativacao(paroquia: Paroquia): void {
+    this.service.reativar(paroquia.id).subscribe({
+      next: () => {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Paróquia/Comunidade reativada',
+          detail: 'Cadastro reativado com sucesso.',
+          life: 4000
+        });
+
+        this.carregarParoquias();
+      },
+      error: erro => this.exibirErroOperacao(erro, 'Não foi possível reativar a paróquia/comunidade.')
+    });
+  }
+  
+
+  private executarExclusao(paroquia: Paroquia): void {
+    this.service.excluir(paroquia.id).subscribe({
+      next: () => {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Paróquia/Comunidade excluída',
+          detail: 'Cadastro excluído com sucesso.',
+          life: 4000
+        });
+
+        this.carregarParoquias();
+      },
+      error: erro => this.exibirErroOperacao(erro, 'Não foi possível excluir. Se houver vínculos, utilize a inativação.')
+    });
+  }
+  
+
+  labelAtivo(ativo: boolean): string {
+    return ativo ? 'Ativa' : 'Inativa';
+  }
+
   cancelarEdicao(): void {
     this.limparFormulario();
   }
@@ -214,6 +313,20 @@ export class ParoquiasComponent implements OnInit {
       telefone: '',
       email: '',
       responsavel: ''
+    });
+  }
+
+
+  private exibirErroOperacao(erro: unknown, mensagemPadrao: string): void {
+    console.error(mensagemPadrao, erro);
+
+    const mensagemApi = (erro as { error?: { message?: string } })?.error?.message;
+
+    this.messageService.add({
+      severity: 'error',
+      summary: 'Operação não realizada',
+      detail: mensagemApi || mensagemPadrao,
+      life: 6000
     });
   }
 

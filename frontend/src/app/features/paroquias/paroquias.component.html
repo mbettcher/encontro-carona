@@ -1,4 +1,6 @@
 
+<p-confirmDialog />
+
 <div class="container-fluid py-4 paroquias-page">
   <div class="d-flex flex-column flex-lg-row justify-content-between gap-3 mb-4">
     <div>
@@ -162,6 +164,7 @@
                 <th>Endereço</th>
                 <th>Contato</th>
                 <th>Responsável</th>
+                <th>Status</th>
                 <th class="text-end">Ações</th>
               </tr>
             </ng-template>
@@ -208,11 +211,31 @@
                   }
                 </td>
 
+                <td>
+                  <p-tag [value]="labelAtivo(paroquia.ativo)" [severity]="paroquia.ativo ? 'success' : 'secondary'" />
+                </td>
+
                 <td class="text-end">
                   @if (seguranca.podeEscrever()) {
-                  <p-button type="button" icon="fa-solid fa-pen-to-square" size="small" severity="warn"
-                    pTooltip="Editar paróquia/comunidade" tooltipPosition="top" ariaLabel="Editar paróquia/comunidade"
-                    (onClick)="editar(paroquia)" />
+                  <div class="d-flex justify-content-end gap-2 flex-wrap">
+                    <p-button type="button" icon="fa-solid fa-pen-to-square" size="small" severity="warn"
+                      pTooltip="Editar paróquia/comunidade" tooltipPosition="top" ariaLabel="Editar paróquia/comunidade"
+                      (onClick)="editar(paroquia)" />
+
+                    @if (paroquia.ativo) {
+                    <p-button type="button" icon="fa-solid fa-ban" size="small" severity="secondary"
+                      pTooltip="Inativar paróquia/comunidade" tooltipPosition="top" ariaLabel="Inativar paróquia/comunidade"
+                      (onClick)="inativar(paroquia)" />
+                    } @else {
+                    <p-button type="button" icon="fa-solid fa-rotate-left" size="small" severity="success"
+                      pTooltip="Reativar paróquia/comunidade" tooltipPosition="top" ariaLabel="Reativar paróquia/comunidade"
+                      (onClick)="reativar(paroquia)" />
+                    }
+
+                    <p-button type="button" icon="fa-solid fa-trash" size="small" severity="danger"
+                      pTooltip="Excluir paróquia/comunidade" tooltipPosition="top" ariaLabel="Excluir paróquia/comunidade"
+                      (onClick)="excluir(paroquia)" />
+                  </div>
                   } @else {
                   <span class="small text-body-secondary">Consulta</span>
                   }
@@ -222,7 +245,7 @@
 
             <ng-template pTemplate="emptymessage">
               <tr>
-                <td colspan="5" class="text-center text-body-secondary py-4">
+                <td colspan="6" class="text-center text-body-secondary py-4">
                   Nenhuma paróquia/comunidade encontrada para o filtro informado.
                 </td>
               </tr>

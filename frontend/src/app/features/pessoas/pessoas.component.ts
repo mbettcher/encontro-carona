@@ -2,6 +2,7 @@ import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 
 import { ButtonModule } from 'primeng/button';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { CardModule } from 'primeng/card';
 import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
@@ -9,7 +10,7 @@ import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
 import { TooltipModule } from 'primeng/tooltip';
 import { TextareaModule } from 'primeng/textarea';
-import { MessageService } from 'primeng/api';
+import { ConfirmationService, MessageService } from 'primeng/api';
 
 import { Pessoa, PessoaRequest, PessoaTipo } from '../../shared/models';
 import { CustomFormHelperService } from '../../shared/services/custom-form-helper.service';
@@ -37,6 +38,7 @@ interface TipoFiltroOpcao {
     ReactiveFormsModule,
     ButtonModule,
     CardModule,
+    ConfirmDialogModule,
     InputTextModule,
     SelectModule,
     TableModule,
@@ -46,6 +48,7 @@ interface TipoFiltroOpcao {
     TooltipModule
   ],
   templateUrl: './pessoas.component.html',
+  providers: [ConfirmationService],
   styleUrl: './pessoas.component.scss'
 })
 export class PessoasComponent implements OnInit {
@@ -55,6 +58,7 @@ export class PessoasComponent implements OnInit {
   private readonly service = inject(PessoasService);
   private readonly fb = inject(FormBuilder);
   private readonly messageService = inject(MessageService);
+  private readonly confirmationService = inject(ConfirmationService);
   private readonly customFormHelper = inject(CustomFormHelperService);
 
   readonly pessoas = signal<Pessoa[]>([]);
@@ -205,6 +209,101 @@ export class PessoasComponent implements OnInit {
     });
   }
 
+
+  inativar(pessoa: Pessoa): void {
+    this.confirmationService.confirm({
+      header: 'Confirmar inativação',
+      message: `Inativar a pessoa "${pessoa.nome}"?`,
+      icon: 'fa-solid fa-triangle-exclamation',
+      acceptLabel: 'Inativar',
+      rejectLabel: 'Cancelar',
+      acceptButtonStyleClass: 'p-button-warning',
+      rejectButtonStyleClass: 'p-button-secondary p-button-outlined',
+      accept: () => this.executarInativacao(pessoa)
+    });
+  }
+
+  reativar(pessoa: Pessoa): void {
+    this.confirmationService.confirm({
+      header: 'Confirmar reativação',
+      message: `Reativar a pessoa "${pessoa.nome}"?`,
+      icon: 'fa-solid fa-circle-check',
+      acceptLabel: 'Reativar',
+      rejectLabel: 'Cancelar',
+      acceptButtonStyleClass: 'p-button-success',
+      rejectButtonStyleClass: 'p-button-secondary p-button-outlined',
+      accept: () => this.executarReativacao(pessoa)
+    });
+  }
+
+  excluir(pessoa: Pessoa): void {
+    this.confirmationService.confirm({
+      header: 'Confirmar exclusão definitiva',
+      message: `Excluir definitivamente a pessoa "${pessoa.nome}"?<br><br>A exclusão só será permitida se não houver vínculos. Esta ação não pode ser desfeita.`,
+      icon: 'fa-solid fa-triangle-exclamation',
+      acceptLabel: 'Excluir definitivamente',
+      rejectLabel: 'Cancelar',
+      acceptButtonStyleClass: 'p-button-danger',
+      rejectButtonStyleClass: 'p-button-secondary p-button-outlined',
+      accept: () => this.executarExclusao(pessoa)
+    });
+  }
+
+  private executarInativacao(pessoa: Pessoa): void {
+    this.service.inativar(pessoa.id).subscribe({
+      next: () => {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Pessoa inativada',
+          detail: 'Pessoa inativada com sucesso.',
+          life: 4000
+        });
+
+        this.carregarPessoas();
+      },
+      error: erro => this.exibirErroOperacao(erro, 'Não foi possível inativar a pessoa.')
+    });
+  }
+
+
+  private executarReativacao(pessoa: Pessoa): void {
+    this.service.reativar(pessoa.id).subscribe({
+      next: () => {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Pessoa reativada',
+          detail: 'Pessoa reativada com sucesso.',
+          life: 4000
+        });
+
+        this.carregarPessoas();
+      },
+      error: erro => this.exibirErroOperacao(erro, 'Não foi possível reativar a pessoa.')
+    });
+  }
+
+
+  private executarExclusao(pessoa: Pessoa): void {
+    this.service.excluir(pessoa.id).subscribe({
+      next: () => {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Pessoa excluída',
+          detail: 'Pessoa excluída com sucesso.',
+          life: 4000
+        });
+
+        this.carregarPessoas();
+      },
+      error: erro => this.exibirErroOperacao(erro, 'Não foi possível excluir. Se houver vínculos, utilize a inativação.')
+    });
+  }
+
+
+  labelAtivo(ativo: boolean): string {
+    return ativo ? 'Ativa' : 'Inativa';
+  }
+
   cancelarEdicao(): void {
     this.limparFormulario();
   }
@@ -262,6 +361,20 @@ export class PessoasComponent implements OnInit {
       dataNascimento: '',
       tipo: 'TIO_CARONA' as PessoaTipo,
       observacoes: ''
+    });
+  }
+
+
+  private exibirErroOperacao(erro: unknown, mensagemPadrao: string): void {
+    console.error(mensagemPadrao, erro);
+
+    const mensagemApi = (erro as { error?: { message?: string } })?.error?.message;
+
+    this.messageService.add({
+      severity: 'error',
+      summary: 'Operação não realizada',
+      detail: mensagemApi || mensagemPadrao,
+      life: 6000
     });
   }
 

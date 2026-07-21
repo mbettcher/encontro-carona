@@ -84,6 +84,12 @@
     .min-width-table {
         min-width: 42rem;
     }
+
+    .acoes-column {
+        width: 1%;
+        min-width: 14rem;
+        white-space: nowrap;
+    }
 }
 
 @media (max-width: 768px) {

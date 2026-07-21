@@ -1,4 +1,6 @@
 
+<p-confirmDialog />
+
 <div class="container-fluid py-4 pessoas-page">
   <div class="d-flex flex-column flex-lg-row justify-content-between gap-3 mb-4">
     <div>
@@ -160,6 +162,7 @@
                 <th>Tipo</th>
                 <th>Contato</th>
                 <th>Nascimento</th>
+                <th>Status</th>
                 <th class="text-end">Ações</th>
               </tr>
             </ng-template>
@@ -208,11 +211,31 @@
                   }
                 </td>
 
+                <td>
+                  <p-tag [value]="labelAtivo(pessoa.ativo)" [severity]="pessoa.ativo ? 'success' : 'secondary'" />
+                </td>
+
                 <td class="text-end">
                   @if (seguranca.podeEscrever()) {
-                  <p-button type="button" icon="fa-solid fa-pen-to-square" size="small" severity="warn"
-                    pTooltip="Editar pessoa" tooltipPosition="top" ariaLabel="Editar pessoa"
-                    (onClick)="editar(pessoa)" />
+                  <div class="d-flex justify-content-end gap-2 flex-wrap">
+                    <p-button type="button" icon="fa-solid fa-pen-to-square" size="small" severity="warn"
+                      pTooltip="Editar pessoa" tooltipPosition="top" ariaLabel="Editar pessoa"
+                      (onClick)="editar(pessoa)" />
+
+                    @if (pessoa.ativo) {
+                    <p-button type="button" icon="fa-solid fa-ban" size="small" severity="secondary"
+                      pTooltip="Inativar pessoa" tooltipPosition="top" ariaLabel="Inativar pessoa"
+                      (onClick)="inativar(pessoa)" />
+                    } @else {
+                    <p-button type="button" icon="fa-solid fa-rotate-left" size="small" severity="success"
+                      pTooltip="Reativar pessoa" tooltipPosition="top" ariaLabel="Reativar pessoa"
+                      (onClick)="reativar(pessoa)" />
+                    }
+
+                    <p-button type="button" icon="fa-solid fa-trash" size="small" severity="danger"
+                      pTooltip="Excluir pessoa" tooltipPosition="top" ariaLabel="Excluir pessoa"
+                      (onClick)="excluir(pessoa)" />
+                  </div>
                   } @else {
                   <span class="small text-body-secondary">Consulta</span>
                   }

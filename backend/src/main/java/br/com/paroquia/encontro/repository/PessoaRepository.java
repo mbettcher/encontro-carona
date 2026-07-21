@@ -7,4 +7,6 @@ import java.util.List;
 
 public interface PessoaRepository extends JpaRepository<Pessoa, Long> {
     List<Pessoa> findByNomeContainingIgnoreCaseOrderByNome(String nome);
+
+    List<Pessoa> findByAtivoTrueOrderByNomeAsc();
 }

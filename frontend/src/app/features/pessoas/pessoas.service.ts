@@ -20,4 +20,16 @@ export class PessoasService {
   atualizar(id: number, payload: PessoaRequest): Observable<Pessoa> {
     return this.http.put<Pessoa>(`${this.apiUrl}/${id}`, payload);
   }
+
+  inativar(id: number): Observable<Pessoa> {
+    return this.http.patch<Pessoa>(`${this.apiUrl}/${id}/inativar`, {});
+  }
+
+  reativar(id: number): Observable<Pessoa> {
+    return this.http.patch<Pessoa>(`${this.apiUrl}/${id}/reativar`, {});
+  }
+
+  excluir(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  }
 }

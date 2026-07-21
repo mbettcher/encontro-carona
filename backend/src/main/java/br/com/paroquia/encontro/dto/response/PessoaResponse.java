@@ -12,7 +12,8 @@ public record PessoaResponse(
         String email,
         LocalDate dataNascimento,
         PessoaTipo tipo,
-        String observacoes) {
+        String observacoes,
+        boolean ativo) {
     public static PessoaResponse from(Pessoa p) {
         return new PessoaResponse(
                 p.getId(),
@@ -21,7 +22,8 @@ public record PessoaResponse(
                 p.getEmail(),
                 p.getDataNascimento(),
                 p.getTipo(),
-                p.getObservacoes()
+                p.getObservacoes(),
+                p.isAtivo()
         );
     }
 }

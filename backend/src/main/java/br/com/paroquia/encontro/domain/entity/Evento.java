@@ -110,6 +110,17 @@ public class Evento {
         return monitoramentoAtivo;
     }
 
+    public void inativar() {
+        this.status = EventoStatus.INATIVO;
+        this.monitoramentoAtivo = false;
+    }
+
+    public void reativar() {
+        if (this.status == EventoStatus.INATIVO) {
+            this.status = EventoStatus.PLANEJADO;
+        }
+    }
+
     public void atualizar(String nome, String tema, LocalDate dataInicio, LocalDate dataFim, String local, EventoStatus status, LocalTime monitoramentoInicio, LocalTime monitoramentoFim, boolean monitoramentoAtivo) {
         this.nome = nome;
         this.tema = tema;

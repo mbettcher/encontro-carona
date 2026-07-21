@@ -46,4 +46,8 @@ public interface DuplaTioCaronaRepository extends JpaRepository<DuplaTioCarona, 
             Long duplaIdIgnorada,
             DuplaStatus status
     );
+
+    long countByEventoId(Long eventoId);
+
+    long countByParoquiaComunidadeId(Long paroquiaComunidadeId);
 }

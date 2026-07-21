@@ -20,4 +20,16 @@ export class ParoquiasService {
   atualizar(id: number, payload: ParoquiaRequest): Observable<Paroquia> {
     return this.http.put<Paroquia>(`${this.apiUrl}/${id}`, payload);
   }
+
+  inativar(id: number): Observable<Paroquia> {
+    return this.http.patch<Paroquia>(`${this.apiUrl}/${id}/inativar`, {});
+  }
+
+  reativar(id: number): Observable<Paroquia> {
+    return this.http.patch<Paroquia>(`${this.apiUrl}/${id}/reativar`, {});
+  }
+
+  excluir(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  }
 }

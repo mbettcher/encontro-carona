@@ -1,4 +1,6 @@
 
+<p-confirmDialog />
+
 <div class="container-fluid py-4 eventos-page">
   <div class="d-flex flex-column flex-lg-row justify-content-between gap-3 mb-4">
     <div>
@@ -37,7 +39,7 @@
           <div>
             <label for="paroquiaId" class="form-label">Paróquia/Comunidade *</label>
 
-            <p-select inputId="paroquiaId" [options]="paroquias()" optionLabel="nome" optionValue="id"
+            <p-select inputId="paroquiaId" [options]="paroquiasFormulario()" optionLabel="nome" optionValue="id"
               formControlName="paroquiaId" placeholder="Selecione a paróquia/comunidade" styleClass="w-100" />
 
             @if (form.controls.paroquiaId.touched && form.controls.paroquiaId.invalid) {
@@ -246,11 +248,25 @@
                 </td>
 
                 <td class="text-end">
-                  <div class="d-flex justify-content-end gap-2 flex-wrap">
+                  <div class="d-flex justify-content-end gap-2 flex-wrap acoes-column">
                     @if (seguranca.podeEscrever()) {
                     <p-button type="button" icon="fa-solid fa-pen-to-square" size="small" severity="warn"
                       pTooltip="Editar evento" tooltipPosition="top" ariaLabel="Editar evento"
                       (onClick)="editar(evento)" />
+
+                    @if (evento.status !== 'INATIVO') {
+                    <p-button type="button" icon="fa-solid fa-ban" size="small" severity="secondary"
+                      pTooltip="Inativar evento" tooltipPosition="top" ariaLabel="Inativar evento"
+                      (onClick)="inativar(evento)" />
+                    } @else {
+                    <p-button type="button" icon="fa-solid fa-rotate-left" size="small" severity="success"
+                      pTooltip="Reativar evento" tooltipPosition="top" ariaLabel="Reativar evento"
+                      (onClick)="reativar(evento)" />
+                    }
+
+                    <p-button type="button" icon="fa-solid fa-trash" size="small" severity="danger"
+                      pTooltip="Excluir evento" tooltipPosition="top" ariaLabel="Excluir evento"
+                      (onClick)="excluir(evento)" />
                     }
 
                     @if (seguranca.podeVerCadastros()) {

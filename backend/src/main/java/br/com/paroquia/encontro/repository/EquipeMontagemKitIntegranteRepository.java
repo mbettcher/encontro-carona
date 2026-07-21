@@ -7,4 +7,6 @@ public interface EquipeMontagemKitIntegranteRepository extends JpaRepository<Equ
     boolean existsByEquipe_Evento_IdAndPessoa_Id(Long eventoId, Long pessoaId);
 
     boolean existsByEquipe_Evento_IdAndPessoa_IdAndEquipe_IdNot(Long eventoId, Long pessoaId, Long equipeId);
+
+    long countByPessoaId(Long pessoaId);
 }

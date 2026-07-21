@@ -3,8 +3,9 @@ import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 
-import { MessageService } from 'primeng/api';
+import { ConfirmationService, MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { CardModule } from 'primeng/card';
 import { CheckboxModule } from 'primeng/checkbox';
 import { InputTextModule } from 'primeng/inputtext';
@@ -33,6 +34,7 @@ interface StatusOpcao {
     RouterLink,
     ButtonModule,
     CardModule,
+    ConfirmDialogModule,
     CheckboxModule,
     InputTextModule,
     SelectModule,
@@ -41,6 +43,7 @@ interface StatusOpcao {
     TooltipModule
   ],
   templateUrl: './eventos.component.html',
+  providers: [ConfirmationService],
   styleUrl: './eventos.component.scss'
 })
 export class EventosComponent implements OnInit {
@@ -49,6 +52,7 @@ export class EventosComponent implements OnInit {
   private readonly service = inject(EventosService);
   private readonly fb = inject(FormBuilder);
   private readonly messageService = inject(MessageService);
+  private readonly confirmationService = inject(ConfirmationService);
   private readonly customFormHelper = inject(CustomFormHelperService);
 
   readonly eventos = signal<Evento[]>([]);
@@ -57,6 +61,14 @@ export class EventosComponent implements OnInit {
   readonly carregando = signal(false);
   readonly salvando = signal(false);
   readonly eventoEmEdicao = signal<Evento | null>(null);
+
+
+  readonly paroquiasFormulario = computed(() => {
+    const paroquiaAtualId = this.eventoEmEdicao()?.paroquiaId;
+
+    return this.paroquias()
+      .filter(paroquia => paroquia.ativo || paroquia.id === paroquiaAtualId);
+  });
 
   readonly eventosFiltrados = computed(() => {
     const termo = this.normalizarBusca(this.filtroTexto());
@@ -82,7 +94,8 @@ export class EventosComponent implements OnInit {
     { label: 'Planejado', value: 'PLANEJADO' },
     { label: 'Em andamento', value: 'EM_ANDAMENTO' },
     { label: 'Encerrado', value: 'ENCERRADO' },
-    { label: 'Cancelado', value: 'CANCELADO' }
+    { label: 'Cancelado', value: 'CANCELADO' },
+    { label: 'Inativo', value: 'INATIVO' }
   ];
 
   readonly tituloFormulario = computed(() =>
@@ -227,6 +240,97 @@ export class EventosComponent implements OnInit {
     });
   }
 
+
+  inativar(evento: Evento): void {
+    this.confirmationService.confirm({
+      header: 'Confirmar inativação',
+      message: `Inativar o evento "${evento.nome}"?`,
+      icon: 'fa-solid fa-triangle-exclamation',
+      acceptLabel: 'Inativar',
+      rejectLabel: 'Cancelar',
+      acceptButtonStyleClass: 'p-button-warning',
+      rejectButtonStyleClass: 'p-button-secondary p-button-outlined',
+      accept: () => this.executarInativacao(evento)
+    });
+  }
+
+  reativar(evento: Evento): void {
+    this.confirmationService.confirm({
+      header: 'Confirmar reativação',
+      message: `Reativar o evento "${evento.nome}"?`,
+      icon: 'fa-solid fa-circle-check',
+      acceptLabel: 'Reativar',
+      rejectLabel: 'Cancelar',
+      acceptButtonStyleClass: 'p-button-success',
+      rejectButtonStyleClass: 'p-button-secondary p-button-outlined',
+      accept: () => this.executarReativacao(evento)
+    });
+  }
+
+  excluir(evento: Evento): void {
+    this.confirmationService.confirm({
+      header: 'Confirmar exclusão definitiva',
+      message: `Excluir definitivamente o evento "${evento.nome}"?<br><br>A exclusão só será permitida se não houver dados operacionais vinculados. Esta ação não pode ser desfeita.`,
+      icon: 'fa-solid fa-triangle-exclamation',
+      acceptLabel: 'Excluir definitivamente',
+      rejectLabel: 'Cancelar',
+      acceptButtonStyleClass: 'p-button-danger',
+      rejectButtonStyleClass: 'p-button-secondary p-button-outlined',
+      accept: () => this.executarExclusao(evento)
+    });
+  }
+
+  private executarInativacao(evento: Evento): void {
+    this.service.inativar(evento.id).subscribe({
+      next: () => {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Evento inativado',
+          detail: 'Evento inativado com sucesso.',
+          life: 4000
+        });
+
+        this.carregarEventos();
+      },
+      error: erro => this.exibirErroOperacao(erro, 'Não foi possível inativar o evento.')
+    });
+  }
+  
+
+  private executarReativacao(evento: Evento): void {
+    this.service.reativar(evento.id).subscribe({
+      next: () => {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Evento reativado',
+          detail: 'Evento reativado com sucesso.',
+          life: 4000
+        });
+
+        this.carregarEventos();
+      },
+      error: erro => this.exibirErroOperacao(erro, 'Não foi possível reativar o evento.')
+    });
+  }
+  
+
+  private executarExclusao(evento: Evento): void {
+    this.service.excluir(evento.id).subscribe({
+      next: () => {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Evento excluído',
+          detail: 'Evento excluído com sucesso.',
+          life: 4000
+        });
+
+        this.carregarEventos();
+      },
+      error: erro => this.exibirErroOperacao(erro, 'Não foi possível excluir o evento. Se houver vínculos, utilize a inativação.')
+    });
+  }
+  
+
   cancelarEdicao(): void {
     this.limparFormulario();
   }
@@ -262,6 +366,8 @@ export class EventosComponent implements OnInit {
         return 'secondary';
       case 'CANCELADO':
         return 'danger';
+      case 'INATIVO':
+        return 'secondary';
     }
   }
 
@@ -288,6 +394,20 @@ export class EventosComponent implements OnInit {
       monitoramentoAtivo: false,
       monitoramentoInicio: '05:00',
       monitoramentoFim: '20:00'
+    });
+  }
+
+
+  private exibirErroOperacao(erro: unknown, mensagemPadrao: string): void {
+    console.error(mensagemPadrao, erro);
+
+    const mensagemApi = (erro as { error?: { message?: string } })?.error?.message;
+
+    this.messageService.add({
+      severity: 'error',
+      summary: 'Operação não realizada',
+      detail: mensagemApi || mensagemPadrao,
+      life: 6000
     });
   }
 

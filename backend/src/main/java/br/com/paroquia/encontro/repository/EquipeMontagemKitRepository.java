@@ -17,4 +17,6 @@ public interface EquipeMontagemKitRepository extends JpaRepository<EquipeMontage
     boolean existsByEventoIdAndApelidoIgnoreCase(Long eventoId, String apelido);
 
     boolean existsByEventoIdAndApelidoIgnoreCaseAndIdNot(Long eventoId, String apelido, Long id);
+
+    long countByEventoId(Long eventoId);
 }

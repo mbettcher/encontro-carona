@@ -35,6 +35,9 @@ public class Paroquia {
     private String responsavel;
 
     @Column(nullable = false)
+    private boolean ativo = true;
+
+    @Column(nullable = false)
     private OffsetDateTime criadoEm = OffsetDateTime.now();
 
     protected Paroquia() {
@@ -82,8 +85,20 @@ public class Paroquia {
         return responsavel;
     }
 
+    public boolean isAtivo() {
+        return ativo;
+    }
+
     public OffsetDateTime getCriadoEm() {
         return criadoEm;
+    }
+
+    public void inativar() {
+        this.ativo = false;
+    }
+
+    public void reativar() {
+        this.ativo = true;
     }
 
     public void atualizar(String nome, String endereco, String cidade, String uf, String telefone, String email, String responsavel) {

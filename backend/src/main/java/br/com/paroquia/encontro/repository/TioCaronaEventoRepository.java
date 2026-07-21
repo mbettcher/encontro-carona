@@ -16,4 +16,8 @@ public interface TioCaronaEventoRepository extends JpaRepository<TioCaronaEvento
     Optional<TioCaronaEvento> findByEventoIdAndCodigoIdentificacao(Long eventoId, String codigoIdentificacao);
 
     Optional<TioCaronaEvento> findByIdAndEventoId(Long id, Long eventoId);
+
+    long countByEventoId(Long eventoId);
+
+    long countByPessoaId(Long pessoaId);
 }

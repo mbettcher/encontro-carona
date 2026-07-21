@@ -14,4 +14,8 @@ public interface SobrinhoRepository extends JpaRepository<Sobrinho, Long> {
     Optional<Sobrinho> findByIdAndEventoId(Long id, Long eventoId);
 
     boolean existsByEventoIdAndPessoaId(Long eventoId, Long pessoaId);
+
+    long countByEventoId(Long eventoId);
+
+    long countByPessoaId(Long pessoaId);
 }

@@ -22,6 +22,18 @@ export class EventosService {
     return this.http.put<Evento>(`${this.eventosUrl}/${id}`, payload);
   }
 
+  inativar(id: number): Observable<Evento> {
+    return this.http.patch<Evento>(`${this.eventosUrl}/${id}/inativar`, {});
+  }
+
+  reativar(id: number): Observable<Evento> {
+    return this.http.patch<Evento>(`${this.eventosUrl}/${id}/reativar`, {});
+  }
+
+  excluir(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.eventosUrl}/${id}`);
+  }
+
   listarParoquias(): Observable<ParoquiaResumo[]> {
     return this.http.get<ParoquiaResumo[]>(this.paroquiasUrl);
   }

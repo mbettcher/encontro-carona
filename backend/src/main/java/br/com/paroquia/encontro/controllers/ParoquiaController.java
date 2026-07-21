@@ -33,4 +33,20 @@ public class ParoquiaController {
     public ParoquiaResponse atualizar(@PathVariable Long id, @RequestBody @Valid ParoquiaRequest request) {
         return service.atualizar(id, request);
     }
+
+    @PatchMapping("/{id}/inativar")
+    public ParoquiaResponse inativar(@PathVariable Long id) {
+        return service.inativar(id);
+    }
+
+    @PatchMapping("/{id}/reativar")
+    public ParoquiaResponse reativar(@PathVariable Long id) {
+        return service.reativar(id);
+    }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void excluir(@PathVariable Long id) {
+        service.excluir(id);
+    }
 }

@@ -28,6 +28,9 @@ public class Pessoa {
     @Column(length = 500)
     private String observacoes;
     @Column(nullable = false)
+    private boolean ativo = true;
+
+    @Column(nullable = false)
     private OffsetDateTime criadoEm = OffsetDateTime.now();
 
     protected Pessoa() {
@@ -68,6 +71,18 @@ public class Pessoa {
 
     public String getObservacoes() {
         return observacoes;
+    }
+
+    public boolean isAtivo() {
+        return ativo;
+    }
+
+    public void inativar() {
+        this.ativo = false;
+    }
+
+    public void reativar() {
+        this.ativo = true;
     }
 
     public void atualizar(String nome, String telefone, String email, LocalDate dataNascimento, PessoaTipo tipo, String observacoes) {

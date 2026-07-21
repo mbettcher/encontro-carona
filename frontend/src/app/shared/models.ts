@@ -1,4 +1,4 @@
-export type EventoStatus = 'PLANEJADO' | 'EM_ANDAMENTO' | 'ENCERRADO' | 'CANCELADO';
+export type EventoStatus = 'PLANEJADO' | 'EM_ANDAMENTO' | 'ENCERRADO' | 'CANCELADO' | 'INATIVO';
 export type PessoaTipo = 'TIO_CARONA' | 'SOBRINHO' | 'RESPONSAVEL' | 'EQUIPE';
 export type TioCaronaStatus = 'ATIVO' | 'INATIVO';
 export type DuplaStatus = 'ATIVA' | 'INATIVA';
@@ -15,6 +15,7 @@ export interface Paroquia {
   telefone?: string;
   email?: string;
   responsavel?: string;
+  ativo: boolean;
 }
 
 export interface ParoquiaRequest {
@@ -30,6 +31,7 @@ export interface ParoquiaRequest {
 export interface ParoquiaResumo {
   id: number;
   nome: string;
+  ativo: boolean;
 }
 
 export interface Evento {
@@ -41,7 +43,7 @@ export interface Evento {
   local?: string;
   dataInicio: string;
   dataFim: string;
-  status: 'PLANEJADO' | 'EM_ANDAMENTO' | 'ENCERRADO' | 'CANCELADO';
+  status: EventoStatus;
   monitoramentoAtivo: boolean;
   monitoramentoInicio?: string;
   monitoramentoFim?: string;
@@ -60,7 +62,7 @@ export interface EventoRequest {
   dataInicio: string;
   dataFim: string;
 
-  status: 'PLANEJADO' | 'EM_ANDAMENTO' | 'ENCERRADO' | 'CANCELADO';
+  status: EventoStatus;
   monitoramentoAtivo: boolean;
 
   /**
@@ -79,6 +81,7 @@ export interface Pessoa {
   dataNascimento?: string;
   tipo: PessoaTipo;
   observacoes?: string;
+  ativo: boolean;
 }
 
 export interface PessoaRequest {
