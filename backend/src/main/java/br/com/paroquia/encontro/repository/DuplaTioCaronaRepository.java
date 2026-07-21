@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface DuplaTioCaronaRepository extends JpaRepository<DuplaTioCarona, Long> {
+
     List<DuplaTioCarona> findByEventoIdOrderByCodigo(Long eventoId);
 
     Optional<DuplaTioCarona> findByIdAndEventoId(Long id, Long eventoId);
@@ -45,6 +46,24 @@ public interface DuplaTioCaronaRepository extends JpaRepository<DuplaTioCarona, 
             Long tioCaronaEventoId,
             Long duplaIdIgnorada,
             DuplaStatus status
+    );
+
+    /**
+     * Para exclusão física do vínculo TioCaronaEvento, qualquer dupla
+     * deve bloquear a operação, independentemente do status da dupla.
+     */
+    @Query("""
+            select count(d) > 0
+            from DuplaTioCarona d
+            where d.evento.id = :eventoId
+              and (
+                d.tio1.id = :tioCaronaEventoId
+                or d.tio2.id = :tioCaronaEventoId
+              )
+            """)
+    boolean existsTioEmQualquerDupla(
+            Long eventoId,
+            Long tioCaronaEventoId
     );
 
     long countByEventoId(Long eventoId);

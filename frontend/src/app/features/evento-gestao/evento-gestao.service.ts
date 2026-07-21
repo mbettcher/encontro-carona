@@ -87,6 +87,15 @@ export class EventoGestaoService {
     );
   }
 
+  excluirTioCarona(
+    eventoId: number,
+    tioCaronaEventoId: number
+  ): Observable<void> {
+    return this.http.delete<void>(
+      `${this.apiUrl}/eventos/${eventoId}/tios-carona/${tioCaronaEventoId}`
+    );
+  }
+
   listarDuplas(eventoId: number): Observable<DuplaTioCarona[]> {
     return this.http.get<DuplaTioCarona[]>(`${this.apiUrl}/eventos/${eventoId}/duplas`);
   }
@@ -120,6 +129,15 @@ export class EventoGestaoService {
     return this.http.patch<DuplaTioCarona>(
       `${this.apiUrl}/eventos/${eventoId}/duplas/${duplaId}/reativar`,
       {}
+    );
+  }
+
+  excluirDupla(
+    eventoId: number,
+    duplaId: number
+  ): Observable<void> {
+    return this.http.delete<void>(
+      `${this.apiUrl}/eventos/${eventoId}/duplas/${duplaId}`
     );
   }
 

@@ -1,12 +1,11 @@
 package br.com.paroquia.encontro.controllers;
 
+import br.com.paroquia.encontro.dto.request.AtualizarTioCaronaEventoRequest;
 import br.com.paroquia.encontro.dto.request.TioCaronaEventoRequest;
 import br.com.paroquia.encontro.dto.request.TioCaronaOperacaoCodigoRequest;
 import br.com.paroquia.encontro.dto.response.TioCaronaEventoOperacaoResponse;
 import br.com.paroquia.encontro.dto.response.TioCaronaEventoResponse;
 import br.com.paroquia.encontro.services.TioCaronaEventoService;
-import br.com.paroquia.encontro.dto.request.AtualizarTioCaronaEventoRequest;
-
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -16,14 +15,19 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/eventos/{eventoId}/tios-carona")
 public class TioCaronaEventoController {
+
     private final TioCaronaEventoService service;
 
-    public TioCaronaEventoController(TioCaronaEventoService service) {
+    public TioCaronaEventoController(
+            TioCaronaEventoService service
+    ) {
         this.service = service;
     }
 
     @GetMapping
-    public List<TioCaronaEventoResponse> listar(@PathVariable Long eventoId) {
+    public List<TioCaronaEventoResponse> listar(
+            @PathVariable Long eventoId
+    ) {
         return service.listar(eventoId);
     }
 
@@ -33,7 +37,10 @@ public class TioCaronaEventoController {
             @PathVariable Long eventoId,
             @RequestBody @Valid TioCaronaEventoRequest request
     ) {
-        return service.adicionar(eventoId, request);
+        return service.adicionar(
+                eventoId,
+                request
+        );
     }
 
     @PatchMapping("/{tioCaronaEventoId}")
@@ -42,7 +49,23 @@ public class TioCaronaEventoController {
             @PathVariable Long tioCaronaEventoId,
             @RequestBody @Valid AtualizarTioCaronaEventoRequest request
     ) {
-        return service.atualizar(eventoId, tioCaronaEventoId, request);
+        return service.atualizar(
+                eventoId,
+                tioCaronaEventoId,
+                request
+        );
+    }
+
+    @DeleteMapping("/{tioCaronaEventoId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void excluir(
+            @PathVariable Long eventoId,
+            @PathVariable Long tioCaronaEventoId
+    ) {
+        service.excluir(
+                eventoId,
+                tioCaronaEventoId
+        );
     }
 
     @PostMapping("/operacao/check-in")
@@ -50,7 +73,10 @@ public class TioCaronaEventoController {
             @PathVariable Long eventoId,
             @RequestBody @Valid TioCaronaOperacaoCodigoRequest request
     ) {
-        return service.registrarCheckinPorCodigo(eventoId, request.codigoIdentificacao());
+        return service.registrarCheckinPorCodigo(
+                eventoId,
+                request.codigoIdentificacao()
+        );
     }
 
     @PostMapping("/operacao/checkout")
@@ -58,7 +84,10 @@ public class TioCaronaEventoController {
             @PathVariable Long eventoId,
             @RequestBody @Valid TioCaronaOperacaoCodigoRequest request
     ) {
-        return service.registrarCheckoutPorCodigo(eventoId, request.codigoIdentificacao());
+        return service.registrarCheckoutPorCodigo(
+                eventoId,
+                request.codigoIdentificacao()
+        );
     }
 
     @PostMapping("/{tioCaronaEventoId}/operacao/manual/check-in")
@@ -66,7 +95,10 @@ public class TioCaronaEventoController {
             @PathVariable Long eventoId,
             @PathVariable Long tioCaronaEventoId
     ) {
-        return service.registrarCheckinManual(eventoId, tioCaronaEventoId);
+        return service.registrarCheckinManual(
+                eventoId,
+                tioCaronaEventoId
+        );
     }
 
     @PostMapping("/{tioCaronaEventoId}/operacao/manual/checkout")
@@ -74,7 +106,10 @@ public class TioCaronaEventoController {
             @PathVariable Long eventoId,
             @PathVariable Long tioCaronaEventoId
     ) {
-        return service.registrarCheckoutManual(eventoId, tioCaronaEventoId);
+        return service.registrarCheckoutManual(
+                eventoId,
+                tioCaronaEventoId
+        );
     }
 
     @GetMapping("/{tioCaronaEventoId}/operacoes")
@@ -82,6 +117,9 @@ public class TioCaronaEventoController {
             @PathVariable Long eventoId,
             @PathVariable Long tioCaronaEventoId
     ) {
-        return service.listarOperacoes(eventoId, tioCaronaEventoId);
+        return service.listarOperacoes(
+                eventoId,
+                tioCaronaEventoId
+        );
     }
 }

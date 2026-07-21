@@ -1,5 +1,3 @@
-
-
 <div class="container-fluid py-4 evento-gestao-page">
   <div class="d-flex flex-column flex-xl-row justify-content-between gap-3 mb-4">
     <div>
@@ -110,8 +108,7 @@
       Vínculos
     </button>
 
-    <button type="button" class="tab-button" [class.active]="abaAtiva() === 'EQUIPES'"
-      (click)="alterarAba('EQUIPES')">
+    <button type="button" class="tab-button" [class.active]="abaAtiva() === 'EQUIPES'" (click)="alterarAba('EQUIPES')">
       <i class="fa-solid fa-boxes-packing me-2"></i>
       Equipes do kit
     </button>
@@ -214,8 +211,7 @@
         <div class="table-responsive-wrapper">
           <p-table [value]="tiosCaronaFiltrados()" styleClass="p-datatable-sm min-width-table" [paginator]="true"
             [rows]="10" [rowsPerPageOptions]="[5, 10, 20, 50]" [showCurrentPageReport]="true"
-            currentPageReportTemplate="{first} a {last} de {totalRecords} tio(s)"
-            paginatorDropdownAppendTo="body">
+            currentPageReportTemplate="{first} a {last} de {totalRecords} tio(s)" paginatorDropdownAppendTo="body">
             <ng-template pTemplate="header">
               <tr>
                 <th>Nome</th>
@@ -239,9 +235,23 @@
                   }
                 </td>
                 <td class="text-end">
-                  <p-button icon="fa-solid fa-pen-to-square" size="small" severity="secondary"
-                    [disabled]="!seguranca.podeEscrever()" pTooltip="Editar observações" tooltipPosition="top" ariaLabel="Editar tio carona"
-                    (onClick)="abrirEdicaoTio(tio)" />
+                  @if (seguranca.podeEscrever()) {
+                  <div class="d-flex justify-content-end gap-2">
+                    <p-button icon="fa-solid fa-pen-to-square" size="small" severity="secondary"
+                      [disabled]="processandoTioId() === tio.id" pTooltip="Editar observações" tooltipPosition="top"
+                      ariaLabel="Editar tio carona" (onClick)="abrirEdicaoTio(tio)" />
+
+                    <p-button icon="fa-solid fa-trash-can" size="small" severity="danger"
+                      [loading]="processandoTioId() === tio.id" [disabled]="processandoTioId() !== null"
+                      pTooltip="Remover tio carona do evento" tooltipPosition="top"
+                      ariaLabel="Remover tio carona do evento" (onClick)="excluirTioCarona(tio)" />
+                  </div>
+                  } @else {
+                  <span class="small text-body-secondary" pTooltip="Seu perfil possui acesso somente para leitura"
+                    tooltipPosition="top">
+                    Somente leitura
+                  </span>
+                  }
                 </td>
               </tr>
             </ng-template>
@@ -280,7 +290,8 @@
             <label for="tio1Id" class="form-label">Tio carona 1 *</label>
 
             <p-select inputId="tio1Id" [options]="opcoesTio1Dupla()" optionLabel="label" optionValue="value"
-              formControlName="tio1Id" placeholder="Selecione" class="w-100" [disabled]="!seguranca.podeEscrever() || !podeFormarNovaDupla()"
+              formControlName="tio1Id" placeholder="Selecione" class="w-100"
+              [disabled]="!seguranca.podeEscrever() || !podeFormarNovaDupla()"
               (onChange)="aoAlterarTio1($event.value)" />
 
             @if (duplaForm.controls.tio1Id.touched && duplaForm.controls.tio1Id.invalid) {
@@ -294,7 +305,8 @@
             <label for="tio2Id" class="form-label">Tio carona 2 *</label>
 
             <p-select inputId="tio2Id" [options]="opcoesTio2Dupla()" optionLabel="label" optionValue="value"
-              formControlName="tio2Id" placeholder="Selecione" class="w-100" [disabled]="!seguranca.podeEscrever() || !podeFormarNovaDupla()"
+              formControlName="tio2Id" placeholder="Selecione" class="w-100"
+              [disabled]="!seguranca.podeEscrever() || !podeFormarNovaDupla()"
               (onChange)="aoAlterarTio2($event.value)" />
 
             @if (duplaForm.controls.tio2Id.touched && duplaForm.controls.tio2Id.invalid) {
@@ -356,8 +368,8 @@
                 <span class="p-input-icon-left w-100">
                   <i class="fa-solid fa-magnifying-glass"></i>
                   <input pInputText type="text" class="w-100"
-                    placeholder="Pesquisar por código, dupla, apelido, paróquia/comunidade ou status..." [value]="filtroDuplas()"
-                    (input)="alterarFiltroDuplas($any($event.target).value)" />
+                    placeholder="Pesquisar por código, dupla, apelido, paróquia/comunidade ou status..."
+                    [value]="filtroDuplas()" (input)="alterarFiltroDuplas($any($event.target).value)" />
                 </span>
               </div>
             </div>
@@ -378,8 +390,7 @@
         <div class="table-responsive-wrapper">
           <p-table [value]="duplasFiltradas()" styleClass="p-datatable-sm min-width-table" [paginator]="true"
             [rows]="10" [rowsPerPageOptions]="[5, 10, 20, 50]" [showCurrentPageReport]="true"
-            currentPageReportTemplate="{first} a {last} de {totalRecords} dupla(s)"
-            paginatorDropdownAppendTo="body">
+            currentPageReportTemplate="{first} a {last} de {totalRecords} dupla(s)" paginatorDropdownAppendTo="body">
             <ng-template pTemplate="header">
               <tr>
                 <th>Código</th>
@@ -415,23 +426,35 @@
                   <p-tag [value]="labelStatusDupla(dupla.status)" [severity]="severityStatusDupla(dupla.status)" />
                 </td>
                 <td class="text-end">
+                  @if (seguranca.podeEscrever()) {
                   <div class="d-flex justify-content-end gap-2">
                     <p-button icon="fa-solid fa-pen-to-square" size="small" severity="secondary"
-                      [disabled]="!seguranca.podeEscrever()" pTooltip="Editar dupla" tooltipPosition="top" ariaLabel="Editar dupla"
-                      (onClick)="abrirEdicaoDupla(dupla)" />
+                      [disabled]="processandoDuplaId() !== null" pTooltip="Editar dupla" tooltipPosition="top"
+                      ariaLabel="Editar dupla" (onClick)="abrirEdicaoDupla(dupla)" />
 
                     @if (dupla.status === 'ATIVA') {
-                    <p-button icon="fa-solid fa-ban" size="small" severity="warn" [disabled]="!seguranca.podeEscrever()"
-                      pTooltip="Inativar dupla"
-                      tooltipPosition="top" ariaLabel="Inativar dupla" [loading]="processandoDuplaId() === dupla.id"
+                    <p-button icon="fa-solid fa-ban" size="small" severity="warn"
+                      [disabled]="processandoDuplaId() !== null" pTooltip="Inativar dupla" tooltipPosition="top"
+                      ariaLabel="Inativar dupla" [loading]="processandoDuplaId() === dupla.id"
                       (onClick)="inativarDupla(dupla)" />
                     } @else {
-                    <p-button icon="fa-solid fa-rotate-left" size="small" severity="success" [disabled]="!seguranca.podeEscrever()"
-                      pTooltip="Reativar dupla"
-                      tooltipPosition="top" ariaLabel="Reativar dupla" [loading]="processandoDuplaId() === dupla.id"
+                    <p-button icon="fa-solid fa-rotate-left" size="small" severity="success"
+                      [disabled]="processandoDuplaId() !== null" pTooltip="Reativar dupla" tooltipPosition="top"
+                      ariaLabel="Reativar dupla" [loading]="processandoDuplaId() === dupla.id"
                       (onClick)="reativarDupla(dupla)" />
                     }
+
+                    <p-button icon="fa-solid fa-trash-can" size="small" severity="danger"
+                      [loading]="processandoDuplaId() === dupla.id" [disabled]="processandoDuplaId() !== null"
+                      pTooltip="Excluir dupla" tooltipPosition="top" ariaLabel="Excluir dupla"
+                      (onClick)="excluirDupla(dupla)" />
                   </div>
+                  } @else {
+                  <span class="small text-body-secondary" pTooltip="Seu perfil possui acesso somente para leitura"
+                    tooltipPosition="top">
+                    Somente leitura
+                  </span>
+                  }
                 </td>
               </tr>
             </ng-template>
@@ -492,7 +515,8 @@
             <p-select inputId="pessoaSobrinhoId" [options]="opcoesPessoasEncontristas()" optionLabel="label"
               optionValue="value" formControlName="pessoaId" placeholder="Selecione a pessoa cadastrada"
               styleClass="w-100 vinculo-select" panelStyleClass="vinculo-select-panel" [filter]="true"
-              filterBy="label,descricao" [disabled]="!seguranca.podeEscrever() || opcoesPessoasEncontristas().length === 0"
+              filterBy="label,descricao"
+              [disabled]="!seguranca.podeEscrever() || opcoesPessoasEncontristas().length === 0"
               (onChange)="aoAlterarPessoaSobrinho($event.value)">
               <ng-template pTemplate="selectedItem" let-opcao>
                 @if (opcao) {
@@ -585,7 +609,8 @@
 
           <div class="d-flex flex-column flex-sm-row gap-2">
             <p-button type="submit" label="Adicionar ao evento" icon="fa-solid fa-user-plus"
-              [loading]="salvandoPessoaSobrinho()" [disabled]="!seguranca.podeEscrever() || opcoesPessoasEncontristas().length === 0" />
+              [loading]="salvandoPessoaSobrinho()"
+              [disabled]="!seguranca.podeEscrever() || opcoesPessoasEncontristas().length === 0" />
 
             <p-button type="button" label="Limpar" icon="fa-solid fa-eraser" severity="secondary" [outlined]="true"
               [disabled]="salvandoPessoaSobrinho()" (onClick)="limparFormularioPessoaSobrinho()" />
@@ -784,8 +809,8 @@
                 </td>
                 <td class="text-end">
                   <p-button icon="fa-solid fa-pen-to-square" size="small" severity="secondary"
-                    [disabled]="!seguranca.podeEscrever()" pTooltip="Editar encontrista" tooltipPosition="top" ariaLabel="Editar encontrista"
-                    (onClick)="abrirEdicaoSobrinho(sobrinho)" />
+                    [disabled]="!seguranca.podeEscrever()" pTooltip="Editar encontrista" tooltipPosition="top"
+                    ariaLabel="Editar encontrista" (onClick)="abrirEdicaoSobrinho(sobrinho)" />
                 </td>
               </tr>
             </ng-template>
@@ -925,10 +950,9 @@
         </div>
         } @else {
         <div class="table-responsive-wrapper">
-          <p-table [value]="equipesMontagemKitFiltradas()" styleClass="p-datatable-sm min-width-table" [paginator]="true"
-            [rows]="10" [rowsPerPageOptions]="[5, 10, 20, 50]" [showCurrentPageReport]="true"
-            currentPageReportTemplate="{first} a {last} de {totalRecords} equipe(s)"
-            paginatorDropdownAppendTo="body">
+          <p-table [value]="equipesMontagemKitFiltradas()" styleClass="p-datatable-sm min-width-table"
+            [paginator]="true" [rows]="10" [rowsPerPageOptions]="[5, 10, 20, 50]" [showCurrentPageReport]="true"
+            currentPageReportTemplate="{first} a {last} de {totalRecords} equipe(s)" paginatorDropdownAppendTo="body">
             <ng-template pTemplate="header">
               <tr>
                 <th>Equipe</th>
@@ -1110,8 +1134,7 @@
         <div class="table-responsive-wrapper">
           <p-table [value]="vinculosFiltrados()" styleClass="p-datatable-sm min-width-table" [paginator]="true"
             [rows]="10" [rowsPerPageOptions]="[5, 10, 20, 50]" [showCurrentPageReport]="true"
-            currentPageReportTemplate="{first} a {last} de {totalRecords} vínculo(s)"
-            paginatorDropdownAppendTo="body">
+            currentPageReportTemplate="{first} a {last} de {totalRecords} vínculo(s)" paginatorDropdownAppendTo="body">
             <ng-template pTemplate="header">
               <tr>
                 <th>Encontrista</th>
@@ -1139,25 +1162,29 @@
                     @if (vinculo.status === 'ATIVO') {
                     <p-button icon="fa-solid fa-right-left" size="small" severity="secondary" pTooltip="Trocar dupla"
                       tooltipPosition="top" ariaLabel="Trocar dupla do vínculo"
-                      [disabled]="!seguranca.podeEscrever() || processandoVinculoId() === vinculo.id" (onClick)="abrirTrocaDuplaVinculo(vinculo)">
+                      [disabled]="!seguranca.podeEscrever() || processandoVinculoId() === vinculo.id"
+                      (onClick)="abrirTrocaDuplaVinculo(vinculo)">
                     </p-button>
 
                     <p-button icon="fa-solid fa-people-arrows" size="small" severity="help"
                       pTooltip="Substituir dupla responsável" tooltipPosition="top"
-                      ariaLabel="Substituir dupla responsável" [disabled]="!seguranca.podeEscrever() || processandoVinculoId() === vinculo.id"
+                      ariaLabel="Substituir dupla responsável"
+                      [disabled]="!seguranca.podeEscrever() || processandoVinculoId() === vinculo.id"
                       (onClick)="abrirModalSubstituirDupla(vinculo)">
                     </p-button>
 
                     <p-button icon="fa-solid fa-link-slash" size="small" severity="warn" pTooltip="Remover vínculo"
                       tooltipPosition="top" ariaLabel="Remover vínculo"
                       [loading]="processandoVinculoId() === vinculo.id"
-                      [disabled]="!seguranca.podeEscrever() || processandoVinculoId() === vinculo.id" (onClick)="removerVinculo(vinculo)">
+                      [disabled]="!seguranca.podeEscrever() || processandoVinculoId() === vinculo.id"
+                      (onClick)="removerVinculo(vinculo)">
                     </p-button>
                     } @else {
                     <p-button icon="fa-solid fa-rotate-left" size="small" severity="success" pTooltip="Reativar vínculo"
                       tooltipPosition="top" ariaLabel="Reativar vínculo"
                       [loading]="processandoVinculoId() === vinculo.id"
-                      [disabled]="!seguranca.podeEscrever() || processandoVinculoId() === vinculo.id" (onClick)="reativarVinculo(vinculo)">
+                      [disabled]="!seguranca.podeEscrever() || processandoVinculoId() === vinculo.id"
+                      (onClick)="reativarVinculo(vinculo)">
                     </p-button>
                     }
                   </div>
@@ -1174,7 +1201,7 @@
   }
 
 
-  
+
   @if (abaAtiva() === 'CADERNOS') {
   <div class="row g-4">
     <div class="col-12">
@@ -1206,7 +1233,7 @@
   </div>
   }
 
-<p-dialog header="Editar equipe de montagem do kit" [visible]="equipeEdicaoVisivel()" [modal]="true"
+  <p-dialog header="Editar equipe de montagem do kit" [visible]="equipeEdicaoVisivel()" [modal]="true"
     [draggable]="false" [resizable]="false" styleClass="w-100" [style]="{ maxWidth: '42rem' }"
     (visibleChange)="equipeEdicaoVisivel.set($event)" (onHide)="fecharEdicaoEquipe()">
 
@@ -1363,12 +1390,14 @@
 
     <ng-template pTemplate="footer">
       <div class="d-flex justify-content-end gap-2">
-        <p-button label="Cancelar" severity="secondary" outlined [disabled]="!seguranca.podeEscrever() || salvandoSubstituicaoDupla()"
+        <p-button label="Cancelar" severity="secondary" outlined
+          [disabled]="!seguranca.podeEscrever() || salvandoSubstituicaoDupla()"
           (onClick)="fecharModalSubstituirDupla()">
         </p-button>
 
         <p-button label="Substituir dupla" icon="fa-solid fa-people-arrows" severity="help"
-          [disabled]="!seguranca.podeEscrever()" [loading]="salvandoSubstituicaoDupla()" (onClick)="salvarSubstituicaoDupla()">
+          [disabled]="!seguranca.podeEscrever()" [loading]="salvandoSubstituicaoDupla()"
+          (onClick)="salvarSubstituicaoDupla()">
         </p-button>
       </div>
     </ng-template>
@@ -1394,8 +1423,8 @@
     <ng-template pTemplate="footer">
       <div class="d-flex justify-content-end gap-2">
         <p-button label="Cancelar" severity="secondary" [outlined]="true" (onClick)="fecharEdicaoTio()" />
-        <p-button label="Salvar" icon="fa-solid fa-floppy-disk" [disabled]="!seguranca.podeEscrever()" [loading]="salvandoEdicaoTio()"
-          (onClick)="salvarEdicaoTio()" />
+        <p-button label="Salvar" icon="fa-solid fa-floppy-disk" [disabled]="!seguranca.podeEscrever()"
+          [loading]="salvandoEdicaoTio()" (onClick)="salvarEdicaoTio()" />
       </div>
     </ng-template>
   </p-dialog>
@@ -1446,8 +1475,8 @@
     <ng-template pTemplate="footer">
       <div class="d-flex justify-content-end gap-2">
         <p-button label="Cancelar" severity="secondary" [outlined]="true" (onClick)="fecharEdicaoDupla()" />
-        <p-button label="Salvar" icon="fa-solid fa-floppy-disk" [disabled]="!seguranca.podeEscrever()" [loading]="salvandoEdicaoDupla()"
-          (onClick)="salvarEdicaoDupla()" />
+        <p-button label="Salvar" icon="fa-solid fa-floppy-disk" [disabled]="!seguranca.podeEscrever()"
+          [loading]="salvandoEdicaoDupla()" (onClick)="salvarEdicaoDupla()" />
       </div>
     </ng-template>
   </p-dialog>
@@ -1533,8 +1562,8 @@
     <ng-template pTemplate="footer">
       <div class="d-flex justify-content-end gap-2">
         <p-button label="Cancelar" severity="secondary" [outlined]="true" (onClick)="fecharEdicaoSobrinho()" />
-        <p-button label="Salvar" icon="fa-solid fa-floppy-disk" [disabled]="!seguranca.podeEscrever()" [loading]="salvandoEdicaoSobrinho()"
-          (onClick)="salvarEdicaoSobrinho()" />
+        <p-button label="Salvar" icon="fa-solid fa-floppy-disk" [disabled]="!seguranca.podeEscrever()"
+          [loading]="salvandoEdicaoSobrinho()" (onClick)="salvarEdicaoSobrinho()" />
       </div>
     </ng-template>
   </p-dialog>
@@ -1596,7 +1625,8 @@
       <div class="d-flex justify-content-end gap-2">
         <p-button label="Cancelar" severity="secondary" [outlined]="true" (onClick)="fecharTrocaDuplaVinculo()" />
         <p-button label="Trocar dupla" icon="fa-solid fa-right-left" [loading]="salvandoTrocaDupla()"
-          [disabled]="!seguranca.podeEscrever() || opcoesDuplasParaTroca().length === 0" (onClick)="salvarTrocaDuplaVinculo()" />
+          [disabled]="!seguranca.podeEscrever() || opcoesDuplasParaTroca().length === 0"
+          (onClick)="salvarTrocaDuplaVinculo()" />
       </div>
     </ng-template>
   </p-dialog>

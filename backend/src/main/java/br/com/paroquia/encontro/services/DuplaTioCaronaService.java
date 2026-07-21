@@ -7,16 +7,16 @@ import br.com.paroquia.encontro.domain.entity.TioCaronaEvento;
 import br.com.paroquia.encontro.domain.enums.DuplaStatus;
 import br.com.paroquia.encontro.domain.enums.TioCaronaStatus;
 import br.com.paroquia.encontro.domain.enums.VinculoStatus;
+import br.com.paroquia.encontro.dto.request.AtualizarDuplaTioCaronaRequest;
 import br.com.paroquia.encontro.dto.request.DuplaTioCaronaRequest;
 import br.com.paroquia.encontro.dto.response.DuplaTioCaronaResponse;
+import br.com.paroquia.encontro.repository.CadernoChoroHistoricoRepository;
 import br.com.paroquia.encontro.repository.CadernoChoroRepository;
 import br.com.paroquia.encontro.repository.DuplaTioCaronaRepository;
 import br.com.paroquia.encontro.repository.EventoRepository;
 import br.com.paroquia.encontro.repository.ParoquiaRepository;
 import br.com.paroquia.encontro.repository.SobrinhoDuplaRepository;
 import br.com.paroquia.encontro.repository.TioCaronaEventoRepository;
-import br.com.paroquia.encontro.dto.request.AtualizarDuplaTioCaronaRequest;
-
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,12 +24,14 @@ import java.util.List;
 
 @Service
 public class DuplaTioCaronaService {
+
     private final DuplaTioCaronaRepository repository;
     private final EventoRepository eventoRepository;
     private final TioCaronaEventoRepository tioRepository;
     private final ParoquiaRepository paroquiaRepository;
     private final SobrinhoDuplaRepository sobrinhoDuplaRepository;
     private final CadernoChoroRepository cadernoChoroRepository;
+    private final CadernoChoroHistoricoRepository cadernoChoroHistoricoRepository;
 
     public DuplaTioCaronaService(
             DuplaTioCaronaRepository repository,
@@ -37,7 +39,8 @@ public class DuplaTioCaronaService {
             TioCaronaEventoRepository tioRepository,
             ParoquiaRepository paroquiaRepository,
             SobrinhoDuplaRepository sobrinhoDuplaRepository,
-            CadernoChoroRepository cadernoChoroRepository
+            CadernoChoroRepository cadernoChoroRepository,
+            CadernoChoroHistoricoRepository cadernoChoroHistoricoRepository
     ) {
         this.repository = repository;
         this.eventoRepository = eventoRepository;
@@ -45,6 +48,7 @@ public class DuplaTioCaronaService {
         this.paroquiaRepository = paroquiaRepository;
         this.sobrinhoDuplaRepository = sobrinhoDuplaRepository;
         this.cadernoChoroRepository = cadernoChoroRepository;
+        this.cadernoChoroHistoricoRepository = cadernoChoroHistoricoRepository;
     }
 
     @Transactional(readOnly = true)
@@ -56,42 +60,71 @@ public class DuplaTioCaronaService {
     }
 
     @Transactional
-    public DuplaTioCaronaResponse criar(Long eventoId, DuplaTioCaronaRequest request) {
+    public DuplaTioCaronaResponse criar(
+            Long eventoId,
+            DuplaTioCaronaRequest request
+    ) {
         if (request.tio1Id().equals(request.tio2Id())) {
-            throw new BusinessException("A dupla deve ser formada por dois tios carona diferentes.");
+            throw new BusinessException(
+                    "A dupla deve ser formada por dois tios carona diferentes."
+            );
         }
 
         var evento = eventoRepository.findById(eventoId)
-                .orElseThrow(() -> new ResourceNotFoundException("Evento não encontrado."));
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Evento não encontrado.")
+                );
 
-        var tio1 = tioRepository.findByIdAndEventoId(request.tio1Id(), eventoId)
-                .orElseThrow(() -> new ResourceNotFoundException("Tio carona 1 não encontrado neste evento."));
+        var tio1 = tioRepository.findByIdAndEventoId(
+                        request.tio1Id(),
+                        eventoId
+                )
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Tio carona 1 não encontrado neste evento."
+                        )
+                );
 
-        var tio2 = tioRepository.findByIdAndEventoId(request.tio2Id(), eventoId)
-                .orElseThrow(() -> new ResourceNotFoundException("Tio carona 2 não encontrado neste evento."));
+        var tio2 = tioRepository.findByIdAndEventoId(
+                        request.tio2Id(),
+                        eventoId
+                )
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Tio carona 2 não encontrado neste evento."
+                        )
+                );
 
-        var paroquiaComunidade = paroquiaRepository.findById(request.paroquiaComunidadeId())
-                .orElseThrow(() -> new ResourceNotFoundException("Paróquia/Comunidade da dupla não encontrada."));
+        var paroquiaComunidade = paroquiaRepository
+                .findById(request.paroquiaComunidadeId())
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Paróquia/Comunidade da dupla não encontrada."
+                        )
+                );
 
         validarTioPodeFormarDupla(eventoId, tio1, "Tio carona 1");
         validarTioPodeFormarDupla(eventoId, tio2, "Tio carona 2");
 
         var codigo = "DUP-" + eventoId + "-" + System.currentTimeMillis();
 
-        return DuplaTioCaronaResponse.from(
-                repository.save(new DuplaTioCarona(
-                        evento,
-                        tio1,
-                        tio2,
-                        codigo,
-                        normalizarTextoOpcional(request.apelido()),
-                        paroquiaComunidade
-                ))
+        var dupla = new DuplaTioCarona(
+                evento,
+                tio1,
+                tio2,
+                codigo,
+                normalizarTextoOpcional(request.apelido()),
+                paroquiaComunidade
         );
+
+        return DuplaTioCaronaResponse.from(repository.save(dupla));
     }
 
     @Transactional
-    public DuplaTioCaronaResponse inativar(Long eventoId, Long duplaId) {
+    public DuplaTioCaronaResponse inativar(
+            Long eventoId,
+            Long duplaId
+    ) {
         var dupla = buscarDupla(eventoId, duplaId);
 
         if (sobrinhoDuplaRepository.existsByEventoIdAndDuplaIdAndStatus(
@@ -99,7 +132,10 @@ public class DuplaTioCaronaService {
                 duplaId,
                 VinculoStatus.ATIVO
         )) {
-            throw new BusinessException("Não é possível inativar uma dupla com vínculos ativos. Remova os vínculos antes de inativar a dupla.");
+            throw new BusinessException(
+                    "Não é possível inativar uma dupla com vínculos ativos. " +
+                            "Remova os vínculos antes de inativar a dupla."
+            );
         }
 
         dupla.inativar();
@@ -108,11 +144,25 @@ public class DuplaTioCaronaService {
     }
 
     @Transactional
-    public DuplaTioCaronaResponse reativar(Long eventoId, Long duplaId) {
+    public DuplaTioCaronaResponse reativar(
+            Long eventoId,
+            Long duplaId
+    ) {
         var dupla = buscarDupla(eventoId, duplaId);
 
-        validarTioPodeReativarDupla(eventoId, duplaId, dupla.getTio1(), "Tio carona 1");
-        validarTioPodeReativarDupla(eventoId, duplaId, dupla.getTio2(), "Tio carona 2");
+        validarTioPodeReativarDupla(
+                eventoId,
+                duplaId,
+                dupla.getTio1(),
+                "Tio carona 1"
+        );
+
+        validarTioPodeReativarDupla(
+                eventoId,
+                duplaId,
+                dupla.getTio2(),
+                "Tio carona 2"
+        );
 
         dupla.reativar();
 
@@ -127,17 +177,94 @@ public class DuplaTioCaronaService {
     ) {
         var dupla = buscarDupla(eventoId, duplaId);
 
-        var paroquiaComunidade = paroquiaRepository.findById(request.paroquiaComunidadeId())
-                .orElseThrow(() -> new ResourceNotFoundException("Paróquia/Comunidade da dupla não encontrada."));
+        var paroquiaComunidade = paroquiaRepository
+                .findById(request.paroquiaComunidadeId())
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Paróquia/Comunidade da dupla não encontrada."
+                        )
+                );
 
-        dupla.atualizar(request.apelido(), paroquiaComunidade);
+        dupla.atualizar(
+                request.apelido(),
+                paroquiaComunidade
+        );
 
         return DuplaTioCaronaResponse.from(dupla);
     }
 
-    private DuplaTioCarona buscarDupla(Long eventoId, Long duplaId) {
+    /**
+     * Exclui somente o vínculo da dupla com o evento.
+     * <p>
+     * Os dois tios continuam vinculados individualmente ao evento.
+     * Nenhum cadastro de Pessoa é excluído.
+     */
+    @Transactional
+    public void excluir(
+            Long eventoId,
+            Long duplaId
+    ) {
+        var dupla = buscarDupla(eventoId, duplaId);
+
+        validarDuplaPodeSerExcluida(eventoId, duplaId);
+
+        repository.delete(dupla);
+
+        /*
+         * Força a execução do DELETE dentro desta transação.
+         * Isso permite que eventual restrição não prevista seja detectada
+         * antes de o método retornar.
+         */
+        repository.flush();
+    }
+
+    private void validarDuplaPodeSerExcluida(
+            Long eventoId,
+            Long duplaId
+    ) {
+        if (sobrinhoDuplaRepository.existsByEventoIdAndDuplaId(
+                eventoId,
+                duplaId
+        )) {
+            throw new BusinessException(
+                    "Não é possível excluir esta dupla porque ela já possui " +
+                            "vínculos com encontristas, inclusive vínculos removidos. " +
+                            "Mantenha a dupla inativa para preservar o histórico."
+            );
+        }
+
+        if (cadernoChoroRepository.existsByEventoIdAndDuplaId(
+                eventoId,
+                duplaId
+        )) {
+            throw new BusinessException(
+                    "Não é possível excluir esta dupla porque existem " +
+                            "Cadernos de Mensagens associados a ela. " +
+                            "Mantenha a dupla inativa para preservar o histórico."
+            );
+        }
+
+        if (cadernoChoroHistoricoRepository.existsByEventoIdAndDuplaId(
+                eventoId,
+                duplaId
+        )) {
+            throw new BusinessException(
+                    "Não é possível excluir esta dupla porque existe " +
+                            "histórico operacional do Caderno de Mensagens associado a ela."
+            );
+        }
+    }
+
+    private DuplaTioCarona buscarDupla(
+            Long eventoId,
+            Long duplaId
+    ) {
         return repository.findByIdAndEventoId(duplaId, eventoId)
-                .orElseThrow(() -> new ResourceNotFoundException("Dupla não encontrada neste evento."));
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Dupla não encontrada neste evento."
+                        )
+                );
     }
 
     private void validarTioPodeFormarDupla(
@@ -146,11 +273,19 @@ public class DuplaTioCaronaService {
             String campo
     ) {
         if (tio.getStatus() != TioCaronaStatus.ATIVO) {
-            throw new BusinessException(campo + " está inativo e não pode formar dupla.");
+            throw new BusinessException(
+                    campo + " está inativo e não pode formar dupla."
+            );
         }
 
-        if (repository.existsTioEmDuplaComStatus(eventoId, tio.getId(), DuplaStatus.ATIVA)) {
-            throw new BusinessException(campo + " já está em uma dupla ativa neste evento.");
+        if (repository.existsTioEmDuplaComStatus(
+                eventoId,
+                tio.getId(),
+                DuplaStatus.ATIVA
+        )) {
+            throw new BusinessException(
+                    campo + " já está em uma dupla ativa neste evento."
+            );
         }
     }
 
@@ -161,7 +296,9 @@ public class DuplaTioCaronaService {
             String campo
     ) {
         if (tio.getStatus() != TioCaronaStatus.ATIVO) {
-            throw new BusinessException(campo + " está inativo e a dupla não pode ser reativada.");
+            throw new BusinessException(
+                    campo + " está inativo e a dupla não pode ser reativada."
+            );
         }
 
         if (repository.existsTioEmOutraDuplaComStatus(
@@ -170,11 +307,15 @@ public class DuplaTioCaronaService {
                 duplaId,
                 DuplaStatus.ATIVA
         )) {
-            throw new BusinessException(campo + " já está em outra dupla ativa neste evento.");
+            throw new BusinessException(
+                    campo + " já está em outra dupla ativa neste evento."
+            );
         }
     }
 
     private String normalizarTextoOpcional(String valor) {
-        return valor == null || valor.isBlank() ? null : valor.trim();
+        return valor == null || valor.isBlank()
+                ? null
+                : valor.trim();
     }
 }

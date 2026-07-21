@@ -7,9 +7,25 @@ import java.util.List;
 import java.util.Optional;
 
 public interface TioCaronaEventoOperacaoRepository extends JpaRepository<TioCaronaEventoOperacao, Long> {
-    Optional<TioCaronaEventoOperacao> findFirstByTioCaronaEventoIdOrderByOcorridoEmDesc(Long tioCaronaEventoId);
 
-    List<TioCaronaEventoOperacao> findByTioCaronaEventoIdOrderByOcorridoEmDesc(Long tioCaronaEventoId);
+    Optional<TioCaronaEventoOperacao> findFirstByTioCaronaEventoIdOrderByOcorridoEmDesc(
+            Long tioCaronaEventoId
+    );
 
-    List<TioCaronaEventoOperacao> findByEventoIdOrderByOcorridoEmDesc(Long eventoId);
+    List<TioCaronaEventoOperacao> findByTioCaronaEventoIdOrderByOcorridoEmDesc(
+            Long tioCaronaEventoId
+    );
+
+    List<TioCaronaEventoOperacao> findByEventoIdOrderByOcorridoEmDesc(
+            Long eventoId
+    );
+
+    /**
+     * Impede a exclusão do vínculo do tio com o evento quando já
+     * existir check-in, checkout ou qualquer operação registrada.
+     */
+    boolean existsByEventoIdAndTioCaronaEventoId(
+            Long eventoId,
+            Long tioCaronaEventoId
+    );
 }

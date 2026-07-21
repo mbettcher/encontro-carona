@@ -117,6 +117,7 @@ export class EventoGestaoComponent implements OnInit {
   readonly salvandoVinculo = signal(false);
   readonly salvandoEquipe = signal(false);
   readonly salvandoEdicaoEquipe = signal(false);
+  readonly processandoTioId = signal<number | null>(null);
   readonly processandoDuplaId = signal<number | null>(null);
   readonly processandoVinculoId = signal<number | null>(null);
   readonly processandoEquipeId = signal<number | null>(null);
@@ -737,7 +738,7 @@ export class EventoGestaoComponent implements OnInit {
         this.limparFormularioDupla();
         this.carregarDuplas();
         this.carregarVinculos();
-    this.carregarEquipesMontagemKit();
+        this.carregarEquipesMontagemKit();
       },
       error: erro => {
         console.error('Erro ao criar dupla', {
@@ -862,13 +863,131 @@ export class EventoGestaoComponent implements OnInit {
         this.salvandoVinculo.set(false);
         this.limparFormularioVinculo();
         this.carregarVinculos();
-    this.carregarEquipesMontagemKit();
+        this.carregarEquipesMontagemKit();
         this.carregarSobrinhos();
       },
       error: erro => {
         console.error('Erro ao vincular encontrista', erro);
         this.toastError(this.mensagemErro(erro, 'Não foi possível vincular o encontrista à dupla.'));
         this.salvandoVinculo.set(false);
+      }
+    });
+  }
+
+  excluirTioCarona(tio: TioCaronaEvento): void {
+    if (!this.seguranca.podeEscrever()) {
+      this.toastWarn('Você não tem permissão para remover tios carona do evento.');
+      return;
+    }
+
+    this.confirmationService.confirm({
+      header: 'Remover tio carona do evento?',
+      message:
+        `${tio.pessoaNome} deixará de participar como tio carona deste evento.<br><br>` +
+        `O cadastro da pessoa não será excluído.<br>` +
+        `A remoção será permitida somente se não existirem dupla, credencial ou operações associadas.`,
+      icon: 'fa-solid fa-triangle-exclamation',
+      acceptLabel: 'Remover do evento',
+      rejectLabel: 'Cancelar',
+      acceptButtonStyleClass: 'p-button-danger',
+      rejectButtonStyleClass: 'p-button-secondary p-button-outlined',
+      accept: () => {
+        this.processandoTioId.set(tio.id);
+
+        this.service.excluirTioCarona(this.eventoId, tio.id)
+          .pipe(
+            finalize(() => this.processandoTioId.set(null))
+          )
+          .subscribe({
+            next: () => {
+              this.tiosCarona.update(tios =>
+                tios.filter(item => item.id !== tio.id)
+              );
+
+              this.toastSuccess(
+                `${tio.pessoaNome} foi removido deste evento com sucesso.`
+              );
+
+              /*
+               * Recarregamos as duplas para manter todos os selects,
+               * indicadores e dados derivados sincronizados.
+               */
+              this.carregarDuplas();
+            },
+            error: erro => {
+              console.error('Erro ao remover tio carona do evento', erro);
+
+              this.toastError(
+                this.mensagemErro(
+                  erro,
+                  'Não foi possível remover o tio carona deste evento.'
+                )
+              );
+            }
+          });
+      }
+    });
+  }
+
+  excluirDupla(dupla: DuplaTioCarona): void {
+    if (!this.seguranca.podeEscrever()) {
+      this.toastWarn('Você não tem permissão para excluir duplas.');
+      return;
+    }
+
+    this.confirmationService.confirm({
+      header: 'Excluir dupla?',
+      message:
+        `A dupla ${this.nomeDupla(dupla)} será removida deste evento. ` +
+        `Os tios carona continuarão vinculados individualmente ao evento. ` +
+        `A exclusão será permitida somente se não existirem vínculos ` +
+        `com encontristas ou histórico do Caderno de Mensagens.`,
+      icon: 'fa-solid fa-triangle-exclamation',
+      acceptLabel: 'Excluir dupla',
+      rejectLabel: 'Cancelar',
+      acceptButtonStyleClass: 'p-button-danger',
+      rejectButtonStyleClass: 'p-button-secondary p-button-outlined',
+      accept: () => {
+        this.processandoDuplaId.set(dupla.id);
+
+        this.service.excluirDupla(this.eventoId, dupla.id)
+          .pipe(
+            finalize(() => this.processandoDuplaId.set(null))
+          )
+          .subscribe({
+            next: () => {
+              this.duplas.update(duplas =>
+                duplas.filter(item => item.id !== dupla.id)
+              );
+
+              this.toastSuccess('Dupla excluída com sucesso.');
+
+              /*
+               * Os tios voltam a ficar disponíveis para formação
+               * de novas duplas.
+               */
+              this.tio1Selecionado.set(0);
+              this.tio2Selecionado.set(0);
+
+              this.duplaForm.patchValue({
+                tio1Id: 0,
+                tio2Id: 0
+              });
+
+              this.carregarTiosCarona();
+              this.carregarVinculos();
+            },
+            error: erro => {
+              console.error('Erro ao excluir dupla', erro);
+
+              this.toastError(
+                this.mensagemErro(
+                  erro,
+                  'Não foi possível excluir a dupla.'
+                )
+              );
+            }
+          });
       }
     });
   }
@@ -1177,7 +1296,7 @@ export class EventoGestaoComponent implements OnInit {
           this.toastSuccess('Encontrista atualizado com sucesso.');
           this.fecharEdicaoSobrinho();
           this.carregarVinculos();
-    this.carregarEquipesMontagemKit();
+          this.carregarEquipesMontagemKit();
         },
         error: erro => {
           console.error('Erro ao atualizar encontrista', erro);
@@ -1303,7 +1422,7 @@ export class EventoGestaoComponent implements OnInit {
           this.toastSuccess('Dupla responsável substituída com sucesso.');
           this.fecharModalSubstituirDupla(true);
           this.carregarVinculos();
-    this.carregarEquipesMontagemKit();
+          this.carregarEquipesMontagemKit();
         },
         error: erro => {
           console.error('Erro ao substituir dupla responsável', erro);

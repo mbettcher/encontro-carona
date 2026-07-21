@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface SobrinhoDuplaRepository extends JpaRepository<SobrinhoDupla, Long> {
+
     List<SobrinhoDupla> findByEventoIdAndDuplaIdAndStatusOrderBySobrinhoNome(
             Long eventoId,
             Long duplaId,
@@ -19,9 +20,14 @@ public interface SobrinhoDuplaRepository extends JpaRepository<SobrinhoDupla, Lo
             VinculoStatus status
     );
 
-    List<SobrinhoDupla> findByEventoIdOrderByDuplaCodigoAscSobrinhoNomeAsc(Long eventoId);
+    List<SobrinhoDupla> findByEventoIdOrderByDuplaCodigoAscSobrinhoNomeAsc(
+            Long eventoId
+    );
 
-    Optional<SobrinhoDupla> findByIdAndEventoId(Long id, Long eventoId);
+    Optional<SobrinhoDupla> findByIdAndEventoId(
+            Long id,
+            Long eventoId
+    );
 
     boolean existsByEventoIdAndSobrinhoIdAndStatus(
             Long eventoId,
@@ -40,5 +46,16 @@ public interface SobrinhoDuplaRepository extends JpaRepository<SobrinhoDupla, Lo
             Long eventoId,
             Long duplaId,
             VinculoStatus status
+    );
+
+    /**
+     * Usado na exclusão física de uma dupla.
+     * <p>
+     * Qualquer vínculo já criado, inclusive removido, representa histórico
+     * e deve impedir a exclusão física da dupla.
+     */
+    boolean existsByEventoIdAndDuplaId(
+            Long eventoId,
+            Long duplaId
     );
 }
