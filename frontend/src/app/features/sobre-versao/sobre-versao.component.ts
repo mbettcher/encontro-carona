@@ -99,7 +99,7 @@ export class SobreVersaoComponent {
         {
           label: 'Visão geral',
           status: 'OK',
-          detalhe: 'Atalhos, cards e indicadores principais revisados para a versão 1.1.0.'
+          detalhe: 'Atalhos, cards e indicadores principais revisados para a versão 1.1.1.'
         },
         {
           label: 'Presença',
@@ -114,7 +114,7 @@ export class SobreVersaoComponent {
         {
           label: 'Caderno de Mensagens',
           status: 'VALIDAR',
-          detalhe: 'Fluxo atual mantido na 1.1.0; replanejamento completo recomendado para a versão 1.2.0.'
+          detalhe: 'Fluxo atual mantido na 1.1.1; replanejamento completo recomendado para a versão 1.2.0.'
         }
       ]
     },

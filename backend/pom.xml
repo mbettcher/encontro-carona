@@ -12,7 +12,7 @@
 
     <groupId>br.com.paroquia</groupId>
     <artifactId>encontro-carona-api</artifactId>
-    <version>1.1.0</version>
+    <version>1.1.1</version>
     <name>encontro-carona-api</name>
     <description>API para controle de tios carona, sobrinhos, check-in e encontro paroquial.</description>
 
