@@ -262,133 +262,6 @@ public class CadernoChoroService {
      */
 
     @Transactional
-    public List<CadernoChoroResponse> entregarADupla(
-            Long eventoId,
-            Long duplaId,
-            String observacao
-    ) {
-        validarDuplaNoEvento(eventoId, duplaId);
-
-        var cadernos =
-                repository.findByEventoIdAndDuplaIdAndViaAtualTrueAndStatusIn(
-                        eventoId,
-                        duplaId,
-                        List.of(StatusCadernoChoro.PENDENTE)
-                );
-
-        if (cadernos.isEmpty()) {
-            throw new BusinessException(
-                    "Não há Cadernos de Mensagens pendentes para entregar " +
-                            "a esta dupla."
-            );
-        }
-
-        cadernos.forEach(caderno -> {
-            var statusAnterior = caderno.getStatus();
-
-            caderno.entregarADupla(observacao);
-
-            registrarHistorico(
-                    caderno,
-                    TipoMovimentacaoCaderno.ENTREGA_A_DUPLA,
-                    statusAnterior,
-                    caderno.getStatus(),
-                    null,
-                    observacao
-            );
-        });
-
-        return cadernos.stream()
-                .map(CadernoChoroResponse::from)
-                .toList();
-    }
-
-    @Transactional
-    public List<CadernoChoroResponse> receberDaDupla(
-            Long eventoId,
-            Long duplaId,
-            String observacao
-    ) {
-        validarDuplaNoEvento(eventoId, duplaId);
-
-        var cadernos =
-                repository.findByEventoIdAndDuplaIdAndViaAtualTrueAndStatusIn(
-                        eventoId,
-                        duplaId,
-                        List.of(StatusCadernoChoro.ENTREGUE_A_DUPLA)
-                );
-
-        if (cadernos.isEmpty()) {
-            throw new BusinessException(
-                    "Não há Cadernos de Mensagens entregues à dupla para " +
-                            "receber de volta."
-            );
-        }
-
-        var equipes =
-                equipeMontagemKitRepository
-                        .findByEventoIdAndStatusOrderByIdAsc(
-                                eventoId,
-                                StatusEquipeMontagemKit.ATIVA
-                        );
-
-        if (equipes.isEmpty()) {
-            throw new BusinessException(
-                    "Cadastre ao menos uma equipe de montagem do kit ativa " +
-                            "antes de receber Cadernos de Mensagens da dupla."
-            );
-        }
-
-        var cargasPorEquipe = carregarCargasAtuais(equipes);
-
-        cadernos.forEach(caderno -> {
-            var statusAntesRecebimento = caderno.getStatus();
-
-            caderno.receberDaDupla(observacao);
-
-            registrarHistorico(
-                    caderno,
-                    TipoMovimentacaoCaderno.RECEBIMENTO_DA_DUPLA,
-                    statusAntesRecebimento,
-                    caderno.getStatus(),
-                    null,
-                    observacao
-            );
-
-            var equipe = selecionarEquipeMenosCarregada(
-                    equipes,
-                    cargasPorEquipe
-            );
-
-            var statusAntesDirecionamento = caderno.getStatus();
-
-            caderno.direcionarEquipeMontagem(
-                    equipe,
-                    observacao
-            );
-
-            registrarHistorico(
-                    caderno,
-                    TipoMovimentacaoCaderno.DIRECIONAMENTO_EQUIPE,
-                    statusAntesDirecionamento,
-                    caderno.getStatus(),
-                    null,
-                    observacaoEquipe(equipe, observacao)
-            );
-
-            cargasPorEquipe.compute(
-                    equipe.getId(),
-                    (id, cargaAtual) ->
-                            cargaAtual == null ? 1L : cargaAtual + 1L
-            );
-        });
-
-        return cadernos.stream()
-                .map(CadernoChoroResponse::from)
-                .toList();
-    }
-
-    @Transactional
     public CadernoChoroResponse conferir(
             Long eventoId,
             Long cadernoId,
@@ -476,34 +349,7 @@ public class CadernoChoroService {
         );
     }
 
-    /*
-     * Endpoint legado.
-     *
-     * Continua sendo uma fronteira transacional, mas não chama outro método
-     * público anotado com @Transactional.
-     */
-    @Transactional
-    public CadernoChoroResponse marcarPerdido(
-            Long eventoId,
-            Long cadernoId,
-            String observacao
-    ) {
-        var request = new CadernoChoroOcorrenciaRequest(
-                TipoOcorrenciaCaderno.PERDA,
-                true,
-                validarObservacaoLegada(
-                        observacao,
-                        "Informe uma observação sobre a perda."
-                )
-        );
-
-        return executarRegistroOcorrencia(
-                eventoId,
-                cadernoId,
-                request
-        );
-    }
-
+    
     private CadernoChoroResponse executarRegistroOcorrencia(
             Long eventoId,
             Long cadernoId,
@@ -592,35 +438,7 @@ public class CadernoChoroService {
         );
     }
 
-    /*
-     * Endpoint legado.
-     *
-     * Ele usa diretamente a implementação privada e retorna apenas a nova
-     * via, mantendo o contrato utilizado pelo frontend atual.
-     */
-    @Transactional
-    public CadernoChoroResponse marcarSubstituido(
-            Long eventoId,
-            Long cadernoId,
-            String observacao
-    ) {
-        var request = new CadernoChoroSubstituirRequest(
-                MotivoSubstituicaoCaderno.OUTRO,
-                validarObservacaoLegada(
-                        observacao,
-                        "Informe uma observação sobre a substituição."
-                )
-        );
-
-        var resultado = executarSubstituicao(
-                eventoId,
-                cadernoId,
-                request
-        );
-
-        return resultado.novaVia();
-    }
-
+    
     private CadernoChoroSubstituicaoResponse executarSubstituicao(
             Long eventoId,
             Long cadernoId,
@@ -746,33 +564,7 @@ public class CadernoChoroService {
         );
     }
 
-    /*
-     * Endpoint legado.
-     *
-     * Também permanece como fronteira transacional própria, mas delega a
-     * execução a um método privado não anotado.
-     */
-    @Transactional
-    public CadernoChoroResponse cancelar(
-            Long eventoId,
-            Long cadernoId,
-            String observacao
-    ) {
-        var request = new CadernoChoroCancelarRequest(
-                MotivoCancelamentoCaderno.OUTRO,
-                validarObservacaoLegada(
-                        observacao,
-                        "Informe uma observação sobre o cancelamento."
-                )
-        );
-
-        return executarCancelamento(
-                eventoId,
-                cadernoId,
-                request
-        );
-    }
-
+    
     private CadernoChoroResponse executarCancelamento(
             Long eventoId,
             Long cadernoId,
@@ -999,17 +791,6 @@ public class CadernoChoroService {
                     "Dupla não pertence ao evento informado."
             );
         }
-    }
-
-    private String validarObservacaoLegada(
-            String observacao,
-            String mensagem
-    ) {
-        if (observacao == null || observacao.isBlank()) {
-            throw new BusinessException(mensagem);
-        }
-
-        return observacao.trim();
     }
 
     private String montarObservacaoSubstituicao(

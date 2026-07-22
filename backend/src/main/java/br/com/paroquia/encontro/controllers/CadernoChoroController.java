@@ -100,36 +100,6 @@ public class CadernoChoroController {
      * =========================================================================
      */
 
-    @PostMapping("/duplas/{duplaId}/entregar-a-dupla")
-    public List<CadernoChoroResponse> entregarADupla(
-            @PathVariable Long eventoId,
-            @PathVariable Long duplaId,
-            @RequestBody(required = false)
-            @Valid
-            CadernoChoroOperacaoRequest request
-    ) {
-        return service.entregarADupla(
-                eventoId,
-                duplaId,
-                observacao(request)
-        );
-    }
-
-    @PostMapping("/duplas/{duplaId}/receber-da-dupla")
-    public List<CadernoChoroResponse> receberDaDupla(
-            @PathVariable Long eventoId,
-            @PathVariable Long duplaId,
-            @RequestBody(required = false)
-            @Valid
-            CadernoChoroOperacaoRequest request
-    ) {
-        return service.receberDaDupla(
-                eventoId,
-                duplaId,
-                observacao(request)
-        );
-    }
-
     @PostMapping("/{cadernoId}/conferir")
     public CadernoChoroResponse conferir(
             @PathVariable Long eventoId,
@@ -246,51 +216,6 @@ public class CadernoChoroController {
      * ENDPOINTS LEGADOS — COMPATIBILIDADE COM O FRONTEND ATUAL
      * =========================================================================
      */
-
-    @PostMapping("/{cadernoId}/perdido")
-    public CadernoChoroResponse marcarPerdidoLegado(
-            @PathVariable Long eventoId,
-            @PathVariable Long cadernoId,
-            @RequestBody(required = false)
-            @Valid
-            CadernoChoroOperacaoRequest request
-    ) {
-        return service.marcarPerdido(
-                eventoId,
-                cadernoId,
-                observacao(request)
-        );
-    }
-
-    @PostMapping("/{cadernoId}/substituido")
-    public CadernoChoroResponse marcarSubstituidoLegado(
-            @PathVariable Long eventoId,
-            @PathVariable Long cadernoId,
-            @RequestBody(required = false)
-            @Valid
-            CadernoChoroOperacaoRequest request
-    ) {
-        return service.marcarSubstituido(
-                eventoId,
-                cadernoId,
-                observacao(request)
-        );
-    }
-
-    @PostMapping("/{cadernoId}/cancelado")
-    public CadernoChoroResponse cancelarLegado(
-            @PathVariable Long eventoId,
-            @PathVariable Long cadernoId,
-            @RequestBody(required = false)
-            @Valid
-            CadernoChoroOperacaoRequest request
-    ) {
-        return service.cancelar(
-                eventoId,
-                cadernoId,
-                observacao(request)
-        );
-    }
 
     @PostMapping("/duplas/{duplaId}/entregar-selecionados")
     public List<CadernoChoroResponse> entregarSelecionadosADupla(

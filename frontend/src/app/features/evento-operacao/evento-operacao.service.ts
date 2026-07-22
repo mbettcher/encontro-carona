@@ -32,10 +32,7 @@ import {
 type OperacaoCadernoEndpoint =
   | 'conferir'
   | 'anexar-ao-kit'
-  | 'entregar-ao-sobrinho'
-  | 'perdido'
-  | 'substituido'
-  | 'cancelado';
+  | 'entregar-ao-sobrinho';
 
 @Injectable({
   providedIn: 'root'
@@ -130,15 +127,6 @@ export class EventoOperacaoService {
   ): Observable<CadernoChoroTimeline> {
     return this.http.get<CadernoChoroTimeline>(
       `${this.apiUrl}/eventos/${eventoId}/cadernos/encontristas/${sobrinhoId}/timeline`
-    );
-  }
-
-  listarHistoricoCaderno(
-    eventoId: number,
-    cadernoId: number
-  ): Observable<CadernoChoroHistorico[]> {
-    return this.http.get<CadernoChoroHistorico[]>(
-      `${this.apiUrl}/eventos/${eventoId}/cadernos/${cadernoId}/historico`
     );
   }
 
@@ -394,28 +382,6 @@ export class EventoOperacaoService {
     );
   }
 
-  entregarCadernosADupla(
-    eventoId: number,
-    duplaId: number,
-    observacao?: string
-  ): Observable<CadernoChoro[]> {
-    return this.http.post<CadernoChoro[]>(
-      `${this.apiUrl}/eventos/${eventoId}/cadernos/duplas/${duplaId}/entregar-a-dupla`,
-      { observacao: observacao?.trim() || undefined }
-    );
-  }
-
-  receberCadernosDaDupla(
-    eventoId: number,
-    duplaId: number,
-    observacao?: string
-  ): Observable<CadernoChoro[]> {
-    return this.http.post<CadernoChoro[]>(
-      `${this.apiUrl}/eventos/${eventoId}/cadernos/duplas/${duplaId}/receber-da-dupla`,
-      { observacao: observacao?.trim() || undefined }
-    );
-  }
-
   conferirCaderno(
     eventoId: number,
     cadernoId: number,
@@ -438,30 +404,6 @@ export class EventoOperacaoService {
     observacao?: string
   ): Observable<CadernoChoro> {
     return this.operarCaderno(eventoId, cadernoId, 'entregar-ao-sobrinho', observacao);
-  }
-
-  marcarCadernoPerdido(
-    eventoId: number,
-    cadernoId: number,
-    observacao?: string
-  ): Observable<CadernoChoro> {
-    return this.operarCaderno(eventoId, cadernoId, 'perdido', observacao);
-  }
-
-  marcarCadernoSubstituido(
-    eventoId: number,
-    cadernoId: number,
-    observacao?: string
-  ): Observable<CadernoChoro> {
-    return this.operarCaderno(eventoId, cadernoId, 'substituido', observacao);
-  }
-
-  cancelarCaderno(
-    eventoId: number,
-    cadernoId: number,
-    observacao?: string
-  ): Observable<CadernoChoro> {
-    return this.operarCaderno(eventoId, cadernoId, 'cancelado', observacao);
   }
 
   private operarCaderno(

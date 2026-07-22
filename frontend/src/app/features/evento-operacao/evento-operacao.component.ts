@@ -1,4 +1,3 @@
-
 import { DatePipe, NgClass } from '@angular/common';
 import { finalize } from 'rxjs';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
@@ -55,10 +54,7 @@ import { EventoOperacaoService } from './evento-operacao.service';
 type OperacaoCadernoChoro =
   | 'CONFERIDO'
   | 'ANEXADO_AO_KIT'
-  | 'ENTREGUE_AO_SOBRINHO'
-  | 'PERDIDO'
-  | 'SUBSTITUIDO'
-  | 'CANCELADO';
+  | 'ENTREGUE_AO_SOBRINHO';
 
 type TipoListaPresenca = 'ENCONTRISTAS' | 'TIOS_CARONA';
 type TipoRelatorioOperacao = 'ENCONTRISTAS' | 'TIOS_CARONA' | 'CADERNOS';
@@ -1585,62 +1581,6 @@ export class EventoOperacaoComponent implements OnInit {
       });
   }
 
-  entregarCadernosADupla(): void {
-    const duplaId = this.duplaAlvoEntregaADupla();
-
-    if (!duplaId) {
-      this.toastWarn(
-        this.duplaCadernoSelecionada()
-          ? 'Esta dupla não possui cadernos pendentes para entrega.'
-          : 'Selecione uma dupla com cadernos pendentes para entrega.'
-      );
-      return;
-    }
-
-    this.processandoCadernos.set(true);
-
-    this.service.entregarCadernosADupla(this.eventoId, duplaId)
-      .pipe(finalize(() => this.processandoCadernos.set(false)))
-      .subscribe({
-        next: cadernosAtualizados => {
-          this.atualizarCadernosNaLista(cadernosAtualizados);
-          this.toastSuccess(`${cadernosAtualizados.length} caderno(s) entregue(s) à dupla.`);
-        },
-        error: erro => {
-          console.error('Erro ao entregar cadernos à dupla', erro);
-          this.toastError(this.mensagemErro(erro, 'Não foi possível entregar os cadernos à dupla.'));
-        }
-      });
-  }
-
-  receberCadernosDaDupla(): void {
-    const duplaId = this.duplaAlvoRecebimentoDaDupla();
-
-    if (!duplaId) {
-      this.toastWarn(
-        this.duplaCadernoSelecionada()
-          ? 'Esta dupla não possui cadernos entregues para receber de volta.'
-          : 'Selecione uma dupla com cadernos entregues para receber de volta.'
-      );
-      return;
-    }
-
-    this.processandoCadernos.set(true);
-
-    this.service.receberCadernosDaDupla(this.eventoId, duplaId)
-      .pipe(finalize(() => this.processandoCadernos.set(false)))
-      .subscribe({
-        next: cadernosAtualizados => {
-          this.atualizarCadernosNaLista(cadernosAtualizados);
-          this.toastSuccess(`${cadernosAtualizados.length} caderno(s) recebido(s) da dupla.`);
-        },
-        error: erro => {
-          console.error('Erro ao receber cadernos da dupla', erro);
-          this.toastError(this.mensagemErro(erro, 'Não foi possível receber os cadernos da dupla.'));
-        }
-      });
-  }
-
   private resolverDuplaAlvoPorStatus(status: StatusCadernoChoro): number | null {
     const duplaSelecionada = this.duplaCadernoSelecionada();
 
@@ -1672,14 +1612,6 @@ export class EventoOperacaoComponent implements OnInit {
     return this.resolverDuplaAlvoPorStatus('ENTREGUE_A_DUPLA');
   }
 
-  podeEntregarCadernosADuplaEmLote(): boolean {
-    return this.duplaAlvoEntregaADupla() !== null;
-  }
-
-  podeReceberCadernosDaDuplaEmLote(): boolean {
-    return this.duplaAlvoRecebimentoDaDupla() !== null;
-  }
-
   conferirCaderno(caderno: CadernoChoro): void {
     this.abrirOperacaoCaderno(caderno, 'CONFERIDO');
   }
@@ -1690,18 +1622,6 @@ export class EventoOperacaoComponent implements OnInit {
 
   entregarCadernoAoSobrinho(caderno: CadernoChoro): void {
     this.abrirOperacaoCaderno(caderno, 'ENTREGUE_AO_SOBRINHO');
-  }
-
-  marcarCadernoPerdido(caderno: CadernoChoro): void {
-    this.abrirOperacaoCaderno(caderno, 'PERDIDO');
-  }
-
-  marcarCadernoSubstituido(caderno: CadernoChoro): void {
-    this.abrirOperacaoCaderno(caderno, 'SUBSTITUIDO');
-  }
-
-  cancelarCaderno(caderno: CadernoChoro): void {
-    this.abrirOperacaoCaderno(caderno, 'CANCELADO');
   }
 
   abrirHistoricoCaderno(
@@ -2476,12 +2396,6 @@ export class EventoOperacaoComponent implements OnInit {
           return this.service.anexarCadernoAoKit(this.eventoId, caderno.id, observacao);
         case 'ENTREGUE_AO_SOBRINHO':
           return this.service.entregarCadernoAoSobrinho(this.eventoId, caderno.id, observacao);
-        case 'PERDIDO':
-          return this.service.marcarCadernoPerdido(this.eventoId, caderno.id, observacao);
-        case 'SUBSTITUIDO':
-          return this.service.marcarCadernoSubstituido(this.eventoId, caderno.id, observacao);
-        case 'CANCELADO':
-          return this.service.cancelarCaderno(this.eventoId, caderno.id, observacao);
         default:
           throw new Error('Operação de caderno inválida.');
       }
@@ -2515,12 +2429,6 @@ export class EventoOperacaoComponent implements OnInit {
         return 'Anexar caderno ao kit';
       case 'ENTREGUE_AO_SOBRINHO':
         return 'Entregar kit ao encontrista';
-      case 'PERDIDO':
-        return 'Marcar caderno como perdido';
-      case 'SUBSTITUIDO':
-        return 'Marcar caderno como substituído';
-      case 'CANCELADO':
-        return 'Cancelar caderno';
       default:
         return 'Operação do caderno';
     }
@@ -2536,12 +2444,6 @@ export class EventoOperacaoComponent implements OnInit {
         return 'Confirme que o caderno de mensagens foi anexado ao kit de encerramento.';
       case 'ENTREGUE_AO_SOBRINHO':
         return 'Confirme que o kit final foi entregue ao encontrista no encerramento.';
-      case 'PERDIDO':
-        return 'Registre a ocorrência de perda do caderno de mensagens. Informe detalhes na observação.';
-      case 'SUBSTITUIDO':
-        return 'Registre que o caderno de mensagens precisou ser substituído. Informe detalhes na observação.';
-      case 'CANCELADO':
-        return 'Registre o cancelamento do caderno de mensagens. Use apenas quando ele não deverá seguir no fluxo.';
       default:
         return 'Confirme a operação desejada para o caderno de mensagens.';
     }
@@ -2557,12 +2459,6 @@ export class EventoOperacaoComponent implements OnInit {
         return 'Confirmar anexação';
       case 'ENTREGUE_AO_SOBRINHO':
         return 'Confirmar entrega';
-      case 'PERDIDO':
-        return 'Marcar perdido';
-      case 'SUBSTITUIDO':
-        return 'Marcar substituído';
-      case 'CANCELADO':
-        return 'Cancelar caderno';
       default:
         return 'Confirmar';
     }
@@ -2578,11 +2474,6 @@ export class EventoOperacaoComponent implements OnInit {
         return 'info';
       case 'ENTREGUE_AO_SOBRINHO':
         return 'success';
-      case 'PERDIDO':
-      case 'CANCELADO':
-        return 'danger';
-      case 'SUBSTITUIDO':
-        return 'warn';
       default:
         return 'info';
     }
