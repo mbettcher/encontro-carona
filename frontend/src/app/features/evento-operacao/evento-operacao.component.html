@@ -1799,71 +1799,231 @@
   </ng-template>
 </p-dialog>
 
-<p-dialog header="Histórico do Caderno de Mensagens" [visible]="historicoCadernoVisivel()"
-  (visibleChange)="historicoCadernoVisivel.set($event)" [modal]="true" [style]="{ width: 'min(95vw, 980px)' }"
-  [dismissableMask]="true" (onHide)="fecharHistoricoCaderno()">
-  @if (cadernoSelecionado()) {
-  <div class="mb-3">
-    <div class="fw-semibold">
-      {{ cadernoSelecionado()?.sobrinhoNome }}
-    </div>
-
-    <div class="small text-body-secondary">
-      {{ cadernoSelecionado()?.duplaApelido || cadernoSelecionado()?.duplaCodigo }}
-      —
-      {{ cadernoSelecionado()?.tio1Nome }} e {{ cadernoSelecionado()?.tio2Nome }}
-    </div>
-  </div>
-  }
-
+<p-dialog
+  header="Timeline do Caderno de Mensagens"
+  [visible]="historicoCadernoVisivel()"
+  (visibleChange)="historicoCadernoVisivel.set($event)"
+  [modal]="true"
+  [style]="{ width: 'min(96vw, 1040px)' }"
+  [contentStyle]="{ 'max-height': '76vh', overflow: 'auto' }"
+  [dismissableMask]="true"
+  (onHide)="fecharHistoricoCaderno()"
+>
   @if (carregandoHistoricoCaderno()) {
   <div class="text-center py-5">
-    <i class="fa-solid fa-spinner fa-spin text-body-secondary mb-3"></i>
-    <div class="small text-body-secondary">Carregando histórico...</div>
+    <i class="fa-solid fa-spinner fa-spin fa-2x text-primary mb-3"></i>
+    <div class="fw-semibold">Carregando timeline...</div>
+    <div class="small text-body-secondary">
+      Consultando todas as vias e movimentações.
+    </div>
   </div>
-  } @else if (historicoCaderno().length === 0) {
+  } @else if (!timelineCaderno()) {
   <div class="empty-state text-center py-5">
     <i class="fa-solid fa-clock-rotate-left text-body-secondary mb-3"></i>
-    <h3 class="h6 mb-1">Nenhum histórico encontrado</h3>
-    <p class="text-body-secondary small mb-0">
-      Ainda não há movimentações registradas para este caderno de mensagens.
+    <h3 class="h6 mb-1">Timeline indisponível</h3>
+    <p class="small text-body-secondary mb-0">
+      Não foi possível obter o histórico consolidado.
     </p>
   </div>
   } @else {
-  <div class="historico-caderno-scroll">
-    <div class="historico-caderno-linha" role="list" aria-label="Histórico do caderno de mensagens">
-      @for (item of historicoCadernoTimeline(); track item.id) {
-      <div class="historico-caderno-etapa" role="listitem">
-        <div class="historico-caderno-marker-row">
-          <span class="historico-marker"
-            [class.problematico]="item.status === 'PERDIDO' || item.status === 'CANCELADO'">
-            <i [class]="iconeHistoricoCaderno(item.status)"></i>
+  <section class="timeline-caderno-resumo">
+    <div>
+      <div class="small text-body-secondary">Encontrista</div>
+      <h3 class="h5 mb-1">{{ timelineCaderno()?.sobrinhoNome }}</h3>
+      <div class="small text-body-secondary">
+        {{ totalViasTimelineCaderno() }} via(s) registrada(s)
+      </div>
+    </div>
+
+    @if (viaAtualTimeline(); as viaAtual) {
+    <div class="timeline-caderno-status-atual">
+      <span class="small text-body-secondary">Situação atual</span>
+      <p-tag
+        [value]="'Via ' + viaAtual.numeroVia + ' — ' + labelStatusCaderno(viaAtual.status)"
+        [severity]="severityViaTimeline(viaAtual)"
+      />
+    </div>
+    }
+  </section>
+
+  @if (possuiMultiplasViasTimeline()) {
+  <section class="timeline-filtro-vias mt-3" aria-label="Filtrar timeline por via">
+    <button
+      type="button"
+      class="timeline-filtro-via"
+      [class.ativo]="viaTimelineSelecionadaId() === null"
+      (click)="mostrarTodasMovimentacoesTimeline()"
+    >
+      <i class="fa-solid fa-layer-group"></i>
+      Todas as vias
+      <span>{{ timelineCaderno()?.movimentacoes?.length ?? 0 }}</span>
+    </button>
+
+    @for (via of viasTimelineCaderno(); track via.id) {
+    <button
+      type="button"
+      class="timeline-filtro-via"
+      [class.ativo]="viaSelecionadaNaTimeline(via.id)"
+      (click)="selecionarViaTimeline(via.id)"
+    >
+      <i class="fa-solid fa-file-lines"></i>
+      Via {{ via.numeroVia }}
+      @if (via.viaAtual) {
+      <span class="badge text-bg-primary">Atual</span>
+      }
+    </button>
+    }
+  </section>
+  }
+
+  @if (viaTimelineSelecionada(); as via) {
+  <section class="timeline-via-resumo mt-3">
+    <div>
+      <span>Emissão</span>
+      <strong>{{ labelMotivoEmissaoCaderno(via.motivoEmissao) }}</strong>
+    </div>
+    <div>
+      <span>Dupla</span>
+      <strong>{{ via.duplaApelido || via.duplaCodigo }}</strong>
+    </div>
+    <div>
+      <span>Criada em</span>
+      <strong>{{ via.criadoEm | date:'dd/MM/yyyy HH:mm' }}</strong>
+    </div>
+    <div>
+      <span>Status</span>
+      <strong>{{ labelStatusCaderno(via.status) }}</strong>
+    </div>
+
+    @if (labelMotivoCancelamentoCaderno(via.motivoCancelamento); as motivo) {
+    <div class="timeline-via-resumo-alerta danger">
+      <span>Cancelamento</span>
+      <strong>{{ motivo }}</strong>
+    </div>
+    }
+
+    @if (labelMotivoSubstituicaoCaderno(via.motivoSubstituicao); as motivo) {
+    <div class="timeline-via-resumo-alerta warning">
+      <span>Substituição</span>
+      <strong>{{ motivo }}</strong>
+    </div>
+    }
+
+    @if (via.recolhimentoPendente) {
+    <div class="timeline-via-resumo-alerta danger">
+      <span>Exemplar físico</span>
+      <strong>Recolhimento pendente</strong>
+    </div>
+    }
+  </section>
+  }
+
+  <section class="timeline-caderno-lista mt-4">
+    <div class="timeline-caderno-lista-header">
+      <div>
+        <h4 class="h6 mb-1">Movimentações</h4>
+        <div class="small text-body-secondary">
+          {{ movimentacoesTimelineCaderno().length }} registro(s), do mais antigo ao mais recente
+        </div>
+      </div>
+
+      @if (viaTimelineSelecionada(); as via) {
+      <span class="badge text-bg-light border">
+        Filtrando a Via {{ via.numeroVia }}
+      </span>
+      }
+    </div>
+
+    @if (movimentacoesTimelineCaderno().length === 0) {
+    <div class="empty-state text-center py-4">
+      <i class="fa-solid fa-clock text-body-secondary mb-2"></i>
+      <div class="small text-body-secondary">
+        Nenhuma movimentação encontrada.
+      </div>
+    </div>
+    } @else {
+    <div class="timeline-eventos">
+      @for (item of movimentacoesTimelineCaderno(); track item.id) {
+      <article
+        class="timeline-evento"
+        [ngClass]="classeMovimentacaoCaderno(item.tipoMovimentacao)"
+      >
+        <div class="timeline-evento-eixo">
+          <span class="timeline-evento-marker">
+            <i [class]="iconeMovimentacaoCaderno(item.tipoMovimentacao)"></i>
           </span>
         </div>
 
-        <div class="historico-caderno-conteudo">
-          <div class="fw-semibold small">
-            {{ labelStatusCaderno(item.status) }}
+        <div class="timeline-evento-card">
+          <div class="timeline-evento-topo">
+            <div>
+              <div class="d-flex flex-wrap align-items-center gap-2">
+                <h5 class="h6 mb-0">
+                  {{ labelMovimentacaoCaderno(item.tipoMovimentacao) }}
+                </h5>
+                <span class="badge text-bg-light border">
+                  Via {{ item.numeroVia }}
+                </span>
+              </div>
+              <time class="small text-body-secondary">
+                {{ item.ocorridoEm | date:'dd/MM/yyyy HH:mm' }}
+              </time>
+            </div>
+
+            @if (descricaoTransicaoMovimentacao(item); as transicao) {
+            <span class="timeline-evento-transicao">{{ transicao }}</span>
+            }
           </div>
 
-          <div class="small text-body-secondary mt-1">
-            {{ item.ocorridoEm | date:'dd/MM/yyyy HH:mm' }}
-          </div>
+          @if (item.observacao?.trim()) {
+          <p class="timeline-evento-observacao">
+            {{ item.observacao }}
+          </p>
+          }
 
-          <button type="button" class="historico-info-button mt-2" [pTooltip]="detalhamentoHistoricoCaderno(item)"
-            tooltipPosition="top" ariaLabel="Ver detalhe da movimentação">
-            <i class="fa-solid fa-circle-info"></i>
-          </button>
+          <div class="timeline-evento-metadados">
+            <span>
+              <i class="fa-solid fa-people-group"></i>
+              Dupla: {{ item.duplaApelido || item.duplaCodigo }}
+            </span>
+
+            @if (item.equipeMontagemKitApelido) {
+            <span>
+              <i class="fa-solid fa-boxes-stacked"></i>
+              Equipe do kit: {{ item.equipeMontagemKitApelido }}
+            </span>
+            }
+
+            @if (responsavelMovimentacaoCaderno(item); as responsavel) {
+            <span>
+              <i class="fa-solid fa-user-check"></i>
+              Responsável: {{ responsavel }}
+            </span>
+            }
+
+            @if (item.motivo) {
+            <span>
+              <i class="fa-solid fa-circle-info"></i>
+              Motivo: {{ item.motivo }}
+            </span>
+            }
+          </div>
         </div>
-      </div>
+      </article>
       }
     </div>
-  </div>
+    }
+  </section>
   }
 
   <ng-template pTemplate="footer">
-    <p-button label="Fechar" icon="fa-solid fa-xmark" severity="secondary" variant="outlined"
-      (onClick)="fecharHistoricoCaderno()" />
+    <p-button
+      label="Fechar"
+      icon="fa-solid fa-xmark"
+      severity="secondary"
+      variant="outlined"
+      (onClick)="fecharHistoricoCaderno()"
+    />
   </ng-template>
 </p-dialog>
 

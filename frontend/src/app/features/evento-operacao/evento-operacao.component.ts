@@ -1,5 +1,4 @@
-
-import { DatePipe } from '@angular/common';
+import { DatePipe, NgClass } from '@angular/common';
 import { finalize } from 'rxjs';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -25,19 +24,24 @@ import { CheckboxModule } from 'primeng/checkbox';
 import {
   CadernoChoro,
   CadernoChoroHistorico,
+  CadernoChoroTimeline,
   CredencialEvento,
   DuplaTioCarona,
   Evento,
+  ModeloCarteirinhaCredencial,
+  ModeloCrachaCredencial,
+  ModeloEtiquetaQr,
+  MotivoCancelamentoCaderno,
+  MotivoEmissaoCaderno,
+  MotivoSubstituicaoCaderno,
   OperacaoPresencaSobrinho,
   Sobrinho,
   SobrinhoDupla,
   StatusCadernoChoro,
-  ModeloCarteirinhaCredencial,
-  ModeloCrachaCredencial,
-  ModeloEtiquetaQr,
   StatusCredencial,
-  TipoCredencial,
   TioCaronaEvento,
+  TipoCredencial,
+  TipoMovimentacaoCaderno
 } from '../../shared/models';
 import { AuthService } from '../../core/auth/auth.service';
 import { EventoOperacaoService } from './evento-operacao.service';
@@ -95,6 +99,7 @@ interface ResumoEquipeCaderno {
   standalone: true,
   imports: [
     DatePipe,
+    NgClass,
     FormsModule,
     ReactiveFormsModule,
     RouterLink,
@@ -112,7 +117,7 @@ interface ResumoEquipeCaderno {
     CheckboxModule
   ],
   templateUrl: './evento-operacao.component.html',
-  styleUrl: './evento-operacao.component.scss'
+  styleUrls: ['./evento-operacao.component.scss']
 })
 export class EventoOperacaoComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
@@ -161,7 +166,8 @@ export class EventoOperacaoComponent implements OnInit {
   readonly filtroTextoImpressao = signal('');
   readonly baixandoImpressao = signal(false);
   readonly cadernoSelecionado = signal<CadernoChoro | null>(null);
-  readonly historicoCaderno = signal<CadernoChoroHistorico[]>([]);
+  readonly timelineCaderno = signal<CadernoChoroTimeline | null>(null);
+  readonly viaTimelineSelecionadaId = signal<number | null>(null);
   readonly historicoCadernoVisivel = signal(false);
   readonly carregandoHistoricoCaderno = signal(false);
   readonly operacaoCadernoVisivel = signal(false);
@@ -183,8 +189,67 @@ export class EventoOperacaoComponent implements OnInit {
 
   readonly observacaoOperacaoLoteCaderno = signal('');
 
-  readonly historicoCadernoTimeline = computed(() =>
-    [...this.historicoCaderno()].reverse()
+  readonly viasTimelineCaderno = computed(() => {
+    const timeline = this.timelineCaderno();
+
+    if (!timeline) {
+      return [];
+    }
+
+    return [...timeline.vias]
+      .sort((a, b) => b.numeroVia - a.numeroVia);
+  });
+
+  readonly viaAtualTimeline = computed(() => {
+    const timeline = this.timelineCaderno();
+
+    if (!timeline) {
+      return null;
+    }
+
+    return timeline.vias.find(
+      via => via.id === timeline.cadernoAtualId
+    ) ?? timeline.vias.find(via => via.viaAtual) ?? null;
+  });
+
+  readonly viaTimelineSelecionada = computed(() => {
+    const timeline = this.timelineCaderno();
+    const viaId = this.viaTimelineSelecionadaId();
+
+    if (!timeline || viaId === null) {
+      return null;
+    }
+
+    return timeline.vias.find(
+      via => via.id === viaId
+    ) ?? null;
+  });
+
+  readonly movimentacoesTimelineCaderno = computed(() => {
+    const timeline = this.timelineCaderno();
+
+    if (!timeline) {
+      return [];
+    }
+
+    const viaId = this.viaTimelineSelecionadaId();
+
+    return [...timeline.movimentacoes]
+      .filter(item =>
+        viaId === null || item.cadernoId === viaId
+      )
+      .sort((a, b) =>
+        new Date(a.ocorridoEm).getTime() -
+        new Date(b.ocorridoEm).getTime()
+      );
+  });
+
+  readonly totalViasTimelineCaderno = computed(
+    () => this.timelineCaderno()?.vias.length ?? 0
+  );
+
+  readonly possuiMultiplasViasTimeline = computed(
+    () => this.totalViasTimelineCaderno() > 1
   );
 
   readonly codigoForm = this.fb.nonNullable.group({
@@ -1586,26 +1651,81 @@ export class EventoOperacaoComponent implements OnInit {
     this.abrirOperacaoCaderno(caderno, 'CANCELADO');
   }
 
-  abrirHistoricoCaderno(caderno: CadernoChoro): void {
+  abrirHistoricoCaderno(
+    caderno: CadernoChoro
+  ): void {
     this.cadernoSelecionado.set(caderno);
-    this.historicoCaderno.set([]);
+    this.timelineCaderno.set(null);
+    this.viaTimelineSelecionadaId.set(null);
     this.historicoCadernoVisivel.set(true);
     this.carregandoHistoricoCaderno.set(true);
 
-    this.service.listarHistoricoCaderno(this.eventoId, caderno.id)
-      .pipe(finalize(() => this.carregandoHistoricoCaderno.set(false)))
+    this.service
+      .listarTimelineCaderno(
+        this.eventoId,
+        caderno.sobrinhoId
+      )
+      .pipe(
+        finalize(() =>
+          this.carregandoHistoricoCaderno.set(false)
+        )
+      )
       .subscribe({
-        next: historico => this.historicoCaderno.set(historico),
+        next: timeline => {
+          this.timelineCaderno.set(timeline);
+
+          this.viaTimelineSelecionadaId.set(
+            timeline.vias.length > 1
+              ? null
+              : timeline.cadernoAtualId
+          );
+        },
         error: erro => {
-          console.error('Erro ao carregar histórico do caderno', erro);
-          this.toastError(this.mensagemErro(erro, 'Não foi possível carregar o histórico do caderno.'));
+          console.error(
+            'Erro ao carregar timeline consolidada do caderno',
+            erro
+          );
+
+          this.toastError(
+            this.mensagemErro(
+              erro,
+              'Não foi possível carregar a timeline do Caderno de Mensagens.'
+            )
+          );
         }
       });
   }
 
   fecharHistoricoCaderno(): void {
     this.historicoCadernoVisivel.set(false);
-    this.historicoCaderno.set([]);
+    this.timelineCaderno.set(null);
+    this.viaTimelineSelecionadaId.set(null);
+    this.cadernoSelecionado.set(null);
+  }
+
+  selecionarViaTimeline(
+    cadernoId: number
+  ): void {
+    const timeline = this.timelineCaderno();
+
+    if (
+      !timeline ||
+      !timeline.vias.some(via => via.id === cadernoId)
+    ) {
+      return;
+    }
+
+    this.viaTimelineSelecionadaId.set(cadernoId);
+  }
+
+  mostrarTodasMovimentacoesTimeline(): void {
+    this.viaTimelineSelecionadaId.set(null);
+  }
+
+  viaSelecionadaNaTimeline(
+    cadernoId: number
+  ): boolean {
+    return this.viaTimelineSelecionadaId() === cadernoId;
   }
 
   abrirAcoesEspeciaisCaderno(caderno: CadernoChoro): void {
@@ -1771,60 +1891,6 @@ export class EventoOperacaoComponent implements OnInit {
         return 'warn';
       default:
         return 'info';
-    }
-  }
-
-  iconeHistoricoCaderno(status: StatusCadernoChoro): string {
-    switch (status) {
-      case 'PENDENTE':
-        return 'fa-solid fa-clock';
-      case 'ENTREGUE_A_DUPLA':
-        return 'fa-solid fa-hand-holding-heart';
-      case 'RECEBIDO_DA_DUPLA':
-        return 'fa-solid fa-people-carry-box';
-      case 'CONFERIDO':
-        return 'fa-solid fa-clipboard-check';
-      case 'ANEXADO_AO_KIT':
-        return 'fa-solid fa-box';
-      case 'ENTREGUE_AO_SOBRINHO':
-        return 'fa-solid fa-gift';
-      case 'PERDIDO':
-        return 'fa-solid fa-triangle-exclamation';
-      case 'SUBSTITUIDO':
-        return 'fa-solid fa-arrows-rotate';
-      case 'CANCELADO':
-        return 'fa-solid fa-ban';
-      default:
-        return 'fa-solid fa-circle';
-    }
-  }
-
-  detalhamentoHistoricoCaderno(item: CadernoChoroHistorico): string {
-    if (item.observacao?.trim()) {
-      return item.observacao.trim();
-    }
-
-    switch (item.status) {
-      case 'PENDENTE':
-        return 'Caderno de mensagens gerado automaticamente a partir do vínculo ativo com a dupla.';
-      case 'ENTREGUE_A_DUPLA':
-        return 'Caderno de mensagens entregue à dupla responsável pelo encontrista.';
-      case 'RECEBIDO_DA_DUPLA':
-        return 'Caderno de mensagens recebido de volta pela equipe organizadora.';
-      case 'CONFERIDO':
-        return 'Equipe conferiu o conteúdo recebido antes da montagem do kit.';
-      case 'ANEXADO_AO_KIT':
-        return 'Caderno de mensagens anexado ao kit de encerramento do encontrista.';
-      case 'ENTREGUE_AO_SOBRINHO':
-        return 'Kit final entregue ao encontrista no encerramento.';
-      case 'PERDIDO':
-        return 'Registro de perda do caderno de mensagens.';
-      case 'SUBSTITUIDO':
-        return 'Registro de substituição do caderno de mensagens.';
-      case 'CANCELADO':
-        return 'Registro de cancelamento do caderno de mensagens.';
-      default:
-        return 'Movimentação registrada no histórico do caderno de mensagens.';
     }
   }
 
@@ -2042,8 +2108,159 @@ export class EventoOperacaoComponent implements OnInit {
         return 'Substituído';
       case 'CANCELADO':
         return 'Cancelado';
+      case 'DANIFICADO':
+        return 'Danificado';
       default:
         return status;
+    }
+  }
+
+  labelMotivoEmissaoCaderno(
+    motivo: MotivoEmissaoCaderno
+  ): string {
+    switch (motivo) {
+      case 'GERACAO_INICIAL':
+        return 'Geração inicial';
+
+      case 'SUBSTITUICAO_PERDA':
+        return 'Substituição por perda';
+
+      case 'SUBSTITUICAO_DANO':
+        return 'Substituição por dano';
+
+      case 'SUBSTITUICAO_ERRO':
+        return 'Substituição por erro';
+
+      case 'RETOMADA_PARTICIPACAO':
+        return 'Retomada da participação';
+
+      case 'OUTRO':
+        return 'Outro motivo';
+
+      default:
+        return motivo;
+    }
+  }
+
+  labelMotivoCancelamentoCaderno(
+    motivo?: MotivoCancelamentoCaderno | null
+  ): string | null {
+    if (!motivo) {
+      return null;
+    }
+
+    switch (motivo) {
+      case 'DESISTENCIA_ENCONTRISTA':
+        return 'Desistência do encontrista';
+
+      case 'NAO_PARTICIPOU_DO_EVENTO':
+        return 'Não participou do evento';
+
+      case 'ERRO_DE_CADASTRO':
+        return 'Erro de cadastro';
+
+      case 'CADERNO_NAO_NECESSARIO':
+        return 'Caderno não necessário';
+
+      case 'OUTRO':
+        return 'Outro motivo';
+
+      default:
+        return motivo;
+    }
+  }
+
+  labelMotivoSubstituicaoCaderno(
+    motivo?: MotivoSubstituicaoCaderno | null
+  ): string | null {
+    if (!motivo) {
+      return null;
+    }
+
+    switch (motivo) {
+      case 'PERDA':
+        return 'Perda';
+
+      case 'DANO':
+        return 'Dano';
+
+      case 'ERRO_DE_IMPRESSAO':
+        return 'Erro de impressão';
+
+      case 'ERRO_DE_MONTAGEM':
+        return 'Erro de montagem';
+
+      case 'CONTEUDO_INUTILIZADO':
+        return 'Conteúdo inutilizado';
+
+      case 'OUTRO':
+        return 'Outro motivo';
+
+      default:
+        return motivo;
+    }
+  }
+
+  labelMovimentacaoCaderno(
+    tipo: TipoMovimentacaoCaderno
+  ): string {
+    switch (tipo) {
+      case 'CADERNO_GERADO':
+        return 'Caderno gerado';
+
+      case 'ENTREGA_A_DUPLA':
+        return 'Entregue à dupla';
+
+      case 'RECEBIMENTO_DA_DUPLA':
+        return 'Recebido da dupla';
+
+      case 'DIRECIONAMENTO_EQUIPE':
+        return 'Direcionado à equipe do kit';
+
+      case 'CONFERENCIA':
+        return 'Conteúdo conferido';
+
+      case 'ANEXACAO_KIT':
+        return 'Anexado ao kit';
+
+      case 'ENTREGA_ENCONTRISTA':
+        return 'Entregue ao encontrista';
+
+      case 'PERDA_REGISTRADA':
+        return 'Perda registrada';
+
+      case 'DANO_REGISTRADO':
+        return 'Dano registrado';
+
+      case 'CADERNO_RECUPERADO':
+        return 'Caderno recuperado';
+
+      case 'CADERNO_SUBSTITUIDO':
+        return 'Via substituída';
+
+      case 'NOVA_VIA_GERADA':
+        return 'Nova via gerada';
+
+      case 'CADERNO_CANCELADO':
+        return 'Caderno cancelado';
+
+      case 'DUPLA_ALTERADA':
+        return 'Dupla responsável alterada';
+
+      case 'ENCONTRISTA_DESISTENTE':
+        return 'Desistência registrada';
+
+      case 'PARTICIPACAO_RETOMADA':
+        return 'Participação retomada';
+
+      case 'RECOLHIMENTO_CONCLUIDO':
+        return 'Recolhimento concluído';
+
+      case 'MOVIMENTACAO_LEGADA':
+        return 'Movimentação anterior';
+
+      default:
+        return tipo;
     }
   }
 
@@ -2069,6 +2286,8 @@ export class EventoOperacaoComponent implements OnInit {
         return 'warn';
       case 'CANCELADO':
         return 'secondary';
+      case 'DANIFICADO':
+        return 'danger';
       default:
         return 'secondary';
     }
@@ -2701,6 +2920,66 @@ export class EventoOperacaoComponent implements OnInit {
     }
   }
 
+  iconeMovimentacaoCaderno(
+    tipo: TipoMovimentacaoCaderno
+  ): string {
+    switch (tipo) {
+      case 'CADERNO_GERADO':
+        return 'fa-solid fa-file-circle-plus';
+
+      case 'ENTREGA_A_DUPLA':
+        return 'fa-solid fa-hand-holding-heart';
+
+      case 'RECEBIMENTO_DA_DUPLA':
+        return 'fa-solid fa-people-carry-box';
+
+      case 'DIRECIONAMENTO_EQUIPE':
+        return 'fa-solid fa-people-group';
+
+      case 'CONFERENCIA':
+        return 'fa-solid fa-clipboard-check';
+
+      case 'ANEXACAO_KIT':
+        return 'fa-solid fa-box';
+
+      case 'ENTREGA_ENCONTRISTA':
+        return 'fa-solid fa-gift';
+
+      case 'PERDA_REGISTRADA':
+        return 'fa-solid fa-triangle-exclamation';
+
+      case 'DANO_REGISTRADO':
+        return 'fa-solid fa-heart-crack';
+
+      case 'CADERNO_RECUPERADO':
+        return 'fa-solid fa-rotate-left';
+
+      case 'CADERNO_SUBSTITUIDO':
+        return 'fa-solid fa-arrow-right-arrow-left';
+
+      case 'NOVA_VIA_GERADA':
+        return 'fa-solid fa-copy';
+
+      case 'CADERNO_CANCELADO':
+        return 'fa-solid fa-ban';
+
+      case 'DUPLA_ALTERADA':
+        return 'fa-solid fa-people-arrows';
+
+      case 'ENCONTRISTA_DESISTENTE':
+        return 'fa-solid fa-person-walking-arrow-right';
+
+      case 'PARTICIPACAO_RETOMADA':
+        return 'fa-solid fa-person-circle-check';
+
+      case 'RECOLHIMENTO_CONCLUIDO':
+        return 'fa-solid fa-box-archive';
+
+      default:
+        return 'fa-solid fa-circle';
+    }
+  }
+
   severityOperacaoLoteCaderno():
     | 'info'
     | 'warn'
@@ -2715,6 +2994,24 @@ export class EventoOperacaoComponent implements OnInit {
       case 'RECOLHIMENTO':
         return 'danger';
     }
+  }
+
+  severityViaTimeline(
+    via: CadernoChoro
+  ): 'info' | 'success' | 'warn' | 'danger' | 'secondary' {
+    if (via.viaAtual) {
+      return this.severityStatusCaderno(via.status);
+    }
+
+    if (via.status === 'SUBSTITUIDO') {
+      return 'warn';
+    }
+
+    if (via.status === 'CANCELADO') {
+      return 'secondary';
+    }
+
+    return 'info';
   }
 
   solicitarConfirmacaoOperacaoLoteCaderno(): void {
@@ -2749,6 +3046,82 @@ export class EventoOperacaoComponent implements OnInit {
       accept: () =>
         this.executarOperacaoLoteCaderno()
     });
+  }
+
+  classeMovimentacaoCaderno(
+    tipo: TipoMovimentacaoCaderno
+  ): string {
+    switch (tipo) {
+      case 'PERDA_REGISTRADA':
+      case 'DANO_REGISTRADO':
+      case 'CADERNO_CANCELADO':
+      case 'ENCONTRISTA_DESISTENTE':
+        return 'timeline-evento-danger';
+
+      case 'CADERNO_SUBSTITUIDO':
+      case 'NOVA_VIA_GERADA':
+      case 'PARTICIPACAO_RETOMADA':
+        return 'timeline-evento-warn';
+
+      case 'ENTREGA_ENCONTRISTA':
+      case 'CADERNO_RECUPERADO':
+      case 'RECOLHIMENTO_CONCLUIDO':
+        return 'timeline-evento-success';
+
+      default:
+        return 'timeline-evento-info';
+    }
+  }
+
+  descricaoTransicaoMovimentacao(
+    item: CadernoChoroHistorico
+  ): string | null {
+    if (
+      !item.statusAnterior &&
+      !item.statusNovo
+    ) {
+      return null;
+    }
+
+    if (
+      item.statusAnterior === item.statusNovo &&
+      item.statusNovo
+    ) {
+      return this.labelStatusCaderno(
+        item.statusNovo
+      );
+    }
+
+    if (!item.statusAnterior && item.statusNovo) {
+      return this.labelStatusCaderno(
+        item.statusNovo
+      );
+    }
+
+    if (item.statusAnterior && !item.statusNovo) {
+      return this.labelStatusCaderno(
+        item.statusAnterior
+      );
+    }
+
+    return (
+      `${this.labelStatusCaderno(item.statusAnterior!)} ` +
+      `→ ${this.labelStatusCaderno(item.statusNovo!)}`
+    );
+  }
+
+  responsavelMovimentacaoCaderno(
+    item: CadernoChoroHistorico
+  ): string | null {
+    if (item.tioCaronaNome) {
+      return item.tioCaronaNome;
+    }
+
+    if (item.usuarioResponsavelNome) {
+      return item.usuarioResponsavelNome;
+    }
+
+    return null;
   }
 
   private executarOperacaoLoteCaderno(): void {
