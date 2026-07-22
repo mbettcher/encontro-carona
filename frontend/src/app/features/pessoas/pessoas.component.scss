@@ -110,3 +110,46 @@
         }
     }
 }
+
+.pessoas-page {
+    .form-section {
+        padding: 1rem;
+        border: 1px solid var(--bs-border-color);
+        border-radius: 0.9rem;
+        background: var(--bs-tertiary-bg);
+    }
+
+    .form-section-title {
+        display: flex;
+        gap: 0.75rem;
+        align-items: flex-start;
+        margin-bottom: 1rem;
+
+        > i {
+            display: grid;
+            place-items: center;
+            width: 2.25rem;
+            height: 2.25rem;
+            flex: 0 0 auto;
+            border-radius: 999px;
+            background: rgba(var(--bs-primary-rgb), 0.1);
+            color: var(--bs-primary);
+        }
+
+        h3 {
+            margin: 0;
+            font-size: 0.95rem;
+            font-weight: 800;
+        }
+
+        p {
+            margin: 0.15rem 0 0;
+            color: var(--bs-secondary-color);
+            font-size: 0.78rem;
+        }
+    }
+
+    .endereco-preview {
+        max-width: 26rem;
+    }
+}

@@ -80,6 +80,9 @@ export interface Pessoa {
   email?: string;
   dataNascimento?: string;
   tipo: PessoaTipo;
+  responsavelNome?: string;
+  responsavelTelefone?: string;
+  endereco?: string;
   observacoes?: string;
   ativo: boolean;
 }
@@ -90,6 +93,9 @@ export interface PessoaRequest {
   email?: string;
   dataNascimento?: string;
   tipo: PessoaTipo;
+  responsavelNome?: string;
+  responsavelTelefone?: string;
+  endereco?: string;
   observacoes?: string;
 }
 

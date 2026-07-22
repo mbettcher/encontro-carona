@@ -1,4 +1,3 @@
-
 <p-confirmDialog />
 
 <div class="container-fluid py-4 pessoas-page">
@@ -15,7 +14,7 @@
         <label for="buscaPessoas" class="form-label small mb-1">Pesquisar</label>
         <span class="p-input-icon-left w-100">
           <i class="fa-solid fa-magnifying-glass"></i>
-          <input id="buscaPessoas" pInputText type="text" class="w-100" placeholder="Nome, contato ou observação"
+          <input id="buscaPessoas" pInputText type="text" class="w-100" placeholder="Nome, contato, responsável ou endereço"
             [value]="filtroBusca()" (input)="alterarBusca($any($event.target).value)" />
         </span>
       </div>
@@ -36,78 +35,239 @@
           <div class="px-4 pt-4">
             <h2 class="h5 mb-1">{{ tituloFormulario() }}</h2>
             <p class="text-body-secondary small mb-0">
-              Dados básicos usados nos fluxos do encontro.
+              Cadastro principal reutilizado nos diferentes eventos.
             </p>
           </div>
         </ng-template>
 
-        <form [formGroup]="form" (ngSubmit)="salvar()" class="d-grid gap-3">
-          <div>
-            <label for="nome" class="form-label">Nome *</label>
-            <input id="nome" pInputText type="text" class="w-100" formControlName="nome"
-              placeholder="Ex.: João da Silva" (blur)="formatarCamposTexto()" />
-
-            @if (form.controls.nome.touched && form.controls.nome.invalid) {
-            <div class="form-text text-danger">
-              Informe o nome da pessoa.
-            </div>
-            }
-          </div>
-
-          <div>
-            <label for="tipo" class="form-label">Tipo *</label>
-            <p-select inputId="tipo" [options]="tiposPessoa" optionLabel="label" optionValue="value"
-              formControlName="tipo" styleClass="w-100" />
-
-            @if (form.controls.tipo.touched && form.controls.tipo.invalid) {
-            <div class="form-text text-danger">
-              Informe o tipo da pessoa.
-            </div>
-            }
-          </div>
-
-          <div class="row g-3">
-            <div class="col-12 col-md-6">
-              <label for="telefone" class="form-label">Telefone</label>
-              <input id="telefone" pInputText type="text" class="w-100" formControlName="telefone"
-                placeholder="(00) 00000-0000" appTelefoneMask />
+        <form [formGroup]="form" (ngSubmit)="salvar()" class="d-grid gap-4">
+          <section class="form-section">
+            <div class="form-section-title">
+              <i class="fa-solid fa-user"></i>
+              <div>
+                <h3>Dados pessoais</h3>
+                <p>Identificação principal da pessoa.</p>
+              </div>
             </div>
 
-            <div class="col-12 col-md-6">
-              <label for="dataNascimento" class="form-label">Nascimento</label>
-              <input id="dataNascimento" pInputText type="date" class="w-100" formControlName="dataNascimento" />
+            <div class="d-grid gap-3">
+              <div>
+                <label for="nome" class="form-label">Nome *</label>
+                <input
+                  id="nome"
+                  pInputText
+                  type="text"
+                  class="w-100"
+                  formControlName="nome"
+                  placeholder="Ex.: João da Silva"
+                  (blur)="formatarCamposTexto()"
+                />
+
+                @if (form.controls.nome.touched && form.controls.nome.invalid) {
+                  <div class="form-text text-danger">
+                    Informe o nome da pessoa.
+                  </div>
+                }
+              </div>
+
+              <div>
+                <label for="tipo" class="form-label">Tipo *</label>
+                <p-select
+                  inputId="tipo"
+                  [options]="tiposPessoa"
+                  optionLabel="label"
+                  optionValue="value"
+                  formControlName="tipo"
+                  styleClass="w-100"
+                />
+
+                @if (form.controls.tipo.touched && form.controls.tipo.invalid) {
+                  <div class="form-text text-danger">
+                    Informe o tipo da pessoa.
+                  </div>
+                }
+              </div>
+
+              <div>
+                <label for="dataNascimento" class="form-label">Nascimento</label>
+                <input
+                  id="dataNascimento"
+                  pInputText
+                  type="date"
+                  class="w-100"
+                  formControlName="dataNascimento"
+                />
+              </div>
             </div>
-          </div>
+          </section>
 
-          <div>
-            <label for="email" class="form-label">E-mail</label>
-            <input id="email" pInputText type="email" class="w-100" formControlName="email"
-              placeholder="nome@email.com" />
-
-            @if (form.controls.email.touched && form.controls.email.invalid) {
-            <div class="form-text text-danger">
-              Informe um e-mail válido.
+          <section class="form-section">
+            <div class="form-section-title">
+              <i class="fa-solid fa-address-book"></i>
+              <div>
+                <h3>Contato e endereço</h3>
+                <p>Dados reutilizados em novos eventos.</p>
+              </div>
             </div>
-            }
-          </div>
 
-          <div>
-            <label for="observacoes" class="form-label">Observações</label>
-            <textarea id="observacoes" pTextarea rows="4" class="w-100" formControlName="observacoes"
-              placeholder="Observações gerais sobre a pessoa"></textarea>
-          </div>
+            <div class="d-grid gap-3">
+              <div>
+                <label for="telefone" class="form-label">Telefone</label>
+                <input
+                  id="telefone"
+                  pInputText
+                  type="text"
+                  class="w-100"
+                  formControlName="telefone"
+                  placeholder="(00) 00000-0000"
+                  appTelefoneMask
+                />
+              </div>
+
+              <div>
+                <label for="email" class="form-label">E-mail</label>
+                <input
+                  id="email"
+                  pInputText
+                  type="email"
+                  class="w-100"
+                  formControlName="email"
+                  placeholder="nome@email.com"
+                />
+
+                @if (form.controls.email.touched && form.controls.email.invalid) {
+                  <div class="form-text text-danger">
+                    Informe um e-mail válido.
+                  </div>
+                }
+              </div>
+
+              <div>
+                <label for="endereco" class="form-label">Endereço</label>
+                <input
+                  id="endereco"
+                  pInputText
+                  type="text"
+                  class="w-100"
+                  formControlName="endereco"
+                  placeholder="Rua, número, bairro e cidade"
+                />
+
+                @if (form.controls.endereco.touched && form.controls.endereco.invalid) {
+                  <div class="form-text text-danger">
+                    O endereço deve ter no máximo 180 caracteres.
+                  </div>
+                }
+              </div>
+            </div>
+          </section>
+
+          <section class="form-section">
+            <div class="form-section-title">
+              <i class="fa-solid fa-people-roof"></i>
+              <div>
+                <h3>Responsável</h3>
+                <p>Informações utilizadas quando a pessoa participar como encontrista.</p>
+              </div>
+            </div>
+
+            <div class="d-grid gap-3">
+              <div>
+                <label for="responsavelNome" class="form-label">
+                  Nome do responsável
+                </label>
+                <input
+                  id="responsavelNome"
+                  pInputText
+                  type="text"
+                  class="w-100"
+                  formControlName="responsavelNome"
+                  placeholder="Nome completo do responsável"
+                  (blur)="formatarCamposTexto()"
+                />
+
+                @if (
+                  form.controls.responsavelNome.touched &&
+                  form.controls.responsavelNome.invalid
+                ) {
+                  <div class="form-text text-danger">
+                    O nome do responsável deve ter no máximo 150 caracteres.
+                  </div>
+                }
+              </div>
+
+              <div>
+                <label for="responsavelTelefone" class="form-label">
+                  Telefone do responsável
+                </label>
+                <input
+                  id="responsavelTelefone"
+                  pInputText
+                  type="text"
+                  class="w-100"
+                  formControlName="responsavelTelefone"
+                  placeholder="(00) 00000-0000"
+                  appTelefoneMask
+                />
+              </div>
+
+              <div class="alert alert-info py-2 px-3 mb-0 small">
+                <i class="fa-solid fa-circle-info me-2"></i>
+                Quando esta pessoa for vinculada a um encontrista, os dados já
+                cadastrados serão reutilizados e protegidos contra alteração
+                pelo formulário do evento.
+              </div>
+            </div>
+          </section>
+
+          <section class="form-section">
+            <div class="form-section-title">
+              <i class="fa-solid fa-note-sticky"></i>
+              <div>
+                <h3>Observações</h3>
+                <p>Informações gerais do cadastro.</p>
+              </div>
+            </div>
+
+            <textarea
+              id="observacoes"
+              pTextarea
+              rows="4"
+              class="w-100"
+              formControlName="observacoes"
+              placeholder="Observações gerais sobre a pessoa"
+            ></textarea>
+          </section>
 
           <div class="d-flex flex-column flex-sm-row gap-2">
-            <p-button type="submit" label="Salvar" icon="fa-solid fa-floppy-disk" [loading]="salvando()" />
+            <p-button
+              type="submit"
+              label="Salvar"
+              icon="fa-solid fa-floppy-disk"
+              [loading]="salvando()"
+            />
 
             @if (!pessoaEmEdicao()) {
-            <p-button type="button" label="Limpar" severity="secondary" variant="outlined" icon="fa-solid fa-eraser"
-              [disabled]="salvando()" (onClick)="limparFormulario()" />
+              <p-button
+                type="button"
+                label="Limpar"
+                severity="secondary"
+                variant="outlined"
+                icon="fa-solid fa-eraser"
+                [disabled]="salvando()"
+                (onClick)="limparFormulario()"
+              />
             }
 
             @if (pessoaEmEdicao()) {
-            <p-button type="button" label="Cancelar" severity="secondary" variant="outlined" icon="fa-solid fa-xmark"
-              (onClick)="cancelarEdicao()" />
+              <p-button
+                type="button"
+                label="Cancelar"
+                severity="secondary"
+                variant="outlined"
+                icon="fa-solid fa-xmark"
+                (onClick)="cancelarEdicao()"
+              />
             }
           </div>
         </form>
@@ -175,6 +335,23 @@
                   @if (pessoa.observacoes) {
                   <div class="small text-body-secondary text-truncate observacao-preview">
                     {{ pessoa.observacoes }}
+                  </div>
+                  }
+
+                  @if (possuiDadosResponsavel(pessoa)) {
+                  <div class="small text-body-secondary mt-1">
+                    <i class="fa-solid fa-people-roof me-1"></i>
+                    {{ pessoa.responsavelNome || 'Responsável sem nome' }}
+                    @if (pessoa.responsavelTelefone) {
+                    <span> · {{ pessoa.responsavelTelefone }}</span>
+                    }
+                  </div>
+                  }
+
+                  @if (pessoa.endereco) {
+                  <div class="small text-body-secondary text-truncate endereco-preview">
+                    <i class="fa-solid fa-location-dot me-1"></i>
+                    {{ pessoa.endereco }}
                   </div>
                   }
                 </td>

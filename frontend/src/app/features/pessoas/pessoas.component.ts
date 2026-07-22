@@ -98,6 +98,9 @@ export class PessoasComponent implements OnInit {
           this.contemFiltro(this.labelTipo(pessoa.tipo), busca) ||
           this.contemFiltro(pessoa.telefone, busca) ||
           this.contemFiltro(pessoa.email, busca) ||
+          this.contemFiltro(pessoa.responsavelNome, busca) ||
+          this.contemFiltro(pessoa.responsavelTelefone, busca) ||
+          this.contemFiltro(pessoa.endereco, busca) ||
           this.contemFiltro(pessoa.observacoes, busca) ||
           this.contemFiltro(this.formatarData(pessoa.dataNascimento), busca);
       });
@@ -108,11 +111,14 @@ export class PessoasComponent implements OnInit {
   );
 
   readonly form = this.fb.nonNullable.group({
-    nome: ['', [Validators.required, Validators.maxLength(160)]],
+    nome: ['', [Validators.required, Validators.maxLength(150)]],
     telefone: ['', [Validators.maxLength(30)]],
-    email: ['', [Validators.email, Validators.maxLength(160)]],
+    email: ['', [Validators.email, Validators.maxLength(120)]],
     dataNascimento: [''],
     tipo: ['TIO_CARONA' as PessoaTipo, [Validators.required]],
+    responsavelNome: ['', [Validators.maxLength(150)]],
+    responsavelTelefone: ['', [Validators.maxLength(30)]],
+    endereco: ['', [Validators.maxLength(180)]],
     observacoes: ['', [Validators.maxLength(500)]]
   });
 
@@ -205,6 +211,9 @@ export class PessoasComponent implements OnInit {
       email: pessoa.email ?? '',
       dataNascimento: pessoa.dataNascimento ?? '',
       tipo: pessoa.tipo,
+      responsavelNome: pessoa.responsavelNome ?? '',
+      responsavelTelefone: pessoa.responsavelTelefone ?? '',
+      endereco: pessoa.endereco ?? '',
       observacoes: pessoa.observacoes ?? ''
     });
   }
@@ -309,7 +318,10 @@ export class PessoasComponent implements OnInit {
   }
 
   formatarCamposTexto(): void {
-    this.customFormHelper.formatarCamposComTitleCase(this.form, ['nome']);
+    this.customFormHelper.formatarCamposComTitleCase(
+      this.form,
+      ['nome', 'responsavelNome']
+    );
   }
 
   alterarFiltro(tipo: TipoFiltro): void {
@@ -351,6 +363,13 @@ export class PessoasComponent implements OnInit {
     }
   }
 
+  possuiDadosResponsavel(pessoa: Pessoa): boolean {
+    return Boolean(
+      pessoa.responsavelNome ||
+      pessoa.responsavelTelefone
+    );
+  }
+
   limparFormulario(): void {
     this.pessoaEmEdicao.set(null);
 
@@ -360,6 +379,9 @@ export class PessoasComponent implements OnInit {
       email: '',
       dataNascimento: '',
       tipo: 'TIO_CARONA' as PessoaTipo,
+      responsavelNome: '',
+      responsavelTelefone: '',
+      endereco: '',
       observacoes: ''
     });
   }
@@ -387,6 +409,9 @@ export class PessoasComponent implements OnInit {
       email: this.normalizarTextoOpcional(valor.email),
       dataNascimento: this.normalizarTextoOpcional(valor.dataNascimento),
       tipo: valor.tipo,
+      responsavelNome: this.normalizarTextoOpcional(valor.responsavelNome),
+      responsavelTelefone: this.normalizarTextoOpcional(valor.responsavelTelefone),
+      endereco: this.normalizarTextoOpcional(valor.endereco),
       observacoes: this.normalizarTextoOpcional(valor.observacoes)
     };
   }
