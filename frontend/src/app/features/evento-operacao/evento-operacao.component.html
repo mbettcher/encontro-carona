@@ -2146,24 +2146,26 @@
     </button>
   </div>
 
-  <div class="acao-especial-cancelamento mt-3">
-    <div>
-      <div class="fw-semibold small">Cancelamento administrativo</div>
-      <div class="small text-body-secondary">
-        O cancelamento estruturado será tratado no bloco A2.4-E.
-      </div>
-    </div>
+  <button type="button" class="acao-especial-card acao-especial-danger acao-especial-cancelar" [disabled]="
+          !seguranca.podeEscrever() ||
+          !acaoEspecialDisponivel(caderno, 'CANCELAR')
+        " (click)="selecionarAcaoEspecialCaderno('CANCELAR')">
+    <span class="acao-especial-icon">
+      <i class="fa-solid fa-ban"></i>
+    </span>
 
-    <p-button label="Cancelar caderno" icon="fa-solid fa-ban" severity="danger" variant="outlined" size="small"
-      [disabled]="
-            !seguranca.podeEscrever() ||
-            !podeCancelarCaderno(caderno)
-          " (onClick)="cancelarCaderno(caderno)" />
-  </div>
+    <span>
+      <strong>Cancelar caderno</strong>
+      <small>
+        Encerra a via atual sem gerar uma nova via automaticamente.
+      </small>
+    </span>
+  </button>
   } @else {
   <div class="alert py-2 px-3 mb-3 small" [ngClass]="{
           'alert-danger':
-            acaoEspecialCadernoSelecionada() === 'PERDA',
+            acaoEspecialCadernoSelecionada() === 'PERDA' ||
+            acaoEspecialCadernoSelecionada() === 'CANCELAR',
           'alert-warning':
             acaoEspecialCadernoSelecionada() === 'DANO' ||
             acaoEspecialCadernoSelecionada() === 'SUBSTITUIR',
@@ -2195,10 +2197,11 @@
   <div class="mb-3">
     <label for="motivoSubstituicaoCaderno" class="form-label">
       Motivo da substituição
+      <span class="text-danger">*</span>
     </label>
 
     <p-select inputId="motivoSubstituicaoCaderno" [options]="opcoesMotivoSubstituicaoCaderno" optionLabel="label"
-      optionValue="value" [ngModel]="motivoSubstituicaoCaderno()" (ngModelChange)="
+      optionValue="value" placeholder="Selecione o motivo" [ngModel]="motivoSubstituicaoCaderno()" (ngModelChange)="
               alterarMotivoSubstituicaoCaderno($event)
             " appendTo="body" />
 
@@ -2209,9 +2212,44 @@
   </div>
   }
 
+  @if (acaoEspecialCadernoSelecionada() === 'CANCELAR') {
+  <div class="mb-3">
+    <label for="motivoCancelamentoCaderno" class="form-label">
+      Motivo do cancelamento
+      <span class="text-danger">*</span>
+    </label>
+
+    <p-select inputId="motivoCancelamentoCaderno" [options]="opcoesMotivoCancelamentoCaderno" optionLabel="label"
+      optionValue="value" placeholder="Selecione o motivo" [ngModel]="motivoCancelamentoCaderno()" (ngModelChange)="
+              alterarMotivoCancelamentoCaderno($event)
+            " appendTo="body" />
+
+    @if (
+    motivoCancelamentoCaderno() ===
+    'DESISTENCIA_ENCONTRISTA'
+    ) {
+    <div class="alert alert-warning py-2 px-3 mt-2 mb-0 small">
+      <i class="fa-solid fa-circle-info me-2"></i>
+      A desistência normalmente deve ser registrada na presença
+      do encontrista. Use este motivo manualmente apenas para
+      corrigir uma situação administrativa.
+    </div>
+    }
+
+    @if (caderno.status === 'ENTREGUE_A_DUPLA') {
+    <div class="alert alert-danger py-2 px-3 mt-2 mb-0 small">
+      <i class="fa-solid fa-rotate-left me-2"></i>
+      O exemplar está fisicamente com a dupla. Após o
+      cancelamento, acompanhe o recolhimento pendente.
+    </div>
+    }
+  </div>
+  }
+
   <div class="mb-3">
     <label for="observacaoAcaoEspecialCaderno" class="form-label">
       Observação
+      <span class="text-danger">*</span>
     </label>
 
     <textarea pTextarea id="observacaoAcaoEspecialCaderno" rows="4" maxlength="500" class="w-100"
@@ -2239,7 +2277,7 @@
             processandoCadernoId() === cadernoSelecionado()?.id
           " [disabled]="
             !seguranca.podeEscrever() ||
-            !observacaoAcaoEspecialCaderno().trim()
+            !formularioAcaoEspecialValido()
           " (onClick)="confirmarAcaoEspecialCaderno()" />
       } @else {
       <p-button label="Fechar" icon="fa-solid fa-xmark" severity="secondary" variant="outlined"

@@ -24,6 +24,7 @@ import { CheckboxModule } from 'primeng/checkbox';
 
 import {
   CadernoChoro,
+  CadernoChoroCancelarRequest,
   CadernoChoroHistorico,
   CadernoChoroOcorrenciaRequest,
   CadernoChoroRecuperarRequest,
@@ -81,7 +82,8 @@ type AcaoEspecialCaderno =
   | 'PERDA'
   | 'DANO'
   | 'RECUPERAR'
-  | 'SUBSTITUIR';
+  | 'SUBSTITUIR'
+  | 'CANCELAR';
 
 interface OpcaoStatusCaderno {
   label: string;
@@ -190,7 +192,9 @@ export class EventoOperacaoComponent implements OnInit {
   readonly observacaoAcaoEspecialCaderno = signal('');
   readonly danoImpedeContinuacaoCaderno = signal(true);
   readonly motivoSubstituicaoCaderno =
-    signal<MotivoSubstituicaoCaderno>('OUTRO');
+    signal<MotivoSubstituicaoCaderno | null>(null);
+  readonly motivoCancelamentoCaderno =
+    signal<MotivoCancelamentoCaderno | null>(null);
   readonly processandoCodigoSobrinho = signal(false);
   readonly abaOperacaoAtiva = signal<AbaOperacao>('VISAO_GERAL');
   readonly tipoOperacaoLoteCaderno =
@@ -872,6 +876,29 @@ export class EventoOperacaoComponent implements OnInit {
           a.label.localeCompare(b.label, 'pt-BR')
         );
     });
+
+  readonly opcoesMotivoCancelamentoCaderno = [
+    {
+      label: 'Não participou do evento',
+      value: 'NAO_PARTICIPOU_DO_EVENTO' as MotivoCancelamentoCaderno
+    },
+    {
+      label: 'Erro de cadastro',
+      value: 'ERRO_DE_CADASTRO' as MotivoCancelamentoCaderno
+    },
+    {
+      label: 'Caderno não necessário',
+      value: 'CADERNO_NAO_NECESSARIO' as MotivoCancelamentoCaderno
+    },
+    {
+      label: 'Desistência do encontrista',
+      value: 'DESISTENCIA_ENCONTRISTA' as MotivoCancelamentoCaderno
+    },
+    {
+      label: 'Outro motivo',
+      value: 'OUTRO' as MotivoCancelamentoCaderno
+    }
+  ];
 
   readonly opcoesMotivoSubstituicaoCaderno = [
     { label: 'Perda', value: 'PERDA' as MotivoSubstituicaoCaderno },
@@ -1759,7 +1786,8 @@ export class EventoOperacaoComponent implements OnInit {
     this.acaoEspecialCadernoSelecionada.set(null);
     this.observacaoAcaoEspecialCaderno.set('');
     this.danoImpedeContinuacaoCaderno.set(true);
-    this.motivoSubstituicaoCaderno.set('OUTRO');
+    this.motivoSubstituicaoCaderno.set(null);
+    this.motivoCancelamentoCaderno.set(null);
     this.acoesEspeciaisCadernoVisivel.set(true);
   }
 
@@ -1772,7 +1800,8 @@ export class EventoOperacaoComponent implements OnInit {
     this.acaoEspecialCadernoSelecionada.set(null);
     this.observacaoAcaoEspecialCaderno.set('');
     this.danoImpedeContinuacaoCaderno.set(true);
-    this.motivoSubstituicaoCaderno.set('OUTRO');
+    this.motivoSubstituicaoCaderno.set(null);
+    this.motivoCancelamentoCaderno.set(null);
   }
 
   selecionarAcaoEspecialCaderno(
@@ -1797,8 +1826,16 @@ export class EventoOperacaoComponent implements OnInit {
           ? 'PERDA'
           : caderno.status === 'DANIFICADO'
             ? 'DANO'
-            : 'OUTRO'
+            : null
       );
+    } else {
+      this.motivoSubstituicaoCaderno.set(null);
+    }
+
+    if (acao === 'CANCELAR') {
+      this.motivoCancelamentoCaderno.set(null);
+    } else {
+      this.motivoCancelamentoCaderno.set(null);
     }
   }
 
@@ -1809,6 +1846,9 @@ export class EventoOperacaoComponent implements OnInit {
 
     this.acaoEspecialCadernoSelecionada.set(null);
     this.observacaoAcaoEspecialCaderno.set('');
+    this.danoImpedeContinuacaoCaderno.set(true);
+    this.motivoSubstituicaoCaderno.set(null);
+    this.motivoCancelamentoCaderno.set(null);
   }
 
   alterarObservacaoAcaoEspecialCaderno(
@@ -1824,9 +1864,63 @@ export class EventoOperacaoComponent implements OnInit {
   }
 
   alterarMotivoSubstituicaoCaderno(
-    motivo: MotivoSubstituicaoCaderno
+    motivo: MotivoSubstituicaoCaderno | null
   ): void {
     this.motivoSubstituicaoCaderno.set(motivo);
+  }
+
+  alterarMotivoCancelamentoCaderno(
+    motivo: MotivoCancelamentoCaderno | null
+  ): void {
+    this.motivoCancelamentoCaderno.set(motivo);
+  }
+
+  formularioAcaoEspecialValido(): boolean {
+    const acao = this.acaoEspecialCadernoSelecionada();
+    const observacao =
+      this.observacaoAcaoEspecialCaderno().trim();
+
+    if (
+      !acao ||
+      !observacao ||
+      observacao.length > 500 ||
+      this.processandoCadernoId() !== null
+    ) {
+      return false;
+    }
+
+    if (
+      acao === 'SUBSTITUIR' &&
+      this.motivoSubstituicaoCaderno() === null
+    ) {
+      return false;
+    }
+
+    if (
+      acao === 'CANCELAR' &&
+      this.motivoCancelamentoCaderno() === null
+    ) {
+      return false;
+    }
+
+    const caderno = this.cadernoSelecionado();
+
+    return !!caderno &&
+      this.acaoEspecialDisponivel(caderno, acao);
+  }
+
+  private limparFormularioAcaoEspecial(
+    fecharDialogo: boolean
+  ): void {
+    this.acaoEspecialCadernoSelecionada.set(null);
+    this.observacaoAcaoEspecialCaderno.set('');
+    this.danoImpedeContinuacaoCaderno.set(true);
+    this.motivoSubstituicaoCaderno.set(null);
+    this.motivoCancelamentoCaderno.set(null);
+
+    if (fecharDialogo) {
+      this.acoesEspeciaisCadernoVisivel.set(false);
+    }
   }
 
   confirmarAcaoEspecialCaderno(): void {
@@ -1861,6 +1955,26 @@ export class EventoOperacaoComponent implements OnInit {
       return;
     }
 
+    if (
+      acao === 'SUBSTITUIR' &&
+      this.motivoSubstituicaoCaderno() === null
+    ) {
+      this.toastWarn(
+        'Selecione o motivo da substituição.'
+      );
+      return;
+    }
+
+    if (
+      acao === 'CANCELAR' &&
+      this.motivoCancelamentoCaderno() === null
+    ) {
+      this.toastWarn(
+        'Selecione o motivo do cancelamento.'
+      );
+      return;
+    }
+
     if (acao === 'SUBSTITUIR') {
       this.confirmationService.confirm({
         header: 'Confirmar substituição de via',
@@ -1887,6 +2001,38 @@ export class EventoOperacaoComponent implements OnInit {
       return;
     }
 
+    if (acao === 'CANCELAR') {
+      const motivo = this.motivoCancelamentoCaderno();
+
+      this.confirmationService.confirm({
+        header: 'Confirmar cancelamento do caderno',
+        icon: 'fa-solid fa-triangle-exclamation',
+        message:
+          `A Via ${caderno.numeroVia} de ${caderno.sobrinhoNome} ` +
+          `será encerrada como cancelada. Esta ação não cria uma nova via. ` +
+          `Confirma o cancelamento?`,
+        acceptLabel: 'Cancelar caderno',
+        rejectLabel: 'Voltar',
+        acceptButtonProps: {
+          severity: 'danger'
+        },
+        rejectButtonProps: {
+          severity: 'secondary',
+          variant: 'outlined'
+        },
+        accept: () => {
+          if (motivo) {
+            this.executarAcaoEspecialCaderno(
+              caderno,
+              acao,
+              observacao
+            );
+          }
+        }
+      });
+      return;
+    }
+
     this.executarAcaoEspecialCaderno(
       caderno,
       acao,
@@ -1901,9 +2047,73 @@ export class EventoOperacaoComponent implements OnInit {
   ): void {
     this.processandoCadernoId.set(caderno.id);
 
+    if (acao === 'CANCELAR') {
+      const motivo = this.motivoCancelamentoCaderno();
+
+      if (!motivo) {
+        this.processandoCadernoId.set(null);
+        this.toastWarn(
+          'Selecione o motivo do cancelamento.'
+        );
+        return;
+      }
+
+      const request: CadernoChoroCancelarRequest = {
+        motivo,
+        observacao
+      };
+
+      this.service
+        .cancelarViaCaderno(
+          this.eventoId,
+          caderno.id,
+          request
+        )
+        .pipe(
+          finalize(() =>
+            this.processandoCadernoId.set(null)
+          )
+        )
+        .subscribe({
+          next: cadernoAtualizado => {
+            this.atualizarCadernoNaLista(cadernoAtualizado);
+            this.limparFormularioAcaoEspecial(true);
+
+            this.toastSuccess(
+              `Caderno de ${cadernoAtualizado.sobrinhoNome} cancelado.`
+            );
+          },
+          error: erro => {
+            console.error(
+              'Erro ao cancelar o caderno',
+              erro
+            );
+
+            this.toastError(
+              this.mensagemErro(
+                erro,
+                'Não foi possível cancelar o Caderno de Mensagens.'
+              )
+            );
+          }
+        });
+
+      return;
+    }
+
     if (acao === 'SUBSTITUIR') {
+      const motivo = this.motivoSubstituicaoCaderno();
+
+      if (!motivo) {
+        this.processandoCadernoId.set(null);
+        this.toastWarn(
+          'Selecione o motivo da substituição.'
+        );
+        return;
+      }
+
       const request: CadernoChoroSubstituirRequest = {
-        motivo: this.motivoSubstituicaoCaderno(),
+        motivo,
         observacao
       };
 
@@ -1925,7 +2135,7 @@ export class EventoOperacaoComponent implements OnInit {
               resultado.novaVia
             );
 
-            this.fecharAcoesEspeciaisCaderno();
+            this.limparFormularioAcaoEspecial(true);
 
             this.toastSuccess(
               `Via ${resultado.novaVia.numeroVia} criada para ` +
@@ -2004,7 +2214,7 @@ export class EventoOperacaoComponent implements OnInit {
       .subscribe({
         next: cadernoAtualizado => {
           this.atualizarCadernoNaLista(cadernoAtualizado);
-          this.fecharAcoesEspeciaisCaderno();
+          this.limparFormularioAcaoEspecial(true);
 
           this.toastSuccess(
             this.mensagemSucessoAcaoEspecial(
@@ -2058,7 +2268,10 @@ export class EventoOperacaoComponent implements OnInit {
   }
 
   private mensagemSucessoAcaoEspecial(
-    acao: Exclude<AcaoEspecialCaderno, 'SUBSTITUIR'>,
+    acao: Exclude<
+      AcaoEspecialCaderno,
+      'SUBSTITUIR' | 'CANCELAR'
+    >,
     caderno: CadernoChoro
   ): string {
     switch (acao) {
@@ -2089,6 +2302,9 @@ export class EventoOperacaoComponent implements OnInit {
 
       case 'SUBSTITUIR':
         return this.podeSubstituirViaCaderno(caderno);
+
+      case 'CANCELAR':
+        return this.podeCancelarCaderno(caderno);
     }
   }
 
@@ -2139,6 +2355,9 @@ export class EventoOperacaoComponent implements OnInit {
       case 'SUBSTITUIR':
         return 'Substituir via';
 
+      case 'CANCELAR':
+        return 'Cancelar caderno';
+
       default:
         return 'Ações especiais';
     }
@@ -2157,6 +2376,9 @@ export class EventoOperacaoComponent implements OnInit {
 
       case 'SUBSTITUIR':
         return 'A via atual será encerrada e uma nova via física será criada como pendente.';
+
+      case 'CANCELAR':
+        return 'A via atual será encerrada sem gerar automaticamente uma nova via.';
 
       default:
         return 'Selecione a ocorrência ou ação necessária.';
@@ -2177,6 +2399,9 @@ export class EventoOperacaoComponent implements OnInit {
       case 'SUBSTITUIR':
         return 'Criar nova via';
 
+      case 'CANCELAR':
+        return 'Cancelar caderno';
+
       default:
         return 'Confirmar';
     }
@@ -2194,6 +2419,9 @@ export class EventoOperacaoComponent implements OnInit {
       case 'DANO':
       case 'SUBSTITUIR':
         return 'warn';
+
+      case 'CANCELAR':
+        return 'danger';
 
       case 'RECUPERAR':
         return 'success';

@@ -1121,3 +1121,29 @@
     flex-direction: column;
   }
 }
+
+
+/* 1.2.0A2.4-E — Cancelamento estruturado e validação visual */
+
+.acao-especial-cancelar {
+  width: 100%;
+  margin-top: 0.75rem;
+  border-color: var(--bs-danger-border-subtle);
+  background: var(--bs-danger-bg-subtle);
+}
+
+.acao-especial-cancelar:not(:disabled):hover {
+  border-color: var(--bs-danger);
+}
+
+:host ::ng-deep {
+
+  .p-button:disabled,
+  .p-button.p-disabled {
+    cursor: not-allowed;
+  }
+
+  .p-select.ng-invalid.ng-dirty {
+    border-color: var(--bs-danger);
+  }
+}
