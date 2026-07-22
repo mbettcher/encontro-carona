@@ -781,10 +781,31 @@ public class CadernoChoroService {
         var caderno = buscarViaAtual(eventoId, cadernoId);
         var statusAnterior = caderno.getStatus();
 
+        /*
+         * A informação precisa ser capturada antes do cancelamento,
+         * pois depois da operação o status passa a ser CANCELADO.
+         */
+        var estavaComDupla =
+                statusAnterior == StatusCadernoChoro.ENTREGUE_A_DUPLA;
+
         caderno.cancelar(
                 request.motivo(),
                 request.observacao()
         );
+
+        /*
+         * O cancelamento é administrativo. Quando o exemplar ainda
+         * estava com a dupla, permanece uma pendência física até que
+         * a equipe registre o recolhimento pelo fluxo operacional.
+         */
+        if (estavaComDupla) {
+            caderno.marcarRecolhimentoPendente();
+        }
+
+        var observacaoHistorico = estavaComDupla
+                ? request.observacao()
+                  + " O exemplar físico estava com a dupla e precisa ser recolhido."
+                : request.observacao();
 
         registrarHistorico(
                 caderno,
@@ -792,7 +813,7 @@ public class CadernoChoroService {
                 statusAnterior,
                 caderno.getStatus(),
                 request.motivo().name(),
-                request.observacao()
+                observacaoHistorico
         );
 
         return CadernoChoroResponse.from(caderno);
