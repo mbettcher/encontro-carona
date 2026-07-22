@@ -3,17 +3,12 @@ package br.com.paroquia.encontro.services;
 import br.com.paroquia.encontro.common.BusinessException;
 import br.com.paroquia.encontro.common.ResourceNotFoundException;
 import br.com.paroquia.encontro.domain.entity.SobrinhoDupla;
-import br.com.paroquia.encontro.domain.enums.DuplaStatus;
-import br.com.paroquia.encontro.domain.enums.SobrinhoStatus;
-import br.com.paroquia.encontro.domain.enums.VinculoStatus;
+import br.com.paroquia.encontro.domain.enums.*;
 import br.com.paroquia.encontro.dto.request.VincularSobrinhoRequest;
 import br.com.paroquia.encontro.dto.response.SobrinhoDuplaResponse;
 import br.com.paroquia.encontro.repository.*;
 import br.com.paroquia.encontro.dto.request.TrocarDuplaVinculoRequest;
 import br.com.paroquia.encontro.domain.entity.CadernoChoroHistorico;
-import br.com.paroquia.encontro.domain.enums.DuplaStatus;
-import br.com.paroquia.encontro.domain.enums.StatusCadernoChoro;
-import br.com.paroquia.encontro.domain.enums.VinculoStatus;
 import br.com.paroquia.encontro.dto.request.SubstituirDuplaVinculoRequest;
 
 import org.springframework.stereotype.Service;
@@ -201,10 +196,11 @@ public class SobrinhoDuplaService {
         var duplaAnterior = vinculo.getDupla();
         var motivoNormalizado = request.motivo().trim();
 
-        var cadernoOpt = cadernoChoroRepository.findByEventoIdAndSobrinhoIdAndViaAtualTrue(
-                eventoId,
-                vinculo.getSobrinho().getId()
-        );
+        var cadernoOpt = cadernoChoroRepository
+                .findByEventoIdAndSobrinhoIdAndViaAtualTrue(
+                        eventoId,
+                        vinculo.getSobrinho().getId()
+                );
 
         if (cadernoOpt.isEmpty()) {
             vinculo.trocarDupla(novaDupla);
@@ -237,7 +233,12 @@ public class SobrinhoDuplaService {
         cadernoChoroHistoricoRepository.save(
                 new CadernoChoroHistorico(
                         caderno,
+                        TipoMovimentacaoCaderno.DUPLA_ALTERADA,
+                        statusAnterior,
                         caderno.getStatus(),
+                        null,
+                        null,
+                        motivoNormalizado,
                         observacaoHistorico
                 )
         );

@@ -39,6 +39,11 @@ public interface CadernoChoroRepository
             Long eventoId
     );
 
+    List<CadernoChoro> findByEventoIdAndSobrinhoIdOrderByNumeroViaAsc(
+            Long eventoId,
+            Long sobrinhoId
+    );
+
     /*
      * Via atual do encontrista.
      */

@@ -7,26 +7,37 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 import java.util.Optional;
 
-public interface SobrinhoDuplaRepository extends JpaRepository<SobrinhoDupla, Long> {
+public interface SobrinhoDuplaRepository
+        extends JpaRepository<SobrinhoDupla, Long> {
 
-    List<SobrinhoDupla> findByEventoIdAndDuplaIdAndStatusOrderBySobrinhoNome(
+    List<SobrinhoDupla>
+    findByEventoIdAndDuplaIdAndStatusOrderBySobrinhoNome(
             Long eventoId,
             Long duplaId,
             VinculoStatus status
     );
 
-    List<SobrinhoDupla> findByEventoIdAndStatusOrderByDuplaCodigoAscSobrinhoNomeAsc(
+    List<SobrinhoDupla>
+    findByEventoIdAndStatusOrderByDuplaCodigoAscSobrinhoNomeAsc(
             Long eventoId,
             VinculoStatus status
     );
 
-    List<SobrinhoDupla> findByEventoIdOrderByDuplaCodigoAscSobrinhoNomeAsc(
+    List<SobrinhoDupla>
+    findByEventoIdOrderByDuplaCodigoAscSobrinhoNomeAsc(
             Long eventoId
     );
 
     Optional<SobrinhoDupla> findByIdAndEventoId(
             Long id,
             Long eventoId
+    );
+
+    Optional<SobrinhoDupla>
+    findByEventoIdAndSobrinhoIdAndStatus(
+            Long eventoId,
+            Long sobrinhoId,
+            VinculoStatus status
     );
 
     boolean existsByEventoIdAndSobrinhoIdAndStatus(
@@ -48,12 +59,6 @@ public interface SobrinhoDuplaRepository extends JpaRepository<SobrinhoDupla, Lo
             VinculoStatus status
     );
 
-    /**
-     * Usado na exclusão física de uma dupla.
-     * <p>
-     * Qualquer vínculo já criado, inclusive removido, representa histórico
-     * e deve impedir a exclusão física da dupla.
-     */
     boolean existsByEventoIdAndDuplaId(
             Long eventoId,
             Long duplaId
