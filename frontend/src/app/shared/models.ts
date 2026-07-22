@@ -224,9 +224,9 @@ export interface SobrinhoRequest {
 export interface AdicionarPessoaSobrinhoRequest {
   pessoaId: number;
   telefone?: string;
-  responsavelNome: string;
-  responsavelTelefone: string;
-  endereco: string;
+  responsavelNome?: string;
+  responsavelTelefone?: string;
+  endereco?: string;
   dataNascimento?: string;
   restricaoAlimentar?: string;
   observacaoMedica?: string;

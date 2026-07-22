@@ -1,6 +1,5 @@
-
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
-import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormControl, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 
@@ -133,6 +132,22 @@ export class EventoGestaoComponent implements OnInit {
   readonly sobrinhoEdicaoVisivel = signal(false);
   readonly salvandoEdicaoSobrinho = signal(false);
   readonly sobrinhoEmEdicao = signal<Sobrinho | null>(null);
+
+  readonly pessoaDoEncontristaEmEdicao = computed(() => {
+    const sobrinho = this.sobrinhoEmEdicao();
+
+    if (!sobrinho?.pessoaId) {
+      return null;
+    }
+
+    return this.pessoas().find(
+      pessoa => pessoa.id === sobrinho.pessoaId
+    ) ?? null;
+  });
+
+  readonly encontristaEmEdicaoVinculado = computed(
+    () => Boolean(this.sobrinhoEmEdicao()?.pessoaId)
+  );
 
   readonly vinculoTrocaDuplaVisivel = signal(false);
   readonly salvandoTrocaDupla = signal(false);
@@ -664,15 +679,70 @@ export class EventoGestaoComponent implements OnInit {
 
   aoAlterarPessoaSobrinho(pessoaId: number | null): void {
     const id = Number(pessoaId ?? 0);
-    const pessoa = this.pessoas().find(item => item.id === id);
+    const pessoa = this.pessoas().find(item => item.id === id) ?? null;
 
-    this.pessoaSobrinhoForm.patchValue({
-      telefone: TelefoneMaskDirective.formatar(pessoa?.telefone ?? ''),
-      dataNascimento: pessoa?.dataNascimento?.substring(0, 10) ?? ''
-    });
+    this.configurarCampoHerdado(
+      this.pessoaSobrinhoForm.controls.telefone,
+      TelefoneMaskDirective.formatar(pessoa?.telefone ?? ''),
+      Boolean(pessoa?.telefone)
+    );
+    this.configurarCampoHerdado(
+      this.pessoaSobrinhoForm.controls.dataNascimento,
+      pessoa?.dataNascimento?.substring(0, 10) ?? '',
+      Boolean(pessoa?.dataNascimento)
+    );
+    this.configurarCampoHerdado(
+      this.pessoaSobrinhoForm.controls.responsavelNome,
+      pessoa?.responsavelNome ?? '',
+      Boolean(pessoa?.responsavelNome)
+    );
+    this.configurarCampoHerdado(
+      this.pessoaSobrinhoForm.controls.responsavelTelefone,
+      TelefoneMaskDirective.formatar(pessoa?.responsavelTelefone ?? ''),
+      Boolean(pessoa?.responsavelTelefone)
+    );
+    this.configurarCampoHerdado(
+      this.pessoaSobrinhoForm.controls.endereco,
+      pessoa?.endereco ?? '',
+      Boolean(pessoa?.endereco)
+    );
 
-    this.pessoaSobrinhoForm.controls.telefone.markAsPristine();
-    this.pessoaSobrinhoForm.controls.dataNascimento.markAsPristine();
+    this.pessoaSobrinhoForm.markAsPristine();
+    this.pessoaSobrinhoForm.markAsUntouched();
+  }
+
+  private configurarCampoHerdado(
+    controle: FormControl<string>,
+    valor: string,
+    bloquear: boolean
+  ): void {
+    controle.setValue(valor, { emitEvent: false });
+
+    if (bloquear) {
+      controle.clearValidators();
+      controle.disable({ emitEvent: false });
+    } else {
+      controle.enable({ emitEvent: false });
+      controle.setValidators([Validators.required]);
+    }
+
+    controle.updateValueAndValidity({ emitEvent: false });
+  }
+
+  campoPessoaSobrinhoHerdado(
+    campo: 'telefone' | 'dataNascimento' | 'responsavelNome' | 'responsavelTelefone' | 'endereco'
+  ): boolean {
+    const pessoa = this.pessoaEncontristaSelecionada();
+
+    if (!pessoa) {
+      return false;
+    }
+
+    return Boolean(pessoa[campo]);
+  }
+
+  pessoaSelecionadaPossuiDados(): boolean {
+    return Boolean(this.pessoaEncontristaSelecionada());
   }
 
   formatarEdicaoDupla(): void {
@@ -794,9 +864,9 @@ export class EventoGestaoComponent implements OnInit {
     this.service.adicionarPessoaComoSobrinho(this.eventoId, {
       pessoaId: Number(valor.pessoaId),
       telefone: this.normalizarTextoOpcional(valor.telefone),
-      responsavelNome: valor.responsavelNome.trim(),
-      responsavelTelefone: valor.responsavelTelefone.trim(),
-      endereco: valor.endereco.trim(),
+      responsavelNome: this.normalizarTextoOpcional(valor.responsavelNome),
+      responsavelTelefone: this.normalizarTextoOpcional(valor.responsavelTelefone),
+      endereco: this.normalizarTextoOpcional(valor.endereco),
       dataNascimento: this.normalizarTextoOpcional(valor.dataNascimento),
       restricaoAlimentar: this.normalizarTextoOpcional(valor.restricaoAlimentar),
       observacaoMedica: this.normalizarTextoOpcional(valor.observacaoMedica)
@@ -1262,12 +1332,68 @@ export class EventoGestaoComponent implements OnInit {
       restricaoAlimentar: sobrinho.restricaoAlimentar ?? '',
       observacaoMedica: sobrinho.observacaoMedica ?? ''
     });
+    this.configurarEdicaoEncontristaVinculado(sobrinho);
     this.sobrinhoEdicaoVisivel.set(true);
+  }
+  private configurarEdicaoEncontristaVinculado(
+    sobrinho: Sobrinho
+  ): void {
+    const pessoa = sobrinho.pessoaId
+      ? this.pessoas().find(item => item.id === sobrinho.pessoaId) ?? null
+      : null;
+
+    const campos = [
+      {
+        controle: this.sobrinhoEdicaoForm.controls.nome,
+        bloquear: Boolean(pessoa?.nome)
+      },
+      {
+        controle: this.sobrinhoEdicaoForm.controls.telefone,
+        bloquear: Boolean(pessoa?.telefone)
+      },
+      {
+        controle: this.sobrinhoEdicaoForm.controls.responsavelNome,
+        bloquear: Boolean(pessoa?.responsavelNome)
+      },
+      {
+        controle: this.sobrinhoEdicaoForm.controls.responsavelTelefone,
+        bloquear: Boolean(pessoa?.responsavelTelefone)
+      },
+      {
+        controle: this.sobrinhoEdicaoForm.controls.endereco,
+        bloquear: Boolean(pessoa?.endereco)
+      },
+      {
+        controle: this.sobrinhoEdicaoForm.controls.dataNascimento,
+        bloquear: Boolean(pessoa?.dataNascimento)
+      }
+    ];
+
+    for (const campo of campos) {
+      if (pessoa && campo.bloquear) {
+        campo.controle.disable({ emitEvent: false });
+      } else {
+        campo.controle.enable({ emitEvent: false });
+      }
+
+      campo.controle.updateValueAndValidity({ emitEvent: false });
+    }
+  }
+
+  campoEdicaoHerdado(
+    campo: 'nome' | 'telefone' | 'responsavelNome' | 'responsavelTelefone' | 'endereco' | 'dataNascimento'
+  ): boolean {
+    const pessoa = this.pessoaDoEncontristaEmEdicao();
+    return Boolean(pessoa?.[campo]);
   }
 
   fecharEdicaoSobrinho(): void {
     this.sobrinhoEdicaoVisivel.set(false);
     this.sobrinhoEmEdicao.set(null);
+    for (const controle of Object.values(this.sobrinhoEdicaoForm.controls)) {
+      controle.enable({ emitEvent: false });
+    }
+
     this.sobrinhoEdicaoForm.reset({
       nome: '',
       telefone: '',
@@ -2044,7 +2170,7 @@ export class EventoGestaoComponent implements OnInit {
   }
 
   limparFormularioPessoaSobrinho(): void {
-    this.customFormHelper.resetarFormulario(this.pessoaSobrinhoForm, {
+    this.pessoaSobrinhoForm.reset({
       pessoaId: 0,
       telefone: '',
       responsavelNome: '',
@@ -2054,6 +2180,21 @@ export class EventoGestaoComponent implements OnInit {
       restricaoAlimentar: '',
       observacaoMedica: ''
     });
+
+    for (const controle of [
+      this.pessoaSobrinhoForm.controls.telefone,
+      this.pessoaSobrinhoForm.controls.responsavelNome,
+      this.pessoaSobrinhoForm.controls.responsavelTelefone,
+      this.pessoaSobrinhoForm.controls.endereco,
+      this.pessoaSobrinhoForm.controls.dataNascimento
+    ]) {
+      controle.enable({ emitEvent: false });
+      controle.setValidators([Validators.required]);
+      controle.updateValueAndValidity({ emitEvent: false });
+    }
+
+    this.pessoaSobrinhoForm.markAsPristine();
+    this.pessoaSobrinhoForm.markAsUntouched();
   }
 
   limparFormularioSobrinho(): void {

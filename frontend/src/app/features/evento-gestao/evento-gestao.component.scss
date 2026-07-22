@@ -1,4 +1,3 @@
-
 /* Estilos específicos da feature Gestão do Evento. */
 .evento-gestao-page {
     .form-label {
@@ -460,4 +459,41 @@
 
 .evento-gestao-page .summary-grid > .col:nth-child(5) ::ng-deep .summary-card i {
   color: var(--bs-gray-900);
+}
+
+.evento-gestao-page {
+    .campo-herdado:disabled {
+        border-color: rgba(var(--bs-success-rgb), 0.35);
+        background: rgba(var(--bs-success-rgb), 0.07);
+        color: var(--bs-body-color);
+        opacity: 1;
+        cursor: not-allowed;
+    }
+
+    .dados-origem-pessoa {
+        display: flex;
+        gap: 0.75rem;
+        align-items: flex-start;
+        padding: 0.85rem;
+        border: 1px solid rgba(var(--bs-info-rgb), 0.24);
+        border-radius: 0.75rem;
+        background: rgba(var(--bs-info-rgb), 0.06);
+
+        > i {
+            margin-top: 0.15rem;
+            color: var(--bs-info);
+        }
+
+        strong {
+            display: block;
+            font-size: 0.85rem;
+        }
+
+        p {
+            margin: 0.15rem 0 0;
+            color: var(--bs-secondary-color);
+            font-size: 0.78rem;
+            line-height: 1.35;
+        }
+    }
 }

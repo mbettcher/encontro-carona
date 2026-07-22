@@ -518,8 +518,8 @@
         <form [formGroup]="pessoaSobrinhoForm" (ngSubmit)="adicionarPessoaSobrinho()" class="d-grid gap-3">
           <div class="alert alert-warning py-2 px-3 mb-0 small">
             <i class="fa-solid fa-circle-info me-2"></i>
-            O nome será puxado do cadastro geral. Telefone e data de nascimento são preenchidos automaticamente quando
-            existirem na pessoa cadastrada.
+            Os dados existentes no cadastro da Pessoa serão preenchidos e bloqueados.
+            Campos ausentes permanecerão liberados e completarão o cadastro da Pessoa ao salvar.
           </div>
 
           <div>
@@ -563,14 +563,28 @@
           <div>
             <label for="telefonePessoaSobrinho" class="form-label">Telefone</label>
             <input id="telefonePessoaSobrinho" pInputText type="text" class="w-100" formControlName="telefone"
-              appTelefoneMask placeholder="(00) 00000-0000" />
+              appTelefoneMask placeholder="(00) 00000-0000"
+              [class.campo-herdado]="campoPessoaSobrinhoHerdado('telefone')" />
+            @if (campoPessoaSobrinhoHerdado('telefone')) {
+            <div class="form-text text-success">
+              <i class="fa-solid fa-lock me-1"></i>
+              Dado obtido do cadastro da Pessoa.
+            </div>
+            }
           </div>
 
           <div>
             <label for="responsavelNomePessoaSobrinho" class="form-label">Responsável <span
                 class="text-danger">*</span></label>
             <input id="responsavelNomePessoaSobrinho" pInputText type="text" class="w-100"
-              formControlName="responsavelNome" placeholder="Nome do responsável" (blur)="formatarPessoaSobrinho()" />
+              formControlName="responsavelNome" placeholder="Nome do responsável" (blur)="formatarPessoaSobrinho()"
+              [class.campo-herdado]="campoPessoaSobrinhoHerdado('responsavelNome')" />
+            @if (campoPessoaSobrinhoHerdado('responsavelNome')) {
+            <div class="form-text text-success">
+              <i class="fa-solid fa-lock me-1"></i>
+              Dado obtido do cadastro da Pessoa.
+            </div>
+            }
             @if (pessoaSobrinhoForm.controls.responsavelNome.touched &&
             pessoaSobrinhoForm.controls.responsavelNome.hasError('required')) {
             <div class="form-text text-danger">Informe o nome do responsável.</div>
@@ -581,7 +595,14 @@
             <label for="responsavelTelefonePessoaSobrinho" class="form-label">Telefone do responsável <span
                 class="text-danger">*</span></label>
             <input id="responsavelTelefonePessoaSobrinho" pInputText type="text" class="w-100"
-              formControlName="responsavelTelefone" appTelefoneMask placeholder="(00) 00000-0000" />
+              formControlName="responsavelTelefone" appTelefoneMask placeholder="(00) 00000-0000"
+              [class.campo-herdado]="campoPessoaSobrinhoHerdado('responsavelTelefone')" />
+            @if (campoPessoaSobrinhoHerdado('responsavelTelefone')) {
+            <div class="form-text text-success">
+              <i class="fa-solid fa-lock me-1"></i>
+              Dado obtido do cadastro da Pessoa.
+            </div>
+            }
             @if (pessoaSobrinhoForm.controls.responsavelTelefone.touched &&
             pessoaSobrinhoForm.controls.responsavelTelefone.hasError('required')) {
             <div class="form-text text-danger">Informe o telefone do responsável.</div>
@@ -592,7 +613,13 @@
             <label for="dataNascimentoPessoaSobrinho" class="form-label">Data de nascimento <span
                 class="text-danger">*</span></label>
             <input id="dataNascimentoPessoaSobrinho" pInputText type="date" class="w-100"
-              formControlName="dataNascimento" />
+              formControlName="dataNascimento" [class.campo-herdado]="campoPessoaSobrinhoHerdado('dataNascimento')" />
+            @if (campoPessoaSobrinhoHerdado('dataNascimento')) {
+            <div class="form-text text-success">
+              <i class="fa-solid fa-lock me-1"></i>
+              Dado obtido do cadastro da Pessoa.
+            </div>
+            }
             @if (pessoaSobrinhoForm.controls.dataNascimento.touched &&
             pessoaSobrinhoForm.controls.dataNascimento.hasError('required')) {
             <div class="form-text text-danger">Informe data de nascimento do encontrista.</div>
@@ -602,12 +629,32 @@
           <div>
             <label for="enderecoPessoaSobrinho" class="form-label">Endereço <span class="text-danger">*</span></label>
             <input id="enderecoPessoaSobrinho" pInputText type="text" class="w-100" formControlName="endereco"
-              placeholder="Endereço do encontrista" (blur)="formatarPessoaSobrinho()" />
+              placeholder="Endereço do encontrista" (blur)="formatarPessoaSobrinho()"
+              [class.campo-herdado]="campoPessoaSobrinhoHerdado('endereco')" />
+            @if (campoPessoaSobrinhoHerdado('endereco')) {
+            <div class="form-text text-success">
+              <i class="fa-solid fa-lock me-1"></i>
+              Dado obtido do cadastro da Pessoa.
+            </div>
+            }
             @if (pessoaSobrinhoForm.controls.endereco.touched &&
             pessoaSobrinhoForm.controls.endereco.hasError('required')) {
             <div class="form-text text-danger">Informe o endereço do encontrista.</div>
             }
           </div>
+
+          @if (pessoaSelecionadaPossuiDados()) {
+          <div class="dados-origem-pessoa">
+            <i class="fa-solid fa-database"></i>
+            <div>
+              <strong>Cadastro principal selecionado</strong>
+              <p>
+                Campos com cadeado pertencem à Pessoa. Campos livres estão ausentes
+                no cadastro e serão adicionados automaticamente ao salvar.
+              </p>
+            </div>
+          </div>
+          }
 
           <div>
             <label for="restricaoAlimentarPessoaSobrinho" class="form-label">Restrição alimentar</label>
@@ -1499,10 +1546,26 @@
     (visibleChange)="sobrinhoEdicaoVisivel.set($event)" [modal]="true" [style]="{ width: 'min(95vw, 780px)' }"
     [draggable]="false" [resizable]="false" (onHide)="fecharEdicaoSobrinho()">
     <form [formGroup]="sobrinhoEdicaoForm" class="row g-3">
+      @if (encontristaEmEdicaoVinculado()) {
+      <div class="col-12">
+        <div class="alert alert-info py-2 px-3 mb-0 small">
+          <i class="fa-solid fa-database me-2"></i>
+          Este encontrista está vinculado a uma Pessoa. Campos existentes no
+          cadastro principal estão bloqueados; campos ausentes podem ser completados.
+        </div>
+      </div>
+      }
       <div class="col-12 col-md-6">
         <label for="nomeSobrinhoEdicao" class="form-label">Nome <span class="text-danger">*</span></label>
         <input id="nomeSobrinhoEdicao" pInputText type="text" class="w-100" formControlName="nome"
-          placeholder="Nome completo" (blur)="formatarEdicaoSobrinho()" />
+          placeholder="Nome completo" (blur)="formatarEdicaoSobrinho()"
+          [class.campo-herdado]="campoEdicaoHerdado('nome')" />
+        @if (campoEdicaoHerdado('nome')) {
+        <div class="form-text text-success">
+          <i class="fa-solid fa-lock me-1"></i>
+          Dado mantido pelo cadastro da Pessoa.
+        </div>
+        }
 
         @if (sobrinhoEdicaoForm.controls.nome.touched && sobrinhoEdicaoForm.controls.nome.invalid) {
         <div class="form-text text-danger">Informe o nome do encontrista.</div>
@@ -1512,13 +1575,26 @@
       <div class="col-12 col-md-6">
         <label for="telefoneSobrinhoEdicao" class="form-label">Telefone</label>
         <input id="telefoneSobrinhoEdicao" pInputText type="text" class="w-100" formControlName="telefone"
-          appTelefoneMask placeholder="(00) 00000-0000" />
+          appTelefoneMask placeholder="(00) 00000-0000" [class.campo-herdado]="campoEdicaoHerdado('telefone')" />
+        @if (campoEdicaoHerdado('telefone')) {
+        <div class="form-text text-success">
+          <i class="fa-solid fa-lock me-1"></i>
+          Dado mantido pelo cadastro da Pessoa.
+        </div>
+        }
       </div>
 
       <div class="col-12 col-md-6">
         <label for="responsavelNomeEdicao" class="form-label">Responsável <span class="text-danger">*</span></label>
         <input id="responsavelNomeEdicao" pInputText type="text" class="w-100" formControlName="responsavelNome"
-          placeholder="Nome do responsável" (blur)="formatarEdicaoSobrinho()" />
+          placeholder="Nome do responsável" (blur)="formatarEdicaoSobrinho()"
+          [class.campo-herdado]="campoEdicaoHerdado('responsavelNome')" />
+        @if (campoEdicaoHerdado('responsavelNome')) {
+        <div class="form-text text-success">
+          <i class="fa-solid fa-lock me-1"></i>
+          Dado mantido pelo cadastro da Pessoa.
+        </div>
+        }
 
         @if (sobrinhoEdicaoForm.controls.responsavelNome.touched &&
         sobrinhoEdicaoForm.controls.responsavelNome.hasError('required')) {
@@ -1530,7 +1606,14 @@
         <label for="responsavelTelefoneEdicao" class="form-label">Telefone do responsável <span
             class="text-danger">*</span></label>
         <input id="responsavelTelefoneEdicao" pInputText type="text" class="w-100" formControlName="responsavelTelefone"
-          appTelefoneMask placeholder="(00) 00000-0000" />
+          appTelefoneMask placeholder="(00) 00000-0000"
+          [class.campo-herdado]="campoEdicaoHerdado('responsavelTelefone')" />
+        @if (campoEdicaoHerdado('responsavelTelefone')) {
+        <div class="form-text text-success">
+          <i class="fa-solid fa-lock me-1"></i>
+          Dado mantido pelo cadastro da Pessoa.
+        </div>
+        }
 
         @if (sobrinhoEdicaoForm.controls.responsavelTelefone.touched &&
         sobrinhoEdicaoForm.controls.responsavelTelefone.hasError('required')) {
@@ -1541,7 +1624,14 @@
       <div class="col-12 col-md-6">
         <label for="dataNascimentoEdicao" class="form-label">Data de nascimento <span
             class="text-danger">*</span></label>
-        <input id="dataNascimentoEdicao" pInputText type="date" class="w-100" formControlName="dataNascimento" />
+        <input id="dataNascimentoEdicao" pInputText type="date" class="w-100" formControlName="dataNascimento"
+          [class.campo-herdado]="campoEdicaoHerdado('dataNascimento')" />
+        @if (campoEdicaoHerdado('dataNascimento')) {
+        <div class="form-text text-success">
+          <i class="fa-solid fa-lock me-1"></i>
+          Dado mantido pelo cadastro da Pessoa.
+        </div>
+        }
 
         @if (sobrinhoEdicaoForm.controls.dataNascimento.touched &&
         sobrinhoEdicaoForm.controls.dataNascimento.hasError('required')) {
@@ -1552,7 +1642,14 @@
       <div class="col-12 col-md-6">
         <label for="enderecoSobrinhoEdicao" class="form-label">Endereço <span class="text-danger">*</span></label>
         <input id="enderecoSobrinhoEdicao" pInputText type="text" class="w-100" formControlName="endereco"
-          placeholder="Endereço do encontrista" (blur)="formatarEdicaoSobrinho()" />
+          placeholder="Endereço do encontrista" (blur)="formatarEdicaoSobrinho()"
+          [class.campo-herdado]="campoEdicaoHerdado('endereco')" />
+        @if (campoEdicaoHerdado('endereco')) {
+        <div class="form-text text-success">
+          <i class="fa-solid fa-lock me-1"></i>
+          Dado mantido pelo cadastro da Pessoa.
+        </div>
+        }
 
         @if (sobrinhoEdicaoForm.controls.endereco.touched &&
         sobrinhoEdicaoForm.controls.endereco.hasError('required')) {
