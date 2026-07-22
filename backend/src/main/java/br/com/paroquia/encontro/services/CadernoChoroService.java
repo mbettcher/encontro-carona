@@ -153,13 +153,6 @@ public class CadernoChoroService {
 
     @Transactional(readOnly = true)
     public List<CadernoChoroResponse> listar(Long eventoId) {
-        /*
-         * A tela operacional atual deve trabalhar apenas com a via atual.
-         *
-         * Como ainda não existe uma consulta ordenada específica no
-         * repositório, filtramos neste momento. No bloco de consultas e
-         * frontend podemos criar uma query dedicada.
-         */
         return repository
                 .findByEventoIdOrderByDuplaCodigoAscSobrinhoNomeAsc(eventoId)
                 .stream()
@@ -216,10 +209,6 @@ public class CadernoChoroService {
     ) {
         buscarCaderno(eventoId, cadernoId);
 
-        /*
-         * Mantemos DESC para não quebrar o frontend atual.
-         * A nova timeline poderá ordenar os itens em ASC.
-         */
         return historicoRepository
                 .findByCadernoIdOrderByOcorridoEmDesc(cadernoId)
                 .stream()
@@ -486,6 +475,46 @@ public class CadernoChoroService {
             Long cadernoId,
             CadernoChoroOcorrenciaRequest request
     ) {
+        return executarRegistroOcorrencia(
+                eventoId,
+                cadernoId,
+                request
+        );
+    }
+
+    /*
+     * Endpoint legado.
+     *
+     * Continua sendo uma fronteira transacional, mas não chama outro método
+     * público anotado com @Transactional.
+     */
+    @Transactional
+    public CadernoChoroResponse marcarPerdido(
+            Long eventoId,
+            Long cadernoId,
+            String observacao
+    ) {
+        var request = new CadernoChoroOcorrenciaRequest(
+                TipoOcorrenciaCaderno.PERDA,
+                true,
+                validarObservacaoLegada(
+                        observacao,
+                        "Informe uma observação sobre a perda."
+                )
+        );
+
+        return executarRegistroOcorrencia(
+                eventoId,
+                cadernoId,
+                request
+        );
+    }
+
+    private CadernoChoroResponse executarRegistroOcorrencia(
+            Long eventoId,
+            Long cadernoId,
+            CadernoChoroOcorrenciaRequest request
+    ) {
         var caderno = buscarViaAtual(eventoId, cadernoId);
         var statusAnterior = caderno.getStatus();
 
@@ -562,6 +591,47 @@ public class CadernoChoroService {
             Long cadernoId,
             CadernoChoroSubstituirRequest request
     ) {
+        return executarSubstituicao(
+                eventoId,
+                cadernoId,
+                request
+        );
+    }
+
+    /*
+     * Endpoint legado.
+     *
+     * Ele usa diretamente a implementação privada e retorna apenas a nova
+     * via, mantendo o contrato utilizado pelo frontend atual.
+     */
+    @Transactional
+    public CadernoChoroResponse marcarSubstituido(
+            Long eventoId,
+            Long cadernoId,
+            String observacao
+    ) {
+        var request = new CadernoChoroSubstituirRequest(
+                MotivoSubstituicaoCaderno.OUTRO,
+                validarObservacaoLegada(
+                        observacao,
+                        "Informe uma observação sobre a substituição."
+                )
+        );
+
+        var resultado = executarSubstituicao(
+                eventoId,
+                cadernoId,
+                request
+        );
+
+        return resultado.novaVia();
+    }
+
+    private CadernoChoroSubstituicaoResponse executarSubstituicao(
+            Long eventoId,
+            Long cadernoId,
+            CadernoChoroSubstituirRequest request
+    ) {
         var viaAnterior = buscarViaAtual(eventoId, cadernoId);
 
         validarEncontristaPodeReceberNovaVia(viaAnterior);
@@ -592,7 +662,8 @@ public class CadernoChoroService {
         }
 
         var statusAnterior = viaAnterior.getStatus();
-        var motivoEmissao = motivoEmissaoSubstituicao(request.motivo());
+        var motivoEmissao =
+                motivoEmissaoSubstituicao(request.motivo());
 
         /*
          * 1. Encerra a via anterior.
@@ -603,17 +674,15 @@ public class CadernoChoroService {
         );
 
         /*
-         * 2. Libera o índice parcial de via atual.
+         * 2. A via anterior deixa de ser a via atual.
          */
         viaAnterior.marcarComoViaAnterior();
 
         repository.save(viaAnterior);
 
         /*
-         * Força o UPDATE antes do INSERT da nova via.
-         *
-         * Caso qualquer etapa posterior falhe, toda a transação será
-         * revertida, inclusive esta alteração.
+         * Executa o UPDATE da via anterior antes do INSERT da nova via,
+         * liberando a restrição parcial de via atual.
          */
         repository.flush();
 
@@ -644,7 +713,7 @@ public class CadernoChoroService {
         );
 
         /*
-         * 5. Inicia a timeline completa da nova via.
+         * 5. Inicia a timeline da nova via.
          */
         registrarHistorico(
                 novaVia,
@@ -665,33 +734,6 @@ public class CadernoChoroService {
     }
 
     /*
-     * Compatibilidade temporária com o endpoint atual.
-     *
-     * O frontend antigo espera receber somente um CadernoChoroResponse.
-     * Retornamos a nova via, que será a via operacional exibida na tela.
-     */
-    @Transactional
-    public CadernoChoroResponse marcarSubstituido(
-            Long eventoId,
-            Long cadernoId,
-            String observacao
-    ) {
-        var resultado = substituir(
-                eventoId,
-                cadernoId,
-                new CadernoChoroSubstituirRequest(
-                        MotivoSubstituicaoCaderno.OUTRO,
-                        validarObservacaoLegada(
-                                observacao,
-                                "Informe uma observação sobre a substituição."
-                        )
-                )
-        );
-
-        return resultado.novaVia();
-    }
-
-    /*
      * =========================================================================
      * CANCELAMENTO
      * =========================================================================
@@ -699,6 +741,45 @@ public class CadernoChoroService {
 
     @Transactional
     public CadernoChoroResponse cancelar(
+            Long eventoId,
+            Long cadernoId,
+            CadernoChoroCancelarRequest request
+    ) {
+        return executarCancelamento(
+                eventoId,
+                cadernoId,
+                request
+        );
+    }
+
+    /*
+     * Endpoint legado.
+     *
+     * Também permanece como fronteira transacional própria, mas delega a
+     * execução a um método privado não anotado.
+     */
+    @Transactional
+    public CadernoChoroResponse cancelar(
+            Long eventoId,
+            Long cadernoId,
+            String observacao
+    ) {
+        var request = new CadernoChoroCancelarRequest(
+                MotivoCancelamentoCaderno.OUTRO,
+                validarObservacaoLegada(
+                        observacao,
+                        "Informe uma observação sobre o cancelamento."
+                )
+        );
+
+        return executarCancelamento(
+                eventoId,
+                cadernoId,
+                request
+        );
+    }
+
+    private CadernoChoroResponse executarCancelamento(
             Long eventoId,
             Long cadernoId,
             CadernoChoroCancelarRequest request
@@ -721,51 +802,6 @@ public class CadernoChoroService {
         );
 
         return CadernoChoroResponse.from(caderno);
-    }
-
-    /*
-     * Compatibilidade temporária com o endpoint atual.
-     */
-    @Transactional
-    public CadernoChoroResponse cancelar(
-            Long eventoId,
-            Long cadernoId,
-            String observacao
-    ) {
-        return cancelar(
-                eventoId,
-                cadernoId,
-                new CadernoChoroCancelarRequest(
-                        MotivoCancelamentoCaderno.OUTRO,
-                        validarObservacaoLegada(
-                                observacao,
-                                "Informe uma observação sobre o cancelamento."
-                        )
-                )
-        );
-    }
-
-    /*
-     * Compatibilidade temporária com o endpoint /perdido.
-     */
-    @Transactional
-    public CadernoChoroResponse marcarPerdido(
-            Long eventoId,
-            Long cadernoId,
-            String observacao
-    ) {
-        return registrarOcorrencia(
-                eventoId,
-                cadernoId,
-                new CadernoChoroOcorrenciaRequest(
-                        TipoOcorrenciaCaderno.PERDA,
-                        true,
-                        validarObservacaoLegada(
-                                observacao,
-                                "Informe uma observação sobre a perda."
-                        )
-                )
-        );
     }
 
     /*
@@ -814,13 +850,17 @@ public class CadernoChoroService {
             MotivoSubstituicaoCaderno motivo
     ) {
         return switch (motivo) {
-            case PERDA -> MotivoEmissaoCaderno.SUBSTITUICAO_PERDA;
+            case PERDA ->
+                    MotivoEmissaoCaderno.SUBSTITUICAO_PERDA;
 
-            case DANO, CONTEUDO_INUTILIZADO -> MotivoEmissaoCaderno.SUBSTITUICAO_DANO;
+            case DANO, CONTEUDO_INUTILIZADO ->
+                    MotivoEmissaoCaderno.SUBSTITUICAO_DANO;
 
-            case ERRO_DE_IMPRESSAO, ERRO_DE_MONTAGEM -> MotivoEmissaoCaderno.SUBSTITUICAO_ERRO;
+            case ERRO_DE_IMPRESSAO, ERRO_DE_MONTAGEM ->
+                    MotivoEmissaoCaderno.SUBSTITUICAO_ERRO;
 
-            case OUTRO -> MotivoEmissaoCaderno.OUTRO;
+            case OUTRO ->
+                    MotivoEmissaoCaderno.OUTRO;
         };
     }
 
