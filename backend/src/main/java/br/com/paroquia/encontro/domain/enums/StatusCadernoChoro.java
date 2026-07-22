@@ -8,7 +8,16 @@ public enum StatusCadernoChoro {
     CONFERIDO,
     ANEXADO_AO_KIT,
     ENTREGUE_AO_SOBRINHO,
+
+    /*
+     * Ocorrências abertas.
+     */
     PERDIDO,
+    DANIFICADO,
+
+    /*
+     * Estados terminais.
+     */
     SUBSTITUIDO,
     CANCELADO
 }

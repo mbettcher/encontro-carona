@@ -201,7 +201,7 @@ public class SobrinhoDuplaService {
         var duplaAnterior = vinculo.getDupla();
         var motivoNormalizado = request.motivo().trim();
 
-        var cadernoOpt = cadernoChoroRepository.findByEventoIdAndSobrinhoId(
+        var cadernoOpt = cadernoChoroRepository.findByEventoIdAndSobrinhoIdAndViaAtualTrue(
                 eventoId,
                 vinculo.getSobrinho().getId()
         );

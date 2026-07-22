@@ -174,6 +174,7 @@ public class RelatorioCadernoEquipeService {
             case ANEXADO_AO_KIT -> "Anexado ao kit";
             case ENTREGUE_AO_SOBRINHO -> "Entregue ao encontrista";
             case PERDIDO -> "Perdido";
+            case DANIFICADO -> "Danificado";
             case SUBSTITUIDO -> "Substituído";
             case CANCELADO -> "Cancelado";
         };

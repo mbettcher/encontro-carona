@@ -5,20 +5,41 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 
-public interface CadernoChoroHistoricoRepository extends JpaRepository<CadernoChoroHistorico, Long> {
+public interface CadernoChoroHistoricoRepository
+        extends JpaRepository<CadernoChoroHistorico, Long> {
 
-    List<CadernoChoroHistorico> findByCadernoIdOrderByOcorridoEmDesc(
+    /*
+     * Timeline individual da via.
+     */
+    List<CadernoChoroHistorico>
+    findByCadernoIdOrderByOcorridoEmAsc(
             Long cadernoId
     );
 
-    List<CadernoChoroHistorico> findByEventoIdOrderByOcorridoEmDesc(
+    /*
+     * Compatibilidade com o endpoint atual, que retorna do mais recente
+     * para o mais antigo. Será substituído pela ordem crescente no frontend
+     * quando a nova timeline for implementada.
+     */
+    List<CadernoChoroHistorico>
+    findByCadernoIdOrderByOcorridoEmDesc(
+            Long cadernoId
+    );
+
+    /*
+     * Timeline consolidada de todas as vias do encontrista.
+     */
+    List<CadernoChoroHistorico>
+    findByEventoIdAndSobrinhoIdOrderByOcorridoEmAsc(
+            Long eventoId,
+            Long sobrinhoId
+    );
+
+    List<CadernoChoroHistorico>
+    findByEventoIdOrderByOcorridoEmDesc(
             Long eventoId
     );
 
-    /**
-     * Proteção explícita da exclusão da dupla quando existir
-     * histórico do Caderno de Mensagens.
-     */
     boolean existsByEventoIdAndDuplaId(
             Long eventoId,
             Long duplaId
