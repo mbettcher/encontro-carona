@@ -984,3 +984,140 @@
     text-align: right;
   }
 }
+
+/* 1.2.0A2.4-D — Ocorrências, recuperação e substituição de via */
+
+.acao-especial-contexto {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.875rem 1rem;
+  border: 1px solid var(--bs-border-color);
+  border-radius: 0.75rem;
+  background: var(--bs-tertiary-bg);
+}
+
+.acoes-especiais-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.acao-especial-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.875rem;
+  min-height: 7.25rem;
+  padding: 1rem;
+  text-align: left;
+  color: inherit;
+  border: 1px solid var(--bs-border-color);
+  border-radius: 0.75rem;
+  background: var(--bs-body-bg);
+  transition:
+    transform 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+
+  &:not(:disabled):hover {
+    transform: translateY(-1px);
+    border-color: var(--bs-primary);
+    box-shadow: 0 0.35rem 0.9rem rgba(15, 23, 42, 0.08);
+  }
+
+  &:focus-visible {
+    outline: 3px solid rgba(var(--bs-primary-rgb), 0.2);
+    outline-offset: 2px;
+  }
+
+  &:disabled {
+    opacity: 0.48;
+    cursor: not-allowed;
+  }
+
+  >span:last-child {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  strong {
+    font-size: 0.925rem;
+  }
+
+  small {
+    color: var(--bs-secondary-color);
+    line-height: 1.35;
+  }
+}
+
+.acao-especial-icon {
+  width: 2.75rem;
+  height: 2.75rem;
+  min-width: 2.75rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.75rem;
+  background: var(--bs-tertiary-bg);
+  font-size: 1.1rem;
+}
+
+.acao-especial-danger .acao-especial-icon {
+  color: var(--bs-danger);
+  background: var(--bs-danger-bg-subtle);
+}
+
+.acao-especial-warn .acao-especial-icon {
+  color: var(--bs-warning-text-emphasis);
+  background: var(--bs-warning-bg-subtle);
+}
+
+.acao-especial-success .acao-especial-icon {
+  color: var(--bs-success);
+  background: var(--bs-success-bg-subtle);
+}
+
+.acao-especial-cancelamento {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.875rem 1rem;
+  border: 1px dashed var(--bs-danger-border-subtle);
+  border-radius: 0.75rem;
+  background: var(--bs-danger-bg-subtle);
+}
+
+.acao-especial-opcao {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.875rem 1rem;
+  border: 1px solid var(--bs-warning-border-subtle);
+  border-radius: 0.75rem;
+  background: var(--bs-warning-bg-subtle);
+
+  label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    cursor: pointer;
+  }
+
+  small {
+    color: var(--bs-secondary-color);
+  }
+}
+
+@media (max-width: 576px) {
+  .acoes-especiais-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .acao-especial-cancelamento {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}

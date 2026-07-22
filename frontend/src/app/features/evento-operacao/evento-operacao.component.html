@@ -1799,16 +1799,10 @@
   </ng-template>
 </p-dialog>
 
-<p-dialog
-  header="Timeline do Caderno de Mensagens"
-  [visible]="historicoCadernoVisivel()"
-  (visibleChange)="historicoCadernoVisivel.set($event)"
-  [modal]="true"
-  [style]="{ width: 'min(96vw, 1040px)' }"
-  [contentStyle]="{ 'max-height': '76vh', overflow: 'auto' }"
-  [dismissableMask]="true"
-  (onHide)="fecharHistoricoCaderno()"
->
+<p-dialog header="Timeline do Caderno de Mensagens" [visible]="historicoCadernoVisivel()"
+  (visibleChange)="historicoCadernoVisivel.set($event)" [modal]="true" [style]="{ width: 'min(96vw, 1040px)' }"
+  [contentStyle]="{ 'max-height': '76vh', overflow: 'auto' }" [dismissableMask]="true"
+  (onHide)="fecharHistoricoCaderno()">
   @if (carregandoHistoricoCaderno()) {
   <div class="text-center py-5">
     <i class="fa-solid fa-spinner fa-spin fa-2x text-primary mb-3"></i>
@@ -1838,34 +1832,24 @@
     @if (viaAtualTimeline(); as viaAtual) {
     <div class="timeline-caderno-status-atual">
       <span class="small text-body-secondary">Situação atual</span>
-      <p-tag
-        [value]="'Via ' + viaAtual.numeroVia + ' — ' + labelStatusCaderno(viaAtual.status)"
-        [severity]="severityViaTimeline(viaAtual)"
-      />
+      <p-tag [value]="'Via ' + viaAtual.numeroVia + ' — ' + labelStatusCaderno(viaAtual.status)"
+        [severity]="severityViaTimeline(viaAtual)" />
     </div>
     }
   </section>
 
   @if (possuiMultiplasViasTimeline()) {
   <section class="timeline-filtro-vias mt-3" aria-label="Filtrar timeline por via">
-    <button
-      type="button"
-      class="timeline-filtro-via"
-      [class.ativo]="viaTimelineSelecionadaId() === null"
-      (click)="mostrarTodasMovimentacoesTimeline()"
-    >
+    <button type="button" class="timeline-filtro-via" [class.ativo]="viaTimelineSelecionadaId() === null"
+      (click)="mostrarTodasMovimentacoesTimeline()">
       <i class="fa-solid fa-layer-group"></i>
       Todas as vias
       <span>{{ timelineCaderno()?.movimentacoes?.length ?? 0 }}</span>
     </button>
 
     @for (via of viasTimelineCaderno(); track via.id) {
-    <button
-      type="button"
-      class="timeline-filtro-via"
-      [class.ativo]="viaSelecionadaNaTimeline(via.id)"
-      (click)="selecionarViaTimeline(via.id)"
-    >
+    <button type="button" class="timeline-filtro-via" [class.ativo]="viaSelecionadaNaTimeline(via.id)"
+      (click)="selecionarViaTimeline(via.id)">
       <i class="fa-solid fa-file-lines"></i>
       Via {{ via.numeroVia }}
       @if (via.viaAtual) {
@@ -1944,10 +1928,7 @@
     } @else {
     <div class="timeline-eventos">
       @for (item of movimentacoesTimelineCaderno(); track item.id) {
-      <article
-        class="timeline-evento"
-        [ngClass]="classeMovimentacaoCaderno(item.tipoMovimentacao)"
-      >
+      <article class="timeline-evento" [ngClass]="classeMovimentacaoCaderno(item.tipoMovimentacao)">
         <div class="timeline-evento-eixo">
           <span class="timeline-evento-marker">
             <i [class]="iconeMovimentacaoCaderno(item.tipoMovimentacao)"></i>
@@ -2017,13 +1998,8 @@
   }
 
   <ng-template pTemplate="footer">
-    <p-button
-      label="Fechar"
-      icon="fa-solid fa-xmark"
-      severity="secondary"
-      variant="outlined"
-      (onClick)="fecharHistoricoCaderno()"
-    />
+    <p-button label="Fechar" icon="fa-solid fa-xmark" severity="secondary" variant="outlined"
+      (onClick)="fecharHistoricoCaderno()" />
   </ng-template>
 </p-dialog>
 
@@ -2078,36 +2054,198 @@
   </ng-template>
 </p-dialog>
 
-<p-dialog header="Ações especiais do Caderno de Mensagens" [visible]="acoesEspeciaisCadernoVisivel()"
-  (visibleChange)="acoesEspeciaisCadernoVisivel.set($event)" [modal]="true" [style]="{ width: 'min(95vw, 560px)' }"
-  [dismissableMask]="true" (onHide)="fecharAcoesEspeciaisCaderno()">
-  @if (cadernoSelecionado()) {
-  <div class="mb-3">
-    <div class="small text-body-secondary">Encontrista</div>
-    <div class="fw-semibold">{{ cadernoSelecionado()?.sobrinhoNome }}</div>
+<p-dialog [header]="tituloAcaoEspecialCaderno()" [visible]="acoesEspeciaisCadernoVisivel()"
+  (visibleChange)="acoesEspeciaisCadernoVisivel.set($event)" [modal]="true" [style]="{ width: 'min(95vw, 760px)' }"
+  [dismissableMask]="processandoCadernoId() === null" [closable]="processandoCadernoId() === null"
+  (onHide)="fecharAcoesEspeciaisCaderno()">
+  @if (cadernoSelecionado(); as caderno) {
+  <div class="acao-especial-contexto mb-3">
+    <div>
+      <div class="small text-body-secondary">Encontrista</div>
+      <div class="fw-semibold">{{ caderno.sobrinhoNome }}</div>
+      <div class="small text-body-secondary">
+        Via {{ caderno.numeroVia }} ·
+        {{ labelStatusCaderno(caderno.status) }}
+      </div>
+    </div>
+
+    <p-tag [value]="labelStatusCaderno(caderno.status)" [severity]="severityStatusCaderno(caderno.status)" />
   </div>
 
+  @if (!acaoEspecialCadernoSelecionada()) {
   <div class="alert alert-warning py-2 px-3 mb-3 small">
     <i class="fa-solid fa-triangle-exclamation me-2"></i>
-    Use estas ações apenas para ocorrências excepcionais, como perda, substituição ou cancelamento.
+    Estas ações alteram o fluxo físico ou o versionamento do
+    Caderno de Mensagens.
   </div>
 
-  <div class="acoes-especiais-caderno">
-    <p-button icon="fa-solid fa-triangle-exclamation" severity="danger" styleClass="w-100"
-      pTooltip="Marcar como perdido" tooltipPosition="top" ariaLabel="Marcar como perdido"
-      [disabled]="!seguranca.podeEscrever() || !cadernoSelecionado() || !podeMarcarCadernoPerdido(cadernoSelecionado()!)"
-      (onClick)="marcarCadernoPerdido(cadernoSelecionado()!)" />
+  <div class="acoes-especiais-grid">
+    <button type="button" class="acao-especial-card acao-especial-danger" [disabled]="
+            !seguranca.podeEscrever() ||
+            !acaoEspecialDisponivel(caderno, 'PERDA')
+          " (click)="selecionarAcaoEspecialCaderno('PERDA')">
+      <span class="acao-especial-icon">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+      </span>
 
-    <p-button icon="fa-solid fa-arrows-rotate" severity="warn" styleClass="w-100" pTooltip="Marcar como substituído"
-      tooltipPosition="top" ariaLabel="Marcar como substituído"
-      [disabled]="!seguranca.podeEscrever() || !cadernoSelecionado() || !podeMarcarCadernoSubstituido(cadernoSelecionado()!)"
-      (onClick)="marcarCadernoSubstituido(cadernoSelecionado()!)" />
+      <span>
+        <strong>Registrar perda</strong>
+        <small>
+          Interrompe o fluxo até recuperação ou substituição.
+        </small>
+      </span>
+    </button>
 
-    <p-button icon="fa-solid fa-ban" severity="danger" styleClass="w-100" pTooltip="Cancelar caderno"
-      tooltipPosition="top" ariaLabel="Cancelar caderno"
-      [disabled]="!seguranca.podeEscrever() || !cadernoSelecionado() || !podeCancelarCaderno(cadernoSelecionado()!)"
-      (onClick)="cancelarCaderno(cadernoSelecionado()!)" />
+    <button type="button" class="acao-especial-card acao-especial-warn" [disabled]="
+            !seguranca.podeEscrever() ||
+            !acaoEspecialDisponivel(caderno, 'DANO')
+          " (click)="selecionarAcaoEspecialCaderno('DANO')">
+      <span class="acao-especial-icon">
+        <i class="fa-solid fa-heart-crack"></i>
+      </span>
+
+      <span>
+        <strong>Registrar dano</strong>
+        <small>
+          Permite indicar se o dano impede a continuidade.
+        </small>
+      </span>
+    </button>
+
+    <button type="button" class="acao-especial-card acao-especial-success" [disabled]="
+            !seguranca.podeEscrever() ||
+            !acaoEspecialDisponivel(caderno, 'RECUPERAR')
+          " (click)="selecionarAcaoEspecialCaderno('RECUPERAR')">
+      <span class="acao-especial-icon">
+        <i class="fa-solid fa-rotate-left"></i>
+      </span>
+
+      <span>
+        <strong>Recuperar caderno</strong>
+        <small>
+          Retorna o exemplar à etapa anterior à ocorrência.
+        </small>
+      </span>
+    </button>
+
+    <button type="button" class="acao-especial-card acao-especial-warn" [disabled]="
+            !seguranca.podeEscrever() ||
+            !acaoEspecialDisponivel(caderno, 'SUBSTITUIR')
+          " (click)="selecionarAcaoEspecialCaderno('SUBSTITUIR')">
+      <span class="acao-especial-icon">
+        <i class="fa-solid fa-copy"></i>
+      </span>
+
+      <span>
+        <strong>Substituir via</strong>
+        <small>
+          Encerra a via atual e cria uma nova Via
+          {{ caderno.numeroVia + 1 }}.
+        </small>
+      </span>
+    </button>
+  </div>
+
+  <div class="acao-especial-cancelamento mt-3">
+    <div>
+      <div class="fw-semibold small">Cancelamento administrativo</div>
+      <div class="small text-body-secondary">
+        O cancelamento estruturado será tratado no bloco A2.4-E.
+      </div>
+    </div>
+
+    <p-button label="Cancelar caderno" icon="fa-solid fa-ban" severity="danger" variant="outlined" size="small"
+      [disabled]="
+            !seguranca.podeEscrever() ||
+            !podeCancelarCaderno(caderno)
+          " (onClick)="cancelarCaderno(caderno)" />
+  </div>
+  } @else {
+  <div class="alert py-2 px-3 mb-3 small" [ngClass]="{
+          'alert-danger':
+            acaoEspecialCadernoSelecionada() === 'PERDA',
+          'alert-warning':
+            acaoEspecialCadernoSelecionada() === 'DANO' ||
+            acaoEspecialCadernoSelecionada() === 'SUBSTITUIR',
+          'alert-success':
+            acaoEspecialCadernoSelecionada() === 'RECUPERAR'
+        }">
+    <i class="fa-solid fa-circle-info me-2"></i>
+    {{ descricaoAcaoEspecialCaderno() }}
+  </div>
+
+  @if (acaoEspecialCadernoSelecionada() === 'DANO') {
+  <div class="acao-especial-opcao mb-3">
+    <p-checkbox inputId="danoImpedeContinuacao" [binary]="true" [ngModel]="danoImpedeContinuacaoCaderno()"
+      (ngModelChange)="
+              alterarDanoImpedeContinuacaoCaderno($event)
+            " />
+
+    <label for="danoImpedeContinuacao">
+      <strong>O dano impede a continuidade do fluxo</strong>
+      <small>
+        Quando marcado, o status passa para Danificado.
+        Desmarcado, a ocorrência fica somente na timeline.
+      </small>
+    </label>
   </div>
   }
+
+  @if (acaoEspecialCadernoSelecionada() === 'SUBSTITUIR') {
+  <div class="mb-3">
+    <label for="motivoSubstituicaoCaderno" class="form-label">
+      Motivo da substituição
+    </label>
+
+    <p-select inputId="motivoSubstituicaoCaderno" [options]="opcoesMotivoSubstituicaoCaderno" optionLabel="label"
+      optionValue="value" [ngModel]="motivoSubstituicaoCaderno()" (ngModelChange)="
+              alterarMotivoSubstituicaoCaderno($event)
+            " appendTo="body" />
+
+    <div class="form-text">
+      A Via {{ caderno.numeroVia }} será encerrada e a
+      Via {{ caderno.numeroVia + 1 }} começará como pendente.
+    </div>
+  </div>
+  }
+
+  <div class="mb-3">
+    <label for="observacaoAcaoEspecialCaderno" class="form-label">
+      Observação
+    </label>
+
+    <textarea pTextarea id="observacaoAcaoEspecialCaderno" rows="4" maxlength="500" class="w-100"
+      placeholder="Descreva o ocorrido e as providências adotadas." [ngModel]="observacaoAcaoEspecialCaderno()"
+      (ngModelChange)="
+            alterarObservacaoAcaoEspecialCaderno($event)
+          "></textarea>
+
+    <div class="d-flex justify-content-between form-text">
+      <span>Campo obrigatório.</span>
+      <span>{{ observacaoAcaoEspecialCaderno().length }}/500</span>
+    </div>
+  </div>
+  }
+  }
+
+  <ng-template pTemplate="footer">
+    <div class="d-flex flex-column flex-sm-row justify-content-end gap-2">
+      @if (acaoEspecialCadernoSelecionada()) {
+      <p-button label="Voltar" icon="fa-solid fa-arrow-left" severity="secondary" variant="outlined"
+        [disabled]="processandoCadernoId() !== null" (onClick)="voltarParaAcoesEspeciaisCaderno()" />
+
+      <p-button [label]="labelBotaoAcaoEspecialCaderno()" icon="fa-solid fa-check"
+        [severity]="severityAcaoEspecialCaderno()" [loading]="
+            processandoCadernoId() === cadernoSelecionado()?.id
+          " [disabled]="
+            !seguranca.podeEscrever() ||
+            !observacaoAcaoEspecialCaderno().trim()
+          " (onClick)="confirmarAcaoEspecialCaderno()" />
+      } @else {
+      <p-button label="Fechar" icon="fa-solid fa-xmark" severity="secondary" variant="outlined"
+        (onClick)="fecharAcoesEspeciaisCaderno()" />
+      }
+    </div>
+  </ng-template>
 </p-dialog>
 </div>

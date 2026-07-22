@@ -1,3 +1,4 @@
+
 import { DatePipe, NgClass } from '@angular/common';
 import { finalize } from 'rxjs';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
@@ -24,6 +25,9 @@ import { CheckboxModule } from 'primeng/checkbox';
 import {
   CadernoChoro,
   CadernoChoroHistorico,
+  CadernoChoroOcorrenciaRequest,
+  CadernoChoroRecuperarRequest,
+  CadernoChoroSubstituirRequest,
   CadernoChoroTimeline,
   CredencialEvento,
   DuplaTioCarona,
@@ -41,7 +45,8 @@ import {
   StatusCredencial,
   TioCaronaEvento,
   TipoCredencial,
-  TipoMovimentacaoCaderno
+  TipoMovimentacaoCaderno,
+  TipoOcorrenciaCaderno
 } from '../../shared/models';
 import { AuthService } from '../../core/auth/auth.service';
 import { EventoOperacaoService } from './evento-operacao.service';
@@ -71,6 +76,12 @@ type TipoOperacaoLoteCaderno =
   | 'ENTREGA'
   | 'RECEBIMENTO'
   | 'RECOLHIMENTO';
+
+type AcaoEspecialCaderno =
+  | 'PERDA'
+  | 'DANO'
+  | 'RECUPERAR'
+  | 'SUBSTITUIR';
 
 interface OpcaoStatusCaderno {
   label: string;
@@ -174,6 +185,12 @@ export class EventoOperacaoComponent implements OnInit {
   readonly operacaoCadernoPendente = signal<OperacaoCadernoChoro | null>(null);
   readonly observacaoOperacaoCaderno = signal('');
   readonly acoesEspeciaisCadernoVisivel = signal(false);
+  readonly acaoEspecialCadernoSelecionada =
+    signal<AcaoEspecialCaderno | null>(null);
+  readonly observacaoAcaoEspecialCaderno = signal('');
+  readonly danoImpedeContinuacaoCaderno = signal(true);
+  readonly motivoSubstituicaoCaderno =
+    signal<MotivoSubstituicaoCaderno>('OUTRO');
   readonly processandoCodigoSobrinho = signal(false);
   readonly abaOperacaoAtiva = signal<AbaOperacao>('VISAO_GERAL');
   readonly tipoOperacaoLoteCaderno =
@@ -855,6 +872,15 @@ export class EventoOperacaoComponent implements OnInit {
           a.label.localeCompare(b.label, 'pt-BR')
         );
     });
+
+  readonly opcoesMotivoSubstituicaoCaderno = [
+    { label: 'Perda', value: 'PERDA' as MotivoSubstituicaoCaderno },
+    { label: 'Dano', value: 'DANO' as MotivoSubstituicaoCaderno },
+    { label: 'Erro de impressão', value: 'ERRO_DE_IMPRESSAO' as MotivoSubstituicaoCaderno },
+    { label: 'Erro de montagem', value: 'ERRO_DE_MONTAGEM' as MotivoSubstituicaoCaderno },
+    { label: 'Conteúdo inutilizado', value: 'CONTEUDO_INUTILIZADO' as MotivoSubstituicaoCaderno },
+    { label: 'Outro motivo', value: 'OUTRO' as MotivoSubstituicaoCaderno }
+  ];
 
   readonly opcoesStatusCaderno: OpcaoStatusCaderno[] = [
     { label: 'Pendente', value: 'PENDENTE' },
@@ -1730,11 +1756,451 @@ export class EventoOperacaoComponent implements OnInit {
 
   abrirAcoesEspeciaisCaderno(caderno: CadernoChoro): void {
     this.cadernoSelecionado.set(caderno);
+    this.acaoEspecialCadernoSelecionada.set(null);
+    this.observacaoAcaoEspecialCaderno.set('');
+    this.danoImpedeContinuacaoCaderno.set(true);
+    this.motivoSubstituicaoCaderno.set('OUTRO');
     this.acoesEspeciaisCadernoVisivel.set(true);
   }
 
   fecharAcoesEspeciaisCaderno(): void {
+    if (this.processandoCadernoId() !== null) {
+      return;
+    }
+
     this.acoesEspeciaisCadernoVisivel.set(false);
+    this.acaoEspecialCadernoSelecionada.set(null);
+    this.observacaoAcaoEspecialCaderno.set('');
+    this.danoImpedeContinuacaoCaderno.set(true);
+    this.motivoSubstituicaoCaderno.set('OUTRO');
+  }
+
+  selecionarAcaoEspecialCaderno(
+    acao: AcaoEspecialCaderno
+  ): void {
+    const caderno = this.cadernoSelecionado();
+
+    if (!caderno || !this.acaoEspecialDisponivel(caderno, acao)) {
+      return;
+    }
+
+    this.acaoEspecialCadernoSelecionada.set(acao);
+    this.observacaoAcaoEspecialCaderno.set('');
+
+    if (acao === 'DANO') {
+      this.danoImpedeContinuacaoCaderno.set(true);
+    }
+
+    if (acao === 'SUBSTITUIR') {
+      this.motivoSubstituicaoCaderno.set(
+        caderno.status === 'PERDIDO'
+          ? 'PERDA'
+          : caderno.status === 'DANIFICADO'
+            ? 'DANO'
+            : 'OUTRO'
+      );
+    }
+  }
+
+  voltarParaAcoesEspeciaisCaderno(): void {
+    if (this.processandoCadernoId() !== null) {
+      return;
+    }
+
+    this.acaoEspecialCadernoSelecionada.set(null);
+    this.observacaoAcaoEspecialCaderno.set('');
+  }
+
+  alterarObservacaoAcaoEspecialCaderno(
+    observacao: string
+  ): void {
+    this.observacaoAcaoEspecialCaderno.set(observacao);
+  }
+
+  alterarDanoImpedeContinuacaoCaderno(
+    valor: boolean
+  ): void {
+    this.danoImpedeContinuacaoCaderno.set(valor);
+  }
+
+  alterarMotivoSubstituicaoCaderno(
+    motivo: MotivoSubstituicaoCaderno
+  ): void {
+    this.motivoSubstituicaoCaderno.set(motivo);
+  }
+
+  confirmarAcaoEspecialCaderno(): void {
+    const caderno = this.cadernoSelecionado();
+    const acao = this.acaoEspecialCadernoSelecionada();
+    const observacao =
+      this.observacaoAcaoEspecialCaderno().trim();
+
+    if (!caderno || !acao) {
+      this.toastWarn('Selecione uma ação especial válida.');
+      return;
+    }
+
+    if (!observacao) {
+      this.toastWarn(
+        'Informe uma observação para registrar a ação.'
+      );
+      return;
+    }
+
+    if (observacao.length > 500) {
+      this.toastWarn(
+        'A observação deve possuir no máximo 500 caracteres.'
+      );
+      return;
+    }
+
+    if (!this.acaoEspecialDisponivel(caderno, acao)) {
+      this.toastWarn(
+        'A ação selecionada não está disponível para o status atual.'
+      );
+      return;
+    }
+
+    if (acao === 'SUBSTITUIR') {
+      this.confirmationService.confirm({
+        header: 'Confirmar substituição de via',
+        icon: 'fa-solid fa-triangle-exclamation',
+        message:
+          `A Via ${caderno.numeroVia} será encerrada e uma nova via ` +
+          `será criada para ${caderno.sobrinhoNome}. Confirma?`,
+        acceptLabel: 'Criar nova via',
+        rejectLabel: 'Voltar',
+        acceptButtonProps: {
+          severity: 'warn'
+        },
+        rejectButtonProps: {
+          severity: 'secondary',
+          variant: 'outlined'
+        },
+        accept: () =>
+          this.executarAcaoEspecialCaderno(
+            caderno,
+            acao,
+            observacao
+          )
+      });
+      return;
+    }
+
+    this.executarAcaoEspecialCaderno(
+      caderno,
+      acao,
+      observacao
+    );
+  }
+
+  private executarAcaoEspecialCaderno(
+    caderno: CadernoChoro,
+    acao: AcaoEspecialCaderno,
+    observacao: string
+  ): void {
+    this.processandoCadernoId.set(caderno.id);
+
+    if (acao === 'SUBSTITUIR') {
+      const request: CadernoChoroSubstituirRequest = {
+        motivo: this.motivoSubstituicaoCaderno(),
+        observacao
+      };
+
+      this.service
+        .substituirViaCaderno(
+          this.eventoId,
+          caderno.id,
+          request
+        )
+        .pipe(
+          finalize(() =>
+            this.processandoCadernoId.set(null)
+          )
+        )
+        .subscribe({
+          next: resultado => {
+            this.substituirViaAtualNaLista(
+              resultado.viaSubstituida,
+              resultado.novaVia
+            );
+
+            this.fecharAcoesEspeciaisCaderno();
+
+            this.toastSuccess(
+              `Via ${resultado.novaVia.numeroVia} criada para ` +
+              `${resultado.novaVia.sobrinhoNome}.`
+            );
+          },
+          error: erro => {
+            console.error(
+              'Erro ao substituir a via do caderno',
+              erro
+            );
+
+            this.toastError(
+              this.mensagemErro(
+                erro,
+                'Não foi possível substituir a via do Caderno de Mensagens.'
+              )
+            );
+          }
+        });
+
+      return;
+    }
+
+    const requisicao = (() => {
+      switch (acao) {
+        case 'PERDA': {
+          const request: CadernoChoroOcorrenciaRequest = {
+            tipo: 'PERDA',
+            impedeContinuacao: true,
+            observacao
+          };
+
+          return this.service.registrarOcorrenciaCaderno(
+            this.eventoId,
+            caderno.id,
+            request
+          );
+        }
+
+        case 'DANO': {
+          const request: CadernoChoroOcorrenciaRequest = {
+            tipo: 'DANO',
+            impedeContinuacao:
+              this.danoImpedeContinuacaoCaderno(),
+            observacao
+          };
+
+          return this.service.registrarOcorrenciaCaderno(
+            this.eventoId,
+            caderno.id,
+            request
+          );
+        }
+
+        case 'RECUPERAR': {
+          const request: CadernoChoroRecuperarRequest = {
+            observacao
+          };
+
+          return this.service.recuperarCaderno(
+            this.eventoId,
+            caderno.id,
+            request
+          );
+        }
+      }
+    })();
+
+    requisicao
+      .pipe(
+        finalize(() =>
+          this.processandoCadernoId.set(null)
+        )
+      )
+      .subscribe({
+        next: cadernoAtualizado => {
+          this.atualizarCadernoNaLista(cadernoAtualizado);
+          this.fecharAcoesEspeciaisCaderno();
+
+          this.toastSuccess(
+            this.mensagemSucessoAcaoEspecial(
+              acao,
+              cadernoAtualizado
+            )
+          );
+        },
+        error: erro => {
+          console.error(
+            'Erro ao registrar ação especial do caderno',
+            erro
+          );
+
+          this.toastError(
+            this.mensagemErro(
+              erro,
+              'Não foi possível concluir a ação especial.'
+            )
+          );
+        }
+      });
+  }
+
+  private substituirViaAtualNaLista(
+    viaSubstituida: CadernoChoro,
+    novaVia: CadernoChoro
+  ): void {
+    this.cadernos.update(cadernos => {
+      const possuiViaAnterior = cadernos.some(
+        item => item.id === viaSubstituida.id
+      );
+
+      const atualizados = possuiViaAnterior
+        ? cadernos.map(item =>
+          item.id === viaSubstituida.id
+            ? novaVia
+            : item
+        )
+        : [...cadernos, novaVia];
+
+      return atualizados.sort((a, b) =>
+        a.sobrinhoNome.localeCompare(
+          b.sobrinhoNome,
+          'pt-BR'
+        )
+      );
+    });
+
+    this.cadernoSelecionado.set(novaVia);
+  }
+
+  private mensagemSucessoAcaoEspecial(
+    acao: Exclude<AcaoEspecialCaderno, 'SUBSTITUIR'>,
+    caderno: CadernoChoro
+  ): string {
+    switch (acao) {
+      case 'PERDA':
+        return `Perda registrada para ${caderno.sobrinhoNome}.`;
+
+      case 'DANO':
+        return this.danoImpedeContinuacaoCaderno()
+          ? `Dano impeditivo registrado para ${caderno.sobrinhoNome}.`
+          : `Dano informativo registrado para ${caderno.sobrinhoNome}.`;
+
+      case 'RECUPERAR':
+        return `Caderno de ${caderno.sobrinhoNome} recuperado e devolvido à etapa anterior.`;
+    }
+  }
+
+  acaoEspecialDisponivel(
+    caderno: CadernoChoro,
+    acao: AcaoEspecialCaderno
+  ): boolean {
+    switch (acao) {
+      case 'PERDA':
+      case 'DANO':
+        return this.podeRegistrarOcorrenciaCaderno(caderno);
+
+      case 'RECUPERAR':
+        return this.podeRecuperarCaderno(caderno);
+
+      case 'SUBSTITUIR':
+        return this.podeSubstituirViaCaderno(caderno);
+    }
+  }
+
+  podeRegistrarOcorrenciaCaderno(
+    caderno: CadernoChoro
+  ): boolean {
+    return caderno.viaAtual &&
+      ![
+        'PERDIDO',
+        'DANIFICADO',
+        'SUBSTITUIDO',
+        'CANCELADO',
+        'ENTREGUE_AO_SOBRINHO'
+      ].includes(caderno.status);
+  }
+
+  podeRecuperarCaderno(
+    caderno: CadernoChoro
+  ): boolean {
+    return caderno.viaAtual &&
+      ['PERDIDO', 'DANIFICADO'].includes(
+        caderno.status
+      );
+  }
+
+  podeSubstituirViaCaderno(
+    caderno: CadernoChoro
+  ): boolean {
+    return caderno.viaAtual &&
+      ![
+        'SUBSTITUIDO',
+        'CANCELADO',
+        'ENTREGUE_AO_SOBRINHO'
+      ].includes(caderno.status);
+  }
+
+  tituloAcaoEspecialCaderno(): string {
+    switch (this.acaoEspecialCadernoSelecionada()) {
+      case 'PERDA':
+        return 'Registrar perda';
+
+      case 'DANO':
+        return 'Registrar dano';
+
+      case 'RECUPERAR':
+        return 'Recuperar caderno';
+
+      case 'SUBSTITUIR':
+        return 'Substituir via';
+
+      default:
+        return 'Ações especiais';
+    }
+  }
+
+  descricaoAcaoEspecialCaderno(): string {
+    switch (this.acaoEspecialCadernoSelecionada()) {
+      case 'PERDA':
+        return 'A perda interrompe o fluxo atual e exige recuperação ou substituição da via.';
+
+      case 'DANO':
+        return 'O dano pode ser somente informativo ou impedir a continuidade do fluxo físico.';
+
+      case 'RECUPERAR':
+        return 'O caderno retornará à etapa em que estava antes da ocorrência.';
+
+      case 'SUBSTITUIR':
+        return 'A via atual será encerrada e uma nova via física será criada como pendente.';
+
+      default:
+        return 'Selecione a ocorrência ou ação necessária.';
+    }
+  }
+
+  labelBotaoAcaoEspecialCaderno(): string {
+    switch (this.acaoEspecialCadernoSelecionada()) {
+      case 'PERDA':
+        return 'Registrar perda';
+
+      case 'DANO':
+        return 'Registrar dano';
+
+      case 'RECUPERAR':
+        return 'Confirmar recuperação';
+
+      case 'SUBSTITUIR':
+        return 'Criar nova via';
+
+      default:
+        return 'Confirmar';
+    }
+  }
+
+  severityAcaoEspecialCaderno():
+    | 'info'
+    | 'success'
+    | 'warn'
+    | 'danger' {
+    switch (this.acaoEspecialCadernoSelecionada()) {
+      case 'PERDA':
+        return 'danger';
+
+      case 'DANO':
+      case 'SUBSTITUIR':
+        return 'warn';
+
+      case 'RECUPERAR':
+        return 'success';
+
+      default:
+        return 'info';
+    }
   }
 
   abrirOperacaoCaderno(caderno: CadernoChoro, operacao: OperacaoCadernoChoro): void {
