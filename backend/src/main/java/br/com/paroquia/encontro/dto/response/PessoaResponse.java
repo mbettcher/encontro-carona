@@ -12,18 +12,25 @@ public record PessoaResponse(
         String email,
         LocalDate dataNascimento,
         PessoaTipo tipo,
+        String responsavelNome,
+        String responsavelTelefone,
+        String endereco,
         String observacoes,
-        boolean ativo) {
-    public static PessoaResponse from(Pessoa p) {
+        boolean ativo
+) {
+    public static PessoaResponse from(Pessoa pessoa) {
         return new PessoaResponse(
-                p.getId(),
-                p.getNome(),
-                p.getTelefone(),
-                p.getEmail(),
-                p.getDataNascimento(),
-                p.getTipo(),
-                p.getObservacoes(),
-                p.isAtivo()
+                pessoa.getId(),
+                pessoa.getNome(),
+                pessoa.getTelefone(),
+                pessoa.getEmail(),
+                pessoa.getDataNascimento(),
+                pessoa.getTipo(),
+                pessoa.getResponsavelNome(),
+                pessoa.getResponsavelTelefone(),
+                pessoa.getEndereco(),
+                pessoa.getObservacoes(),
+                pessoa.isAtivo()
         );
     }
 }

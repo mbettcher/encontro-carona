@@ -16,6 +16,7 @@ import java.util.List;
 
 @Service
 public class PessoaService {
+
     private final PessoaRepository repository;
     private final TioCaronaEventoRepository tioCaronaRepository;
     private final SobrinhoRepository sobrinhoRepository;
@@ -35,20 +36,52 @@ public class PessoaService {
 
     @Transactional(readOnly = true)
     public List<PessoaResponse> listar(String busca) {
-        var pessoas = (busca == null || busca.isBlank()) ? repository.findAll() : repository.findByNomeContainingIgnoreCaseOrderByNome(busca);
-        return pessoas.stream().map(PessoaResponse::from).toList();
+        var pessoas = busca == null || busca.isBlank()
+                ? repository.findAll()
+                : repository.findByNomeContainingIgnoreCaseOrderByNome(busca);
+
+        return pessoas.stream()
+                .map(PessoaResponse::from)
+                .toList();
     }
 
     @Transactional
     public PessoaResponse criar(PessoaRequest request) {
-        return PessoaResponse.from(repository.save(new Pessoa(request.nome(), request.telefone(), request.email(), request.dataNascimento(), request.tipo(), request.observacoes())));
+        var pessoa = new Pessoa(
+                normalizarTextoObrigatorio(request.nome()),
+                normalizarTextoOpcional(request.telefone()),
+                normalizarTextoOpcional(request.email()),
+                request.dataNascimento(),
+                request.tipo(),
+                normalizarTextoOpcional(request.responsavelNome()),
+                normalizarTextoOpcional(request.responsavelTelefone()),
+                normalizarTextoOpcional(request.endereco()),
+                normalizarTextoOpcional(request.observacoes())
+        );
+
+        return PessoaResponse.from(repository.save(pessoa));
     }
 
     @Transactional
-    public PessoaResponse atualizar(Long id, PessoaRequest request) {
-        var p = buscar(id);
-        p.atualizar(request.nome(), request.telefone(), request.email(), request.dataNascimento(), request.tipo(), request.observacoes());
-        return PessoaResponse.from(p);
+    public PessoaResponse atualizar(
+            Long id,
+            PessoaRequest request
+    ) {
+        var pessoa = buscar(id);
+
+        pessoa.atualizar(
+                normalizarTextoObrigatorio(request.nome()),
+                normalizarTextoOpcional(request.telefone()),
+                normalizarTextoOpcional(request.email()),
+                request.dataNascimento(),
+                request.tipo(),
+                normalizarTextoOpcional(request.responsavelNome()),
+                normalizarTextoOpcional(request.responsavelTelefone()),
+                normalizarTextoOpcional(request.endereco()),
+                normalizarTextoOpcional(request.observacoes())
+        );
+
+        return PessoaResponse.from(pessoa);
     }
 
     @Transactional
@@ -74,20 +107,51 @@ public class PessoaService {
 
     private Pessoa buscar(Long id) {
         return repository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Pessoa não encontrada."));
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Pessoa não encontrada."
+                        )
+                );
     }
 
     private void validarExclusao(Pessoa pessoa) {
         if (tioCaronaRepository.countByPessoaId(pessoa.getId()) > 0) {
-            throw new BusinessException("Não é possível excluir esta pessoa porque ela está vinculada como tio carona em evento(s). Inative o cadastro.");
+            throw new BusinessException(
+                    "Não é possível excluir esta pessoa porque ela está " +
+                            "vinculada como tio carona em evento(s). " +
+                            "Inative o cadastro."
+            );
         }
 
         if (sobrinhoRepository.countByPessoaId(pessoa.getId()) > 0) {
-            throw new BusinessException("Não é possível excluir esta pessoa porque ela está vinculada como encontrista em evento(s). Inative o cadastro.");
+            throw new BusinessException(
+                    "Não é possível excluir esta pessoa porque ela está " +
+                            "vinculada como encontrista em evento(s). " +
+                            "Inative o cadastro."
+            );
         }
 
         if (equipeIntegranteRepository.countByPessoaId(pessoa.getId()) > 0) {
-            throw new BusinessException("Não é possível excluir esta pessoa porque ela está vinculada a equipe(s) do kit. Inative o cadastro.");
+            throw new BusinessException(
+                    "Não é possível excluir esta pessoa porque ela está " +
+                            "vinculada a equipe(s) do kit. Inative o cadastro."
+            );
         }
+    }
+
+    private String normalizarTextoObrigatorio(String valor) {
+        return valor == null ? null : valor.trim();
+    }
+
+    private String normalizarTextoOpcional(String valor) {
+        if (valor == null) {
+            return null;
+        }
+
+        var normalizado = valor.trim();
+
+        return normalizado.isBlank()
+                ? null
+                : normalizado;
     }
 }

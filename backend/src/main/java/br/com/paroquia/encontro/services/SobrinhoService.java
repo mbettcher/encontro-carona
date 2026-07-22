@@ -20,6 +20,7 @@ import br.com.paroquia.encontro.repository.SobrinhoRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -100,20 +101,40 @@ public class SobrinhoService {
                         )
                 );
 
+        var nome = normalizarTextoObrigatorio(
+                request.nome(),
+                "O nome do encontrista é obrigatório."
+        );
+        var responsavelNome = normalizarTextoObrigatorio(
+                request.responsavelNome(),
+                "O nome do responsável é obrigatório."
+        );
+        var responsavelTelefone = normalizarTextoObrigatorio(
+                request.responsavelTelefone(),
+                "O telefone do responsável é obrigatório."
+        );
+        var endereco = normalizarTextoObrigatorio(
+                request.endereco(),
+                "O endereço é obrigatório."
+        );
+        var dataNascimento = validarDataNascimento(
+                request.dataNascimento()
+        );
+
+        var sobrinho = new Sobrinho(
+                evento,
+                nome,
+                normalizarTextoOpcional(request.telefone()),
+                responsavelNome,
+                responsavelTelefone,
+                endereco,
+                dataNascimento,
+                normalizarTextoOpcional(request.restricaoAlimentar()),
+                normalizarTextoOpcional(request.observacaoMedica())
+        );
+
         return SobrinhoResponse.from(
-                repository.save(
-                        new Sobrinho(
-                                evento,
-                                request.nome(),
-                                request.telefone(),
-                                request.responsavelNome(),
-                                request.responsavelTelefone(),
-                                request.endereco(),
-                                request.dataNascimento(),
-                                request.restricaoAlimentar(),
-                                request.observacaoMedica()
-                        )
-                )
+                repository.save(sobrinho)
         );
     }
 
@@ -142,41 +163,52 @@ public class SobrinhoService {
                 pessoa.getId()
         );
 
-        var dataNascimento = request.dataNascimento() != null
-                ? request.dataNascimento()
-                : pessoa.getDataNascimento();
+        /*
+         * Completa somente campos ausentes na Pessoa.
+         * Valores já cadastrados nunca são sobrescritos.
+         */
+        pessoa.complementarDadosDoEncontrista(
+                normalizarTextoOpcional(request.telefone()),
+                request.dataNascimento(),
+                normalizarTextoOpcional(request.responsavelNome()),
+                normalizarTextoOpcional(request.responsavelTelefone()),
+                normalizarTextoOpcional(request.endereco())
+        );
 
-        if (dataNascimento == null) {
-            throw new BusinessException(
-                    "Informe a data de nascimento do encontrista ou " +
-                            "atualize o cadastro da pessoa."
-            );
-        }
+        /*
+         * Após a complementação, a Pessoa passa a ser a fonte oficial
+         * dos campos compartilhados. O Sobrinho recebe um snapshot.
+         */
+        var telefone = normalizarTextoOpcional(
+                pessoa.getTelefone()
+        );
+        var responsavelNome = normalizarTextoObrigatorio(
+                pessoa.getResponsavelNome(),
+                "Informe o nome do responsável ou atualize o cadastro da pessoa."
+        );
+        var responsavelTelefone = normalizarTextoObrigatorio(
+                pessoa.getResponsavelTelefone(),
+                "Informe o telefone do responsável ou atualize o cadastro da pessoa."
+        );
+        var endereco = normalizarTextoObrigatorio(
+                pessoa.getEndereco(),
+                "Informe o endereço ou atualize o cadastro da pessoa."
+        );
+        var dataNascimento = validarDataNascimento(
+                pessoa.getDataNascimento()
+        );
 
         var sobrinho = new Sobrinho(
                 evento,
                 pessoa,
                 pessoa.getNome(),
-                textoOuFallback(
-                        request.telefone(),
-                        pessoa.getTelefone()
-                ),
-                normalizarTextoObrigatorio(
-                        request.responsavelNome()
-                ),
-                normalizarTextoObrigatorio(
-                        request.responsavelTelefone()
-                ),
-                normalizarTextoObrigatorio(
-                        request.endereco()
-                ),
+                telefone,
+                responsavelNome,
+                responsavelTelefone,
+                endereco,
                 dataNascimento,
-                normalizarTextoOpcional(
-                        request.restricaoAlimentar()
-                ),
-                normalizarTextoOpcional(
-                        request.observacaoMedica()
-                )
+                normalizarTextoOpcional(request.restricaoAlimentar()),
+                normalizarTextoOpcional(request.observacaoMedica())
         );
 
         return SobrinhoResponse.from(
@@ -319,16 +351,17 @@ public class SobrinhoService {
                 sobrinhoId
         );
 
-        sobrinho.atualizarDados(
-                request.nome(),
-                request.telefone(),
-                request.responsavelNome(),
-                request.responsavelTelefone(),
-                request.endereco(),
-                request.dataNascimento(),
-                request.restricaoAlimentar(),
-                request.observacaoMedica()
-        );
+        if (sobrinho.getPessoa() == null) {
+            atualizarEncontristaExclusivo(
+                    sobrinho,
+                    request
+            );
+        } else {
+            atualizarEncontristaVinculado(
+                    sobrinho,
+                    request
+            );
+        }
 
         var ultimaPresenca = sobrinhoPresencaRepository
                 .findFirstBySobrinhoIdOrderByOcorridoEmDesc(
@@ -339,6 +372,78 @@ public class SobrinhoService {
         return SobrinhoResponse.from(
                 sobrinho,
                 ultimaPresenca
+        );
+    }
+
+    private void atualizarEncontristaExclusivo(
+            Sobrinho sobrinho,
+            SobrinhoRequest request
+    ) {
+        sobrinho.atualizarDados(
+                normalizarTextoObrigatorio(
+                        request.nome(),
+                        "O nome do encontrista é obrigatório."
+                ),
+                normalizarTextoOpcional(request.telefone()),
+                normalizarTextoObrigatorio(
+                        request.responsavelNome(),
+                        "O nome do responsável é obrigatório."
+                ),
+                normalizarTextoObrigatorio(
+                        request.responsavelTelefone(),
+                        "O telefone do responsável é obrigatório."
+                ),
+                normalizarTextoObrigatorio(
+                        request.endereco(),
+                        "O endereço é obrigatório."
+                ),
+                validarDataNascimento(request.dataNascimento()),
+                normalizarTextoOpcional(request.restricaoAlimentar()),
+                normalizarTextoOpcional(request.observacaoMedica())
+        );
+    }
+
+    private void atualizarEncontristaVinculado(
+            Sobrinho sobrinho,
+            SobrinhoRequest request
+    ) {
+        var pessoa = sobrinho.getPessoa();
+
+        /*
+         * Campos ausentes em Pessoa podem ser informados pelo formulário
+         * do Encontrista. Campos existentes permanecem protegidos.
+         */
+        pessoa.complementarDadosDoEncontrista(
+                normalizarTextoOpcional(request.telefone()),
+                request.dataNascimento(),
+                normalizarTextoOpcional(request.responsavelNome()),
+                normalizarTextoOpcional(request.responsavelTelefone()),
+                normalizarTextoOpcional(request.endereco())
+        );
+
+        /*
+         * Nome e demais dados compartilhados são sempre obtidos da Pessoa.
+         * Restrição alimentar e observação médica continuam específicas
+         * da inscrição no evento.
+         */
+        sobrinho.atualizarDados(
+                pessoa.getNome(),
+                normalizarTextoOpcional(pessoa.getTelefone()),
+                normalizarTextoObrigatorio(
+                        pessoa.getResponsavelNome(),
+                        "Informe o nome do responsável ou atualize o cadastro da pessoa."
+                ),
+                normalizarTextoObrigatorio(
+                        pessoa.getResponsavelTelefone(),
+                        "Informe o telefone do responsável ou atualize o cadastro da pessoa."
+                ),
+                normalizarTextoObrigatorio(
+                        pessoa.getEndereco(),
+                        "Informe o endereço ou atualize o cadastro da pessoa."
+                ),
+                validarDataNascimento(pessoa.getDataNascimento()),
+                normalizarTextoOpcional(request.restricaoAlimentar()),
+                normalizarTextoOpcional(request.observacaoMedica())
         );
     }
 
@@ -389,24 +494,30 @@ public class SobrinhoService {
         }
     }
 
-    private String textoOuFallback(
-            String valor,
-            String fallback
+    private LocalDate validarDataNascimento(
+            LocalDate dataNascimento
     ) {
-        var normalizado =
-                normalizarTextoOpcional(valor);
-
-        if (normalizado != null) {
-            return normalizado;
+        if (dataNascimento == null) {
+            throw new BusinessException(
+                    "Informe a data de nascimento do encontrista ou " +
+                            "atualize o cadastro da pessoa."
+            );
         }
 
-        return normalizarTextoOpcional(fallback);
+        return dataNascimento;
     }
 
-    private String normalizarTextoObrigatorio(String valor) {
-        return valor == null
-                ? null
-                : valor.trim();
+    private String normalizarTextoObrigatorio(
+            String valor,
+            String mensagem
+    ) {
+        var normalizado = normalizarTextoOpcional(valor);
+
+        if (normalizado == null) {
+            throw new BusinessException(mensagem);
+        }
+
+        return normalizado;
     }
 
     private String normalizarTextoOpcional(String valor) {
@@ -420,4 +531,5 @@ public class SobrinhoService {
                 ? null
                 : texto;
     }
+
 }
