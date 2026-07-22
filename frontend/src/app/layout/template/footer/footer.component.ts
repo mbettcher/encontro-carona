@@ -1,5 +1,6 @@
 import { Component, computed, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { APP_BUILD_INFO } from 'src/app/core/app-version';
 
 @Component({
   selector: 'app-footer',
@@ -8,9 +9,11 @@ import { RouterLink } from '@angular/router';
     RouterLink
   ],
   templateUrl: './footer.component.html',
-  styleUrl: './footer.component.scss'
+  styleUrls: ['./footer.component.scss']
 })
 export class FooterComponent {
+  readonly buildInfo = APP_BUILD_INFO;
+  
   readonly anoAtual = signal(new Date().getFullYear());
-  readonly textoVersao = computed(() => `EAC - Tio Carona v1.1.1`);
+  readonly textoVersao = computed(() => `EAC - Tio Carona v${this.buildInfo.version}`);
 }

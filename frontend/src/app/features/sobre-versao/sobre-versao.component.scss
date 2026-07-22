@@ -259,3 +259,33 @@
     flex-direction: column;
   }
 }
+
+.release-hero-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.85rem 1.25rem;
+  margin-top: 1rem;
+  color: var(--bs-secondary-color);
+  font-size: 0.82rem;
+}
+
+.release-hero-meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.release-ready {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  width: fit-content;
+  margin-top: 0.75rem;
+  padding: 0.25rem 0.55rem;
+  border-radius: 999px;
+  background: var(--bs-success-bg-subtle);
+  color: var(--bs-success-text-emphasis);
+  font-size: 0.75rem;
+  font-weight: 700;
+}

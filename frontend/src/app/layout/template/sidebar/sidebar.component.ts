@@ -3,6 +3,7 @@ import { Component, EventEmitter, Input, Output, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 
 import { AuthService } from '../../../core/auth/auth.service';
+import { APP_BUILD_INFO } from 'src/app/core/app-version';
 
 interface SidebarItem {
   label: string;
@@ -24,6 +25,7 @@ interface SidebarItem {
 })
 export class SidebarComponent {
   readonly auth = inject(AuthService);
+  readonly buildInfo = APP_BUILD_INFO;
 
   @Input({ required: true })
   collapsed = false;

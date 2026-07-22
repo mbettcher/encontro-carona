@@ -7,7 +7,7 @@ import { AuthService } from '../../core/auth/auth.service';
 
 interface ChecklistItem {
   label: string;
-  status: 'OK' | 'VALIDAR';
+  status: 'OK';
   detalhe: string;
 }
 
@@ -34,7 +34,9 @@ export class SobreVersaoComponent {
   readonly buildInfo = APP_BUILD_INFO;
 
   readonly usuarioAtual = computed(() => this.auth.usuario());
-  readonly perfilAtualLabel = computed(() => this.auth.labelPerfil(this.usuarioAtual()?.perfil));
+  readonly perfilAtualLabel = computed(() =>
+    this.auth.labelPerfil(this.usuarioAtual()?.perfil)
+  );
 
   readonly checklist: ChecklistGroup[] = [
     {
@@ -43,130 +45,120 @@ export class SobreVersaoComponent {
       cor: 'primary',
       itens: [
         {
-          label: 'Login/JWT',
+          label: 'Login e JWT',
           status: 'OK',
-          detalhe: 'Login autenticado, token Bearer, logout e refresh token com rotação validados.'
+          detalhe: 'Autenticação JWT, token Bearer, logout, troca de senha e expiração de sessão validados.'
         },
         {
-          label: 'Sessão expirada',
+          label: 'Perfis e permissões',
           status: 'OK',
-          detalhe: 'Sessão expirada limpa dados locais e redireciona para login sem quebrar navegação.'
-        },
-        {
-          label: 'Perfis',
-          status: 'OK',
-          detalhe: 'ADMIN, OPERADOR_ADMIN, OPERADOR_LEITURA e SOMENTE_LEITURA aplicados em rotas e UX.'
+          detalhe: 'ADMIN, OPERADOR_ADMIN, OPERADOR_LEITURA e SOMENTE_LEITURA aplicados em rotas, menus e ações.'
         },
         {
           label: 'Administração de usuários',
           status: 'OK',
-          detalhe: 'ADMIN lista, cria, edita perfil, ativa/desativa e reseta senha.'
+          detalhe: 'Criação, alteração de perfil, ativação, desativação e redefinição de senha disponíveis ao ADMIN.'
+        },
+        {
+          label: 'Tratamento de acesso',
+          status: 'OK',
+          detalhe: 'Respostas 401 e 403 tratadas sem derrubar indevidamente a navegação da aplicação.'
         }
       ]
     },
     {
-      titulo: 'Cadastros e gestão',
-      icon: 'fa-solid fa-database',
+      titulo: 'Gestão do evento',
+      icon: 'fa-solid fa-calendar-check',
       cor: 'success',
       itens: [
         {
-          label: 'Paróquias/Comunidades',
+          label: 'Cadastros principais',
           status: 'OK',
-          detalhe: 'Textos de tela ajustados para o contexto Paróquia/Comunidade.'
+          detalhe: 'Paróquias/Comunidades, pessoas, eventos, tios, duplas, encontristas e vínculos revisados.'
         },
         {
-          label: 'Pessoas e eventos',
+          label: 'Operação por credencial',
           status: 'OK',
-          detalhe: 'Cadastros principais, filtros e formulários revisados.'
+          detalhe: 'Leitura QR e operação manual de tios e encontristas funcionando com validação de credencial ativa.'
         },
         {
-          label: 'Gestão do Evento',
+          label: 'Presença e históricos',
           status: 'OK',
-          detalhe: 'Tios, duplas com Paróquia/Comunidade, encontristas, vínculos e equipes do kit validados.'
+          detalhe: 'Históricos de check-in, checkout e presença por dia consolidados para a operação do evento.'
         },
         {
-          label: 'Equipes do kit',
+          label: 'Central de impressão',
           status: 'OK',
-          detalhe: 'Regra de uma pessoa por equipe do kit no evento aplicada no backend e no frontend.'
+          detalhe: 'Credenciais, crachás, carteirinhas, etiquetas e relatórios Jasper mantidos e revisados.'
         }
       ]
     },
     {
-      titulo: 'Operação do Evento',
-      icon: 'fa-solid fa-people-group',
+      titulo: 'Caderno de Mensagens',
+      icon: 'fa-solid fa-book-open',
       cor: 'info',
       itens: [
         {
-          label: 'Visão geral',
+          label: 'Seleção operacional',
           status: 'OK',
-          detalhe: 'Atalhos, cards e indicadores principais revisados para a versão 1.1.1.'
+          detalhe: 'Entrega, recebimento e recolhimento trabalham com seleção explícita de cadernos da mesma dupla.'
         },
         {
-          label: 'Presença',
+          label: 'Timeline consolidada',
           status: 'OK',
-          detalhe: 'Indicadores de presença e preparação consideram somente encontristas ativos.'
+          detalhe: 'Histórico cronológico por encontrista reúne todas as vias, movimentações, responsáveis e transições.'
         },
         {
-          label: 'Credenciais',
+          label: 'Ocorrências e recuperação',
           status: 'OK',
-          detalhe: 'Tela alinhada à Central de Impressão Jasper e sem rotas CSS/browser antigas.'
+          detalhe: 'Perda, dano informativo ou impeditivo e recuperação da etapa anterior foram estruturados.'
         },
         {
-          label: 'Caderno de Mensagens',
-          status: 'VALIDAR',
-          detalhe: 'Fluxo atual mantido na 1.1.1; replanejamento completo recomendado para a versão 1.2.0.'
+          label: 'Versionamento e cancelamento',
+          status: 'OK',
+          detalhe: 'Substituição cria nova via; cancelamento registra motivo e controla recolhimento físico pendente.'
         }
       ]
     },
     {
-      titulo: 'Relatórios e impressões Jasper',
-      icon: 'fa-solid fa-print',
+      titulo: 'Qualidade da release',
+      icon: 'fa-solid fa-circle-check',
       cor: 'warning',
       itens: [
         {
-          label: 'Relatórios',
+          label: 'Fluxos legados',
           status: 'OK',
-          detalhe: 'Listas de presença, cadernos por equipe e filtros Jasper validados.'
+          detalhe: 'Chamadas e endpoints antigos do Caderno de Mensagens foram removidos após homologação.'
         },
         {
-          label: 'Etiquetas QR Code',
+          label: 'Validação dos formulários',
           status: 'OK',
-          detalhe: 'Modelos A4/Pimaco e filtro textual funcionando na Central de Impressão.'
+          detalhe: 'Ações especiais exigem campos obrigatórios, bloqueiam envio duplicado e limpam o estado após sucesso.'
         },
         {
-          label: 'Crachás e carteirinhas',
+          label: 'Responsividade e UX',
           status: 'OK',
-          detalhe: 'Crachás verticais e carteirinhas horizontais gerados por Jasper.'
+          detalhe: 'Tabelas, diálogos, timeline, alertas e estados desabilitados foram revisados para uso operacional.'
         },
         {
-          label: 'Limpeza técnica',
-          status: 'VALIDAR',
-          detalhe: 'Arquivos físicos das impressões CSS antigas podem ser removidos após aplicar este bloco.'
+          label: 'Homologação',
+          status: 'OK',
+          detalhe: 'Frontend buildado, backend executado e principais cenários da versão 1.2.0 testados e aprovados.'
         }
       ]
     }
   ];
 
   readonly totalItens = computed(() =>
-    this.checklist.reduce((total, grupo) => total + grupo.itens.length, 0)
-  );
-
-  readonly totalOk = computed(() =>
     this.checklist.reduce(
-      (total, grupo) => total + grupo.itens.filter((item) => item.status === 'OK').length,
+      (total, grupo) => total + grupo.itens.length,
       0
     )
   );
 
-  readonly totalValidar = computed(() => this.totalItens() - this.totalOk());
+  readonly totalOk = computed(() => this.totalItens());
 
   classeBorda(cor: ChecklistGroup['cor']): string {
     return `release-card-${cor}`;
-  }
-
-  classeStatus(status: ChecklistItem['status']): string {
-    return status === 'OK'
-      ? 'badge text-bg-success'
-      : 'badge text-bg-warning';
   }
 }

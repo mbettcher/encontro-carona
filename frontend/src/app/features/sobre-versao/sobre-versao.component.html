@@ -1,17 +1,40 @@
 <div class="release-page">
   <section class="release-hero">
     <div>
-      <span class="release-kicker">Release 1.1.1</span>
+      <span class="release-kicker">
+        <i class="fa-solid fa-tag"></i>
+        Release {{ buildInfo.version }}
+      </span>
+
       <h1>Sobre / Versão</h1>
+
       <p>
-        Central de informações da versão atual, ambiente, usuário logado e checklist final da release.
+        Informações da versão instalada, ambiente atual, usuário logado
+        e escopo homologado da release.
       </p>
+
+      <div class="release-hero-meta">
+        <span>
+          <i class="fa-solid fa-calendar-day"></i>
+          Publicada em {{ buildInfo.releaseDate }}
+        </span>
+
+        <span>
+          <i class="fa-solid fa-layer-group"></i>
+          {{ buildInfo.releaseName }}
+        </span>
+      </div>
     </div>
 
     <div class="release-version-card">
       <span>Versão atual</span>
       <strong>{{ buildInfo.releaseLabel }}</strong>
       <small>{{ buildInfo.appName }}</small>
+
+      <div class="release-ready">
+        <i class="fa-solid fa-circle-check"></i>
+        Homologada
+      </div>
     </div>
   </section>
 
@@ -24,7 +47,7 @@
       <div>
         <span>Versão</span>
         <strong>{{ buildInfo.releaseLabel }}</strong>
-        <small>Release operacional 1.1.1</small>
+        <small>{{ buildInfo.releaseName }}</small>
       </div>
     </article>
 
@@ -58,9 +81,9 @@
       </div>
 
       <div>
-        <span>Checklist</span>
+        <span>Homologação</span>
         <strong>{{ totalOk() }}/{{ totalItens() }} OK</strong>
-        <small>{{ totalValidar() }} item(ns) no roadmap pós-release</small>
+        <small>Escopo da release aprovado</small>
       </div>
     </article>
   </section>
@@ -76,7 +99,10 @@
       Eventos
     </a>
 
-    <a routerLink="/minha-conta/alterar-senha" class="btn btn-sm btn-outline-secondary">
+    <a
+      routerLink="/minha-conta/alterar-senha"
+      class="btn btn-sm btn-outline-secondary"
+    >
       <i class="fa-solid fa-key me-1"></i>
       Alterar senha
     </a>
@@ -84,43 +110,50 @@
 
   <section class="release-checklist-grid">
     @for (grupo of checklist; track grupo.titulo) {
-    <article class="release-checklist-card" [class]="classeBorda(grupo.cor)">
-      <header>
-        <div class="release-checklist-icon">
-          <i [class]="grupo.icon"></i>
-        </div>
-
-        <div>
-          <h2>{{ grupo.titulo }}</h2>
-          <small>{{ grupo.itens.length }} item(ns)</small>
-        </div>
-      </header>
-
-      <div class="release-checklist-items">
-        @for (item of grupo.itens; track item.label) {
-        <div class="release-checklist-item">
-          <div>
-            <strong>{{ item.label }}</strong>
-            <p>{{ item.detalhe }}</p>
+      <article
+        class="release-checklist-card"
+        [class]="classeBorda(grupo.cor)"
+      >
+        <header>
+          <div class="release-checklist-icon">
+            <i [class]="grupo.icon"></i>
           </div>
 
-          <span [class]="classeStatus(item.status)">
-            {{ item.status }}
-          </span>
+          <div>
+            <h2>{{ grupo.titulo }}</h2>
+            <small>{{ grupo.itens.length }} item(ns) homologado(s)</small>
+          </div>
+        </header>
+
+        <div class="release-checklist-items">
+          @for (item of grupo.itens; track item.label) {
+            <div class="release-checklist-item">
+              <div>
+                <strong>{{ item.label }}</strong>
+                <p>{{ item.detalhe }}</p>
+              </div>
+
+              <span class="badge text-bg-success">
+                <i class="fa-solid fa-check me-1"></i>
+                {{ item.status }}
+              </span>
+            </div>
+          }
         </div>
-        }
-      </div>
-    </article>
+      </article>
     }
   </section>
 
   <section class="release-note">
-    <i class="fa-solid fa-circle-info"></i>
+    <i class="fa-solid fa-road"></i>
+
     <div>
-      <strong>Próxima etapa planejada</strong>
+      <strong>Próximo ciclo planejado</strong>
+
       <p>
-        Versão 1.1.1 pronta para validação final/deploy. O principal roadmap pós-release é replanejar o fluxo do
-        Caderno de Mensagens para a versão 1.2.0.
+        A versão 1.2.0 está fechada. O próximo ciclo será a versão 1.3.0,
+        iniciando pela evolução da sessão com refresh token, rotação,
+        revogação e renovação automática no frontend.
       </p>
     </div>
   </section>
