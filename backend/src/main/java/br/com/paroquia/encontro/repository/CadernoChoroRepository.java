@@ -115,4 +115,9 @@ public interface CadernoChoroRepository
             Long duplaId,
             Collection<StatusCadernoChoro> status
     );
+
+    List<CadernoChoro> findByEventoIdAndIdIn(
+            Long eventoId,
+            Collection<Long> ids
+    );
 }

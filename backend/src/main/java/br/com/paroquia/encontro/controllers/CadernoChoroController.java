@@ -11,6 +11,8 @@ import br.com.paroquia.encontro.dto.response.CadernoChoroResponse;
 import br.com.paroquia.encontro.dto.response.CadernoChoroSubstituicaoResponse;
 import br.com.paroquia.encontro.dto.response.CadernoChoroTimelineResponse;
 import br.com.paroquia.encontro.services.CadernoChoroService;
+import br.com.paroquia.encontro.dto.request.CadernoChoroOperacaoSelecionadaRequest;
+
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
@@ -287,6 +289,51 @@ public class CadernoChoroController {
                 eventoId,
                 cadernoId,
                 observacao(request)
+        );
+    }
+
+    @PostMapping("/duplas/{duplaId}/entregar-selecionados")
+    public List<CadernoChoroResponse> entregarSelecionadosADupla(
+            @PathVariable Long eventoId,
+            @PathVariable Long duplaId,
+            @RequestBody
+            @Valid
+            CadernoChoroOperacaoSelecionadaRequest request
+    ) {
+        return service.entregarSelecionadosADupla(
+                eventoId,
+                duplaId,
+                request
+        );
+    }
+
+    @PostMapping("/duplas/{duplaId}/receber-selecionados")
+    public List<CadernoChoroResponse> receberSelecionadosDaDupla(
+            @PathVariable Long eventoId,
+            @PathVariable Long duplaId,
+            @RequestBody
+            @Valid
+            CadernoChoroOperacaoSelecionadaRequest request
+    ) {
+        return service.receberSelecionadosDaDupla(
+                eventoId,
+                duplaId,
+                request
+        );
+    }
+
+    @PostMapping("/duplas/{duplaId}/recolher-cancelados")
+    public List<CadernoChoroResponse> recolherCanceladosDaDupla(
+            @PathVariable Long eventoId,
+            @PathVariable Long duplaId,
+            @RequestBody
+            @Valid
+            CadernoChoroOperacaoSelecionadaRequest request
+    ) {
+        return service.recolherCanceladosDaDupla(
+                eventoId,
+                duplaId,
+                request
         );
     }
 

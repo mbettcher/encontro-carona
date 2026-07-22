@@ -2,29 +2,20 @@ package br.com.paroquia.encontro.services;
 
 import br.com.paroquia.encontro.common.BusinessException;
 import br.com.paroquia.encontro.common.ResourceNotFoundException;
-import br.com.paroquia.encontro.domain.entity.CadernoChoro;
-import br.com.paroquia.encontro.domain.entity.CadernoChoroHistorico;
-import br.com.paroquia.encontro.domain.entity.EquipeMontagemKit;
+import br.com.paroquia.encontro.domain.entity.*;
 import br.com.paroquia.encontro.domain.enums.*;
-import br.com.paroquia.encontro.dto.request.CadernoChoroCancelarRequest;
-import br.com.paroquia.encontro.dto.request.CadernoChoroOcorrenciaRequest;
-import br.com.paroquia.encontro.dto.request.CadernoChoroRecuperarRequest;
-import br.com.paroquia.encontro.dto.request.CadernoChoroSubstituirRequest;
+import br.com.paroquia.encontro.dto.request.*;
 import br.com.paroquia.encontro.dto.response.CadernoChoroGeracaoResponse;
 import br.com.paroquia.encontro.dto.response.CadernoChoroHistoricoResponse;
 import br.com.paroquia.encontro.dto.response.CadernoChoroResponse;
 import br.com.paroquia.encontro.dto.response.CadernoChoroSubstituicaoResponse;
 import br.com.paroquia.encontro.dto.response.CadernoChoroTimelineResponse;
-import br.com.paroquia.encontro.repository.CadernoChoroHistoricoRepository;
-import br.com.paroquia.encontro.repository.CadernoChoroRepository;
-import br.com.paroquia.encontro.repository.DuplaTioCaronaRepository;
-import br.com.paroquia.encontro.repository.EquipeMontagemKitRepository;
-import br.com.paroquia.encontro.repository.EventoRepository;
-import br.com.paroquia.encontro.repository.SobrinhoDuplaRepository;
+import br.com.paroquia.encontro.repository.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -46,6 +37,7 @@ public class CadernoChoroService {
     private final DuplaTioCaronaRepository duplaRepository;
     private final SobrinhoDuplaRepository sobrinhoDuplaRepository;
     private final EquipeMontagemKitRepository equipeMontagemKitRepository;
+    private final TioCaronaEventoRepository tioCaronaEventoRepository;
 
     public CadernoChoroService(
             CadernoChoroRepository repository,
@@ -53,7 +45,8 @@ public class CadernoChoroService {
             EventoRepository eventoRepository,
             DuplaTioCaronaRepository duplaRepository,
             SobrinhoDuplaRepository sobrinhoDuplaRepository,
-            EquipeMontagemKitRepository equipeMontagemKitRepository
+            EquipeMontagemKitRepository equipeMontagemKitRepository,
+            TioCaronaEventoRepository tioCaronaEventoRepository
     ) {
         this.repository = repository;
         this.historicoRepository = historicoRepository;
@@ -62,6 +55,7 @@ public class CadernoChoroService {
         this.sobrinhoDuplaRepository = sobrinhoDuplaRepository;
         this.equipeMontagemKitRepository =
                 equipeMontagemKitRepository;
+        this.tioCaronaEventoRepository = tioCaronaEventoRepository;
     }
 
     /*
@@ -936,28 +930,6 @@ public class CadernoChoroService {
                 observacao.trim();
     }
 
-    private void registrarHistorico(
-            CadernoChoro caderno,
-            TipoMovimentacaoCaderno tipoMovimentacao,
-            StatusCadernoChoro statusAnterior,
-            StatusCadernoChoro statusNovo,
-            String motivo,
-            String observacao
-    ) {
-        historicoRepository.save(
-                new CadernoChoroHistorico(
-                        caderno,
-                        tipoMovimentacao,
-                        statusAnterior,
-                        statusNovo,
-                        null,
-                        null,
-                        motivo,
-                        observacao
-                )
-        );
-    }
-
     private CadernoChoro buscarCaderno(
             Long eventoId,
             Long cadernoId
@@ -1265,6 +1237,255 @@ public class CadernoChoroService {
         );
     }
 
+    @Transactional
+    public List<CadernoChoroResponse> entregarSelecionadosADupla(
+            Long eventoId,
+            Long duplaId,
+            CadernoChoroOperacaoSelecionadaRequest request
+    ) {
+        var dupla = buscarDuplaAtiva(
+                eventoId,
+                duplaId
+        );
+
+        var tioRecebedor = buscarTioAtivoDaDupla(
+                eventoId,
+                dupla,
+                request.tioCaronaEventoId()
+        );
+
+        var cadernos = buscarCadernosSelecionados(
+                eventoId,
+                request.cadernoIds()
+        );
+
+        validarCadernosParaEntrega(
+                cadernos,
+                duplaId
+        );
+
+        var observacao = montarObservacaoEntregaSelecionada(
+                tioRecebedor,
+                request.observacao()
+        );
+
+        for (var caderno : cadernos) {
+            var statusAnterior = caderno.getStatus();
+
+            caderno.entregarADupla(observacao);
+
+            registrarHistorico(
+                    caderno,
+                    TipoMovimentacaoCaderno.ENTREGA_A_DUPLA,
+                    statusAnterior,
+                    caderno.getStatus(),
+                    tioRecebedor,
+                    null,
+                    observacao
+            );
+        }
+
+        return ordenarResponses(cadernos);
+    }
+
+    @Transactional
+    public List<CadernoChoroResponse> receberSelecionadosDaDupla(
+            Long eventoId,
+            Long duplaId,
+            CadernoChoroOperacaoSelecionadaRequest request
+    ) {
+        var dupla = buscarDuplaAtiva(
+                eventoId,
+                duplaId
+        );
+
+        var tioDevolvente = buscarTioAtivoDaDupla(
+                eventoId,
+                dupla,
+                request.tioCaronaEventoId()
+        );
+
+        var cadernos = buscarCadernosSelecionados(
+                eventoId,
+                request.cadernoIds()
+        );
+
+        validarCadernosParaRecebimento(
+                cadernos,
+                duplaId
+        );
+
+        var equipes = equipeMontagemKitRepository
+                .findByEventoIdAndStatusOrderByIdAsc(
+                        eventoId,
+                        StatusEquipeMontagemKit.ATIVA
+                );
+
+        if (equipes.isEmpty()) {
+            throw new BusinessException(
+                    "Cadastre ao menos uma equipe de montagem do kit ativa " +
+                            "antes de receber Cadernos de Mensagens."
+            );
+        }
+
+        var cargasPorEquipe = carregarCargasAtuais(equipes);
+
+        for (var caderno : cadernos) {
+            var observacaoRecebimento =
+                    montarObservacaoRecebimentoSelecionado(
+                            tioDevolvente,
+                            request.observacao()
+                    );
+
+            var statusAntesRecebimento = caderno.getStatus();
+
+            caderno.receberDaDupla(observacaoRecebimento);
+
+            registrarHistorico(
+                    caderno,
+                    TipoMovimentacaoCaderno.RECEBIMENTO_DA_DUPLA,
+                    statusAntesRecebimento,
+                    caderno.getStatus(),
+                    tioDevolvente,
+                    null,
+                    observacaoRecebimento
+            );
+
+            var equipe = selecionarEquipeMenosCarregada(
+                    equipes,
+                    cargasPorEquipe
+            );
+
+            var statusAntesDirecionamento = caderno.getStatus();
+
+            var observacaoDirecionamento =
+                    observacaoEquipe(
+                            equipe,
+                            request.observacao()
+                    );
+
+            caderno.direcionarEquipeMontagem(
+                    equipe,
+                    observacaoDirecionamento
+            );
+
+            registrarHistorico(
+                    caderno,
+                    TipoMovimentacaoCaderno.DIRECIONAMENTO_EQUIPE,
+                    statusAntesDirecionamento,
+                    caderno.getStatus(),
+                    null,
+                    null,
+                    observacaoDirecionamento
+            );
+
+            cargasPorEquipe.compute(
+                    equipe.getId(),
+                    (id, cargaAtual) ->
+                            cargaAtual == null
+                                    ? 1L
+                                    : cargaAtual + 1L
+            );
+        }
+
+        return ordenarResponses(cadernos);
+    }
+
+    @Transactional
+    public List<CadernoChoroResponse> recolherCanceladosDaDupla(
+            Long eventoId,
+            Long duplaId,
+            CadernoChoroOperacaoSelecionadaRequest request
+    ) {
+        var dupla = buscarDuplaAtiva(
+                eventoId,
+                duplaId
+        );
+
+        var tioDevolvente = buscarTioAtivoDaDupla(
+                eventoId,
+                dupla,
+                request.tioCaronaEventoId()
+        );
+
+        var cadernos = buscarCadernosSelecionados(
+                eventoId,
+                request.cadernoIds()
+        );
+
+        validarCadernosParaRecolhimento(
+                cadernos,
+                duplaId
+        );
+
+        var observacao = montarObservacaoRecolhimento(
+                tioDevolvente,
+                request.observacao()
+        );
+
+        for (var caderno : cadernos) {
+            /*
+             * O status permanece CANCELADO. A movimentação registra somente
+             * a conclusão do recolhimento físico.
+             */
+            caderno.concluirRecolhimento();
+
+            registrarHistorico(
+                    caderno,
+                    TipoMovimentacaoCaderno.RECOLHIMENTO_CONCLUIDO,
+                    StatusCadernoChoro.CANCELADO,
+                    StatusCadernoChoro.CANCELADO,
+                    tioDevolvente,
+                    null,
+                    observacao
+            );
+        }
+
+        return ordenarResponses(cadernos);
+    }
+
+    private void registrarHistorico(
+            CadernoChoro caderno,
+            TipoMovimentacaoCaderno tipoMovimentacao,
+            StatusCadernoChoro statusAnterior,
+            StatusCadernoChoro statusNovo,
+            String motivo,
+            String observacao
+    ) {
+        registrarHistorico(
+                caderno,
+                tipoMovimentacao,
+                statusAnterior,
+                statusNovo,
+                null,
+                motivo,
+                observacao
+        );
+    }
+
+    private void registrarHistorico(
+            CadernoChoro caderno,
+            TipoMovimentacaoCaderno tipoMovimentacao,
+            StatusCadernoChoro statusAnterior,
+            StatusCadernoChoro statusNovo,
+            TioCaronaEvento tioCaronaEvento,
+            String motivo,
+            String observacao
+    ) {
+        historicoRepository.save(
+                new CadernoChoroHistorico(
+                        caderno,
+                        tipoMovimentacao,
+                        statusAnterior,
+                        statusNovo,
+                        tioCaronaEvento,
+                        null,
+                        motivo,
+                        observacao
+                )
+        );
+    }
+
     private String montarObservacaoDesistencia(
             CadernoChoro caderno,
             String observacaoPresenca
@@ -1314,5 +1535,307 @@ public class CadernoChoroService {
         return mensagem +
                 " Observação da presença: " +
                 observacao.trim();
+    }
+
+    private DuplaTioCarona buscarDuplaAtiva(
+            Long eventoId,
+            Long duplaId
+    ) {
+        var dupla = duplaRepository.findByIdAndEventoId(
+                        duplaId,
+                        eventoId
+                )
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Dupla não encontrada neste evento."
+                        )
+                );
+
+        if (dupla.getStatus() != DuplaStatus.ATIVA) {
+            throw new BusinessException(
+                    "Não é possível realizar a operação com uma dupla inativa."
+            );
+        }
+
+        return dupla;
+    }
+
+    private TioCaronaEvento buscarTioAtivoDaDupla(
+            Long eventoId,
+            DuplaTioCarona dupla,
+            Long tioCaronaEventoId
+    ) {
+        var tio = tioCaronaEventoRepository
+                .findByIdAndEventoId(
+                        tioCaronaEventoId,
+                        eventoId
+                )
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Tio carona não encontrado neste evento."
+                        )
+                );
+
+        if (tio.getStatus() != TioCaronaStatus.ATIVO) {
+            throw new BusinessException(
+                    "O tio carona informado está inativo."
+            );
+        }
+
+        var pertenceADupla =
+                dupla.getTio1().getId().equals(tio.getId())
+                        || dupla.getTio2().getId().equals(tio.getId());
+
+        if (!pertenceADupla) {
+            throw new BusinessException(
+                    "O tio carona informado não pertence à dupla selecionada."
+            );
+        }
+
+        return tio;
+    }
+
+    private List<CadernoChoro> buscarCadernosSelecionados(
+            Long eventoId,
+            List<Long> cadernoIds
+    ) {
+        if (cadernoIds == null || cadernoIds.isEmpty()) {
+            throw new BusinessException(
+                    "Selecione ao menos um Caderno de Mensagens."
+            );
+        }
+
+        var idsUnicos = new LinkedHashSet<Long>();
+
+        for (var cadernoId : cadernoIds) {
+            if (cadernoId == null) {
+                throw new BusinessException(
+                        "A seleção contém um ID de caderno inválido."
+                );
+            }
+
+            if (!idsUnicos.add(cadernoId)) {
+                throw new BusinessException(
+                        "O Caderno de Mensagens " +
+                                cadernoId +
+                                " foi selecionado mais de uma vez."
+                );
+            }
+        }
+
+        var cadernos = repository.findByEventoIdAndIdIn(
+                eventoId,
+                idsUnicos
+        );
+
+        if (cadernos.size() != idsUnicos.size()) {
+            var idsEncontrados = cadernos.stream()
+                    .map(CadernoChoro::getId)
+                    .collect(java.util.stream.Collectors.toSet());
+
+            var idsNaoEncontrados = idsUnicos.stream()
+                    .filter(id -> !idsEncontrados.contains(id))
+                    .toList();
+
+            throw new ResourceNotFoundException(
+                    "Um ou mais Cadernos de Mensagens não foram encontrados " +
+                            "neste evento. IDs: " +
+                            idsNaoEncontrados
+            );
+        }
+
+        return cadernos;
+    }
+
+    private void validarCadernosParaEntrega(
+            List<CadernoChoro> cadernos,
+            Long duplaId
+    ) {
+        for (var caderno : cadernos) {
+            validarViaAtual(caderno);
+            validarDuplaDoCaderno(
+                    caderno,
+                    duplaId
+            );
+
+            if (caderno.getStatus() != StatusCadernoChoro.PENDENTE) {
+                throw new BusinessException(
+                        identificarCaderno(caderno) +
+                                " não está pendente. Status atual: " +
+                                caderno.getStatus() +
+                                "."
+                );
+            }
+
+            if (caderno.getSobrinho().getStatus()
+                    == SobrinhoStatus.DESISTENTE) {
+                throw new BusinessException(
+                        identificarCaderno(caderno) +
+                                " pertence a um encontrista desistente."
+                );
+            }
+        }
+    }
+
+    private void validarCadernosParaRecebimento(
+            List<CadernoChoro> cadernos,
+            Long duplaId
+    ) {
+        for (var caderno : cadernos) {
+            validarViaAtual(caderno);
+            validarDuplaDoCaderno(
+                    caderno,
+                    duplaId
+            );
+
+            if (caderno.getStatus()
+                    != StatusCadernoChoro.ENTREGUE_A_DUPLA) {
+                throw new BusinessException(
+                        identificarCaderno(caderno) +
+                                " não está entregue à dupla. Status atual: " +
+                                caderno.getStatus() +
+                                "."
+                );
+            }
+        }
+    }
+
+    private void validarCadernosParaRecolhimento(
+            List<CadernoChoro> cadernos,
+            Long duplaId
+    ) {
+        for (var caderno : cadernos) {
+            validarViaAtual(caderno);
+            validarDuplaDoCaderno(
+                    caderno,
+                    duplaId
+            );
+
+            if (caderno.getStatus()
+                    != StatusCadernoChoro.CANCELADO) {
+                throw new BusinessException(
+                        identificarCaderno(caderno) +
+                                " não está cancelado."
+                );
+            }
+
+            if (!caderno.isRecolhimentoPendente()) {
+                throw new BusinessException(
+                        identificarCaderno(caderno) +
+                                " não possui recolhimento físico pendente."
+                );
+            }
+        }
+    }
+
+    private void validarViaAtual(
+            CadernoChoro caderno
+    ) {
+        if (!caderno.isViaAtual()) {
+            throw new BusinessException(
+                    identificarCaderno(caderno) +
+                            " não é a via atual."
+            );
+        }
+    }
+
+    private void validarDuplaDoCaderno(
+            CadernoChoro caderno,
+            Long duplaId
+    ) {
+        if (!caderno.getDupla().getId().equals(duplaId)) {
+            throw new BusinessException(
+                    identificarCaderno(caderno) +
+                            " não pertence à dupla selecionada."
+            );
+        }
+    }
+
+    private String identificarCaderno(
+            CadernoChoro caderno
+    ) {
+        return "Caderno " +
+                caderno.getId() +
+                ", Via " +
+                caderno.getNumeroVia() +
+                ", encontrista " +
+                caderno.getSobrinho().getNome();
+    }
+
+    private String montarObservacaoEntregaSelecionada(
+            TioCaronaEvento tioRecebedor,
+            String observacao
+    ) {
+        var mensagem =
+                "Caderno entregue à dupla. Recebedor: " +
+                        tioRecebedor.getPessoa().getNome() +
+                        ".";
+
+        return concatenarObservacaoOperacional(
+                mensagem,
+                observacao
+        );
+    }
+
+    private String montarObservacaoRecebimentoSelecionado(
+            TioCaronaEvento tioDevolvente,
+            String observacao
+    ) {
+        var mensagem =
+                "Caderno recebido de volta da dupla. Entregue à equipe por: " +
+                        tioDevolvente.getPessoa().getNome() +
+                        ".";
+
+        return concatenarObservacaoOperacional(
+                mensagem,
+                observacao
+        );
+    }
+
+    private String montarObservacaoRecolhimento(
+            TioCaronaEvento tioDevolvente,
+            String observacao
+    ) {
+        var mensagem =
+                "Recolhimento físico concluído. Caderno cancelado devolvido por: " +
+                        tioDevolvente.getPessoa().getNome() +
+                        ".";
+
+        return concatenarObservacaoOperacional(
+                mensagem,
+                observacao
+        );
+    }
+
+    private String concatenarObservacaoOperacional(
+            String mensagem,
+            String observacao
+    ) {
+        if (observacao == null || observacao.isBlank()) {
+            return mensagem;
+        }
+
+        return mensagem +
+                " Observação: " +
+                observacao.trim();
+    }
+
+    private List<CadernoChoroResponse> ordenarResponses(
+            List<CadernoChoro> cadernos
+    ) {
+        return cadernos.stream()
+                .sorted(
+                        java.util.Comparator
+                                .comparing(
+                                        (CadernoChoro caderno) ->
+                                                caderno.getSobrinho().getNome(),
+                                        String.CASE_INSENSITIVE_ORDER
+                                )
+                                .thenComparing(
+                                        CadernoChoro::getNumeroVia
+                                )
+                )
+                .map(CadernoChoroResponse::from)
+                .toList();
     }
 }
