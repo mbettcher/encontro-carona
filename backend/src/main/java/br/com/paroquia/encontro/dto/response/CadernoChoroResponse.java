@@ -29,6 +29,7 @@ public record CadernoChoroResponse(
 
         Integer numeroVia,
         boolean viaAtual,
+        boolean recolhimentoPendente,
         Long cadernoAnteriorId,
         MotivoEmissaoCaderno motivoEmissao,
         MotivoCancelamentoCaderno motivoCancelamento,
@@ -72,6 +73,7 @@ public record CadernoChoroResponse(
 
                 entity.getNumeroVia(),
                 entity.isViaAtual(),
+                entity.isRecolhimentoPendente(),
                 anterior == null ? null : anterior.getId(),
                 entity.getMotivoEmissao(),
                 entity.getMotivoCancelamento(),

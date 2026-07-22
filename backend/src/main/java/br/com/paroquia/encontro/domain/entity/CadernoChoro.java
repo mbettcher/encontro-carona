@@ -70,6 +70,9 @@ public class CadernoChoro {
     @Column(name = "via_atual", nullable = false)
     private boolean viaAtual = true;
 
+    @Column(name = "recolhimento_pendente", nullable = false)
+    private boolean recolhimentoPendente;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "status_anterior_ocorrencia", length = 40)
     private StatusCadernoChoro statusAnteriorOcorrencia;
@@ -190,6 +193,27 @@ public class CadernoChoro {
             DuplaTioCarona duplaAtual,
             MotivoEmissaoCaderno motivoEmissao
     ) {
+        return criarNovaVia(
+                viaAnterior,
+                duplaAtual,
+                motivoEmissao
+        );
+    }
+
+    /**
+     * Cria uma nova via física vinculada à via anterior.
+     * <p>
+     * Pode ser utilizada tanto para:
+     * - substituição por perda, dano ou erro;
+     * - retomada da participação.
+     * <p>
+     * Toda nova via sempre começa em PENDENTE.
+     */
+    public static CadernoChoro criarNovaVia(
+            CadernoChoro viaAnterior,
+            DuplaTioCarona duplaAtual,
+            MotivoEmissaoCaderno motivoEmissao
+    ) {
         if (viaAnterior == null) {
             throw new BusinessException(
                     "A via anterior deve ser informada."
@@ -204,6 +228,34 @@ public class CadernoChoro {
                 motivoEmissao,
                 viaAnterior
         );
+    }
+
+    /**
+     * Marca que a via foi cancelada administrativamente, mas continua
+     * fisicamente fora da equipe organizadora.
+     */
+    public void marcarRecolhimentoPendente() {
+        if (this.status != StatusCadernoChoro.CANCELADO) {
+            throw new BusinessException(
+                    "Somente cadernos cancelados podem possuir recolhimento pendente."
+            );
+        }
+
+        this.recolhimentoPendente = true;
+    }
+
+    /**
+     * Será utilizado no próximo bloco quando a equipe confirmar
+     * que o exemplar físico foi recolhido.
+     */
+    public void concluirRecolhimento() {
+        if (!this.recolhimentoPendente) {
+            throw new BusinessException(
+                    "Este Caderno de Mensagens não possui recolhimento pendente."
+            );
+        }
+
+        this.recolhimentoPendente = false;
     }
 
     public void entregarADupla(String observacao) {
@@ -653,5 +705,9 @@ public class CadernoChoro {
 
     public OffsetDateTime getCriadoEm() {
         return criadoEm;
+    }
+
+    public boolean isRecolhimentoPendente() {
+        return recolhimentoPendente;
     }
 }

@@ -850,17 +850,13 @@ public class CadernoChoroService {
             MotivoSubstituicaoCaderno motivo
     ) {
         return switch (motivo) {
-            case PERDA ->
-                    MotivoEmissaoCaderno.SUBSTITUICAO_PERDA;
+            case PERDA -> MotivoEmissaoCaderno.SUBSTITUICAO_PERDA;
 
-            case DANO, CONTEUDO_INUTILIZADO ->
-                    MotivoEmissaoCaderno.SUBSTITUICAO_DANO;
+            case DANO, CONTEUDO_INUTILIZADO -> MotivoEmissaoCaderno.SUBSTITUICAO_DANO;
 
-            case ERRO_DE_IMPRESSAO, ERRO_DE_MONTAGEM ->
-                    MotivoEmissaoCaderno.SUBSTITUICAO_ERRO;
+            case ERRO_DE_IMPRESSAO, ERRO_DE_MONTAGEM -> MotivoEmissaoCaderno.SUBSTITUICAO_ERRO;
 
-            case OUTRO ->
-                    MotivoEmissaoCaderno.OUTRO;
+            case OUTRO -> MotivoEmissaoCaderno.OUTRO;
         };
     }
 
@@ -1040,6 +1036,283 @@ public class CadernoChoroService {
         return "Nova via gerada em substituição à Via " +
                 numeroViaAnterior +
                 ". O fluxo operacional foi reiniciado em PENDENTE. " +
+                observacao.trim();
+    }
+
+    /*
+     * =========================================================================
+     * INTEGRAÇÃO COM A PARTICIPAÇÃO DO ENCONTRISTA
+     * =========================================================================
+     */
+
+    /**
+     * Integra a desistência do encontrista com sua via atual.
+     * <p>
+     * Regras:
+     * - sem caderno: nenhuma ação;
+     * - já entregue ao encontrista: não altera o status;
+     * - ainda não entregue: cancela automaticamente;
+     * - se estava com a dupla: registra recolhimento físico pendente.
+     */
+    @Transactional
+    public void registrarDesistenciaEncontrista(
+            Long eventoId,
+            Long sobrinhoId,
+            String observacaoPresenca
+    ) {
+        var cadernoOpt =
+                repository.findByEventoIdAndSobrinhoIdAndViaAtualTrue(
+                        eventoId,
+                        sobrinhoId
+                );
+
+        if (cadernoOpt.isEmpty()) {
+            return;
+        }
+
+        var caderno = cadernoOpt.get();
+        var statusAnterior = caderno.getStatus();
+        var observacao = montarObservacaoDesistencia(
+                caderno,
+                observacaoPresenca
+        );
+
+        /*
+         * O exemplar já foi entregue fisicamente ao encontrista.
+         *
+         * Não reescrevemos o resultado final da via. Apenas registramos
+         * que a desistência aconteceu depois da entrega.
+         */
+        if (statusAnterior == StatusCadernoChoro.ENTREGUE_AO_SOBRINHO) {
+            registrarHistorico(
+                    caderno,
+                    TipoMovimentacaoCaderno.ENCONTRISTA_DESISTENTE,
+                    statusAnterior,
+                    statusAnterior,
+                    MotivoCancelamentoCaderno.DESISTENCIA_ENCONTRISTA.name(),
+                    observacao
+            );
+
+            return;
+        }
+
+        /*
+         * Proteção contra repetição. O SobrinhoService já evita normalmente
+         * esta chamada quando o status anterior também era DESISTENTE, mas
+         * a operação permanece idempotente no serviço de cadernos.
+         */
+        if (statusAnterior == StatusCadernoChoro.CANCELADO) {
+            return;
+        }
+
+        if (statusAnterior == StatusCadernoChoro.SUBSTITUIDO) {
+            throw new BusinessException(
+                    "A via atual não pode estar marcada como substituída."
+            );
+        }
+
+        var estavaComDupla =
+                statusAnterior == StatusCadernoChoro.ENTREGUE_A_DUPLA;
+
+        /*
+         * Primeiro registramos o fato administrativo da desistência.
+         */
+        registrarHistorico(
+                caderno,
+                TipoMovimentacaoCaderno.ENCONTRISTA_DESISTENTE,
+                statusAnterior,
+                statusAnterior,
+                MotivoCancelamentoCaderno.DESISTENCIA_ENCONTRISTA.name(),
+                observacao
+        );
+
+        /*
+         * Depois encerramos formalmente a via.
+         */
+        caderno.cancelar(
+                MotivoCancelamentoCaderno.DESISTENCIA_ENCONTRISTA,
+                observacao
+        );
+
+        if (estavaComDupla) {
+            caderno.marcarRecolhimentoPendente();
+        }
+
+        registrarHistorico(
+                caderno,
+                TipoMovimentacaoCaderno.CADERNO_CANCELADO,
+                statusAnterior,
+                StatusCadernoChoro.CANCELADO,
+                MotivoCancelamentoCaderno.DESISTENCIA_ENCONTRISTA.name(),
+                estavaComDupla
+                        ? observacao +
+                          " O exemplar físico estava com a dupla e precisa ser recolhido."
+                        : observacao
+        );
+    }
+
+    /**
+     * Gera uma nova via quando o encontrista retorna após ter desistido.
+     * <p>
+     * A via cancelada não é reaberta. Ela deixa de ser a via atual e uma
+     * nova via é criada em PENDENTE, utilizando a dupla do vínculo ativo.
+     */
+    @Transactional
+    public void registrarRetomadaParticipacao(
+            Long eventoId,
+            Long sobrinhoId,
+            String observacaoPresenca
+    ) {
+        var viaAnteriorOpt =
+                repository.findByEventoIdAndSobrinhoIdAndViaAtualTrue(
+                        eventoId,
+                        sobrinhoId
+                );
+
+        /*
+         * O encontrista pode retomar antes da geração inicial dos cadernos.
+         * Nesse caso, o processo normal de geração criará a Via 1 depois.
+         */
+        if (viaAnteriorOpt.isEmpty()) {
+            return;
+        }
+
+        var viaAnterior = viaAnteriorOpt.get();
+
+        /*
+         * Uma retomada só gera nova via quando a última via foi cancelada
+         * especificamente pela desistência.
+         */
+        if (viaAnterior.getStatus() != StatusCadernoChoro.CANCELADO
+                || viaAnterior.getMotivoCancelamento()
+                != MotivoCancelamentoCaderno.DESISTENCIA_ENCONTRISTA) {
+            return;
+        }
+
+        var vinculoAtivo = sobrinhoDuplaRepository
+                .findByEventoIdAndSobrinhoIdAndStatus(
+                        eventoId,
+                        sobrinhoId,
+                        VinculoStatus.ATIVO
+                )
+                .orElseThrow(() ->
+                        new BusinessException(
+                                "Não é possível retomar o fluxo do Caderno de " +
+                                        "Mensagens porque o encontrista não possui " +
+                                        "vínculo ativo com uma dupla."
+                        )
+                );
+
+        var duplaAtual = vinculoAtivo.getDupla();
+
+        if (duplaAtual.getStatus() != DuplaStatus.ATIVA) {
+            throw new BusinessException(
+                    "Não é possível gerar a nova via porque a dupla " +
+                            "responsável está inativa."
+            );
+        }
+
+        var observacao = montarObservacaoRetomada(
+                viaAnterior,
+                duplaAtual.getCodigo(),
+                observacaoPresenca
+        );
+
+        /*
+         * A via cancelada permanece histórica e deixa de ser a via atual.
+         */
+        viaAnterior.marcarComoViaAnterior();
+        repository.save(viaAnterior);
+        repository.flush();
+
+        var novaVia = CadernoChoro.criarNovaVia(
+                viaAnterior,
+                duplaAtual,
+                MotivoEmissaoCaderno.RETOMADA_PARTICIPACAO
+        );
+
+        repository.save(novaVia);
+
+        /*
+         * Registra a retomada na timeline da via encerrada.
+         */
+        registrarHistorico(
+                viaAnterior,
+                TipoMovimentacaoCaderno.PARTICIPACAO_RETOMADA,
+                StatusCadernoChoro.CANCELADO,
+                StatusCadernoChoro.CANCELADO,
+                MotivoEmissaoCaderno.RETOMADA_PARTICIPACAO.name(),
+                "Participação retomada. A Via " +
+                        novaVia.getNumeroVia() +
+                        " foi gerada para reiniciar o processo. " +
+                        observacao
+        );
+
+        /*
+         * A nova via possui timeline própria desde sua criação.
+         */
+        registrarHistorico(
+                novaVia,
+                TipoMovimentacaoCaderno.NOVA_VIA_GERADA,
+                null,
+                StatusCadernoChoro.PENDENTE,
+                MotivoEmissaoCaderno.RETOMADA_PARTICIPACAO.name(),
+                "Via gerada após retomada da participação. " +
+                        "Via anterior: " +
+                        viaAnterior.getNumeroVia() +
+                        ". O fluxo foi reiniciado em PENDENTE. " +
+                        observacao
+        );
+    }
+
+    private String montarObservacaoDesistencia(
+            CadernoChoro caderno,
+            String observacaoPresenca
+    ) {
+        var mensagem =
+                "Encontrista marcado como desistente. " +
+                        "Situação da Via " +
+                        caderno.getNumeroVia() +
+                        " no momento da desistência: " +
+                        caderno.getStatus() +
+                        ".";
+
+        return concatenarObservacao(
+                mensagem,
+                observacaoPresenca
+        );
+    }
+
+    private String montarObservacaoRetomada(
+            CadernoChoro viaAnterior,
+            String codigoDuplaAtual,
+            String observacaoPresenca
+    ) {
+        var mensagem =
+                "Encontrista retomou a participação. " +
+                        "A Via " +
+                        viaAnterior.getNumeroVia() +
+                        " permanece cancelada. " +
+                        "Nova dupla responsável: " +
+                        codigoDuplaAtual +
+                        ".";
+
+        return concatenarObservacao(
+                mensagem,
+                observacaoPresenca
+        );
+    }
+
+    private String concatenarObservacao(
+            String mensagem,
+            String observacao
+    ) {
+        if (observacao == null || observacao.isBlank()) {
+            return mensagem;
+        }
+
+        return mensagem +
+                " Observação da presença: " +
                 observacao.trim();
     }
 }
