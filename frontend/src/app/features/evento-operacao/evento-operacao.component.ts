@@ -5,7 +5,10 @@ import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 
-import { MessageService } from 'primeng/api';
+import {
+  ConfirmationService,
+  MessageService
+} from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { InputTextModule } from 'primeng/inputtext';
@@ -17,6 +20,7 @@ import { DialogModule } from 'primeng/dialog';
 import { TextareaModule } from 'primeng/textarea';
 import { TooltipModule } from 'primeng/tooltip';
 import { TabsModule } from 'primeng/tabs';
+import { CheckboxModule } from 'primeng/checkbox';
 
 import {
   CadernoChoro,
@@ -33,7 +37,7 @@ import {
   ModeloEtiquetaQr,
   StatusCredencial,
   TipoCredencial,
-  TioCaronaEvento
+  TioCaronaEvento,
 } from '../../shared/models';
 import { AuthService } from '../../core/auth/auth.service';
 import { EventoOperacaoService } from './evento-operacao.service';
@@ -59,6 +63,10 @@ type AbaOperacao =
   | 'RELATORIOS'
   | 'IMPRESSOES';
 
+type TipoOperacaoLoteCaderno =
+  | 'ENTREGA'
+  | 'RECEBIMENTO'
+  | 'RECOLHIMENTO';
 
 interface OpcaoStatusCaderno {
   label: string;
@@ -68,13 +76,13 @@ interface OpcaoStatusCaderno {
 interface OpcaoEquipeCaderno {
   label: string;
   value: number;
-  cor?: string;
+  cor?: string | null;
 }
 
 interface ResumoEquipeCaderno {
   id: number | null;
   apelido: string;
-  cor?: string;
+  cor?: string | null;
   total: number;
   direcionados: number;
   conferidos: number;
@@ -100,7 +108,8 @@ interface ResumoEquipeCaderno {
     TextareaModule,
     TooltipModule,
     TagModule,
-    TabsModule
+    TabsModule,
+    CheckboxModule
   ],
   templateUrl: './evento-operacao.component.html',
   styleUrl: './evento-operacao.component.scss'
@@ -112,6 +121,7 @@ export class EventoOperacaoComponent implements OnInit {
   private readonly service = inject(EventoOperacaoService);
   private readonly fb = inject(FormBuilder);
   private readonly messageService = inject(MessageService);
+  private readonly confirmationService = inject(ConfirmationService);
 
   readonly eventoId = Number(this.route.snapshot.paramMap.get('eventoId'));
 
@@ -160,6 +170,18 @@ export class EventoOperacaoComponent implements OnInit {
   readonly acoesEspeciaisCadernoVisivel = signal(false);
   readonly processandoCodigoSobrinho = signal(false);
   readonly abaOperacaoAtiva = signal<AbaOperacao>('VISAO_GERAL');
+  readonly tipoOperacaoLoteCaderno =
+    signal<TipoOperacaoLoteCaderno>('ENTREGA');
+
+  readonly cadernosSelecionadosIds =
+    signal<Set<number>>(new Set<number>());
+
+  readonly operacaoLoteCadernoVisivel = signal(false);
+
+  readonly tioOperacaoLoteCadernoId =
+    signal<number | null>(null);
+
+  readonly observacaoOperacaoLoteCaderno = signal('');
 
   readonly historicoCadernoTimeline = computed(() =>
     [...this.historicoCaderno()].reverse()
@@ -260,6 +282,142 @@ export class EventoOperacaoComponent implements OnInit {
       value: dupla.id
     }))
   );
+
+  readonly cadernosElegiveisOperacaoLote = computed(() =>
+    this.cadernosFiltrados().filter(caderno =>
+      this.cadernoElegivelParaOperacaoLote(caderno)
+    )
+  );
+
+  readonly cadernosSelecionadosOperacaoLote = computed(() => {
+    const ids = this.cadernosSelecionadosIds();
+
+    return this.cadernos()
+      .filter(caderno => ids.has(caderno.id))
+      .sort((a, b) =>
+        a.sobrinhoNome.localeCompare(
+          b.sobrinhoNome,
+          'pt-BR'
+        )
+      );
+  });
+
+  readonly quantidadeCadernosSelecionados = computed(
+    () => this.cadernosSelecionadosIds().size
+  );
+
+  readonly duplaOperacaoLote = computed(() => {
+    const selecionados =
+      this.cadernosSelecionadosOperacaoLote();
+
+    if (selecionados.length === 0) {
+      return null;
+    }
+
+    const primeiraDuplaId = selecionados[0].duplaId;
+
+    if (
+      selecionados.some(
+        caderno => caderno.duplaId !== primeiraDuplaId
+      )
+    ) {
+      return null;
+    }
+
+    return this.duplas().find(
+      dupla => dupla.id === primeiraDuplaId
+    ) ?? null;
+  });
+
+  readonly tiosDaDuplaOperacaoLote = computed(() => {
+    const dupla = this.duplaOperacaoLote();
+
+    if (!dupla) {
+      return [];
+    }
+
+    const tioIds = new Set([
+      dupla.tio1Id,
+      dupla.tio2Id
+    ]);
+
+    return this.tiosCarona()
+      .filter(tio =>
+        tioIds.has(tio.id) &&
+        tio.status === 'ATIVO'
+      )
+      .map(tio => ({
+        label: tio.pessoaNome,
+        value: tio.id
+      }))
+      .sort((a, b) =>
+        a.label.localeCompare(b.label, 'pt-BR')
+      );
+  });
+
+  readonly todosCadernosVisiveisSelecionados =
+    computed(() => {
+      const elegiveis =
+        this.cadernosElegiveisOperacaoLote();
+
+      if (elegiveis.length === 0) {
+        return false;
+      }
+
+      const selecionados =
+        this.cadernosSelecionadosIds();
+
+      return elegiveis.every(caderno =>
+        selecionados.has(caderno.id)
+      );
+    });
+
+  readonly possuiSelecaoParcialCadernos =
+    computed(() => {
+      const elegiveis =
+        this.cadernosElegiveisOperacaoLote();
+
+      if (elegiveis.length === 0) {
+        return false;
+      }
+
+      const quantidadeSelecionada =
+        elegiveis.filter(caderno =>
+          this.cadernosSelecionadosIds().has(
+            caderno.id
+          )
+        ).length;
+
+      return quantidadeSelecionada > 0 &&
+        quantidadeSelecionada < elegiveis.length;
+    });
+
+  readonly podeAbrirOperacaoLoteCaderno =
+    computed(() => {
+      const selecionados =
+        this.cadernosSelecionadosOperacaoLote();
+
+      if (
+        !this.seguranca.podeEscrever() ||
+        selecionados.length === 0 ||
+        this.processandoCadernos()
+      ) {
+        return false;
+      }
+
+      const duplaId = selecionados[0].duplaId;
+
+      return selecionados.every(caderno =>
+        caderno.duplaId === duplaId &&
+        this.cadernoElegivelParaOperacaoLote(caderno)
+      );
+    });
+
+  readonly podeConfirmarOperacaoLoteCaderno =
+    computed(() =>
+      this.podeAbrirOperacaoLoteCaderno() &&
+      this.tioOperacaoLoteCadernoId() !== null
+    );
 
 
   readonly opcoesTiposRelatorio = [
@@ -597,26 +755,41 @@ export class EventoOperacaoComponent implements OnInit {
     this.baixandoListaPresenca() !== null || this.baixandoRelatorioCadernos()
   );
 
-  readonly opcoesEquipesCaderno = computed<OpcaoEquipeCaderno[]>(() => {
-    const equipes = new Map<number, OpcaoEquipeCaderno>();
+  readonly opcoesEquipesCaderno =
+    computed<OpcaoEquipeCaderno[]>(() => {
+      const equipes =
+        new Map<number, OpcaoEquipeCaderno>();
 
-    this.cadernos()
-      .filter(caderno => !!caderno.equipeMontagemKitId)
-      .forEach(caderno => {
-        const id = Number(caderno.equipeMontagemKitId);
+      this.cadernos()
+        .filter(
+          caderno =>
+            caderno.equipeMontagemKitId != null
+        )
+        .forEach(caderno => {
+          const id = caderno.equipeMontagemKitId;
 
-        if (!equipes.has(id)) {
-          equipes.set(id, {
+          if (id == null || equipes.has(id)) {
+            return;
+          }
+
+          const opcao: OpcaoEquipeCaderno = {
             value: id,
-            label: caderno.equipeMontagemKitApelido || `Equipe ${id}`,
-            cor: caderno.equipeMontagemKitCorIdentificacao
-          });
-        }
-      });
+            label:
+              caderno.equipeMontagemKitApelido?.trim() ||
+              `Equipe ${id}`,
+            cor:
+              caderno.equipeMontagemKitCorIdentificacao ??
+              null
+          };
 
-    return Array.from(equipes.values())
-      .sort((a, b) => a.label.localeCompare(b.label, 'pt-BR'));
-  });
+          equipes.set(id, opcao);
+        });
+
+      return Array.from(equipes.values())
+        .sort((a, b) =>
+          a.label.localeCompare(b.label, 'pt-BR')
+        );
+    });
 
   readonly opcoesStatusCaderno: OpcaoStatusCaderno[] = [
     { label: 'Pendente', value: 'PENDENTE' },
@@ -626,52 +799,80 @@ export class EventoOperacaoComponent implements OnInit {
     { label: 'Anexado ao kit', value: 'ANEXADO_AO_KIT' },
     { label: 'Entregue ao encontrista', value: 'ENTREGUE_AO_SOBRINHO' },
     { label: 'Ocorrências', value: 'PERDIDO' },
-    { label: 'Cancelado', value: 'CANCELADO' }
+    { label: 'Cancelado', value: 'CANCELADO' },
+    { label: 'Danificado', value: 'DANIFICADO' },
   ];
 
-  readonly resumoEquipesCaderno = computed<ResumoEquipeCaderno[]>(() => {
-    const resumo = new Map<number | null, ResumoEquipeCaderno>();
+  readonly resumoEquipesCaderno =
+    computed<ResumoEquipeCaderno[]>(() => {
+      const resumo =
+        new Map<number | null, ResumoEquipeCaderno>();
 
-    this.cadernos()
-      .filter(caderno => ['DIRECIONADO_EQUIPE_MONTAGEM', 'CONFERIDO', 'ANEXADO_AO_KIT', 'ENTREGUE_AO_SOBRINHO'].includes(caderno.status))
-      .forEach(caderno => {
-        const id = caderno.equipeMontagemKitId ?? null;
-        const chave = id;
-        const item = resumo.get(chave) ?? {
-          id,
-          apelido: caderno.equipeMontagemKitApelido || 'Sem equipe',
-          cor: caderno.equipeMontagemKitCorIdentificacao,
-          total: 0,
-          direcionados: 0,
-          conferidos: 0,
-          noKit: 0,
-          entregues: 0
-        };
+      const statusComEquipe: StatusCadernoChoro[] = [
+        'DIRECIONADO_EQUIPE_MONTAGEM',
+        'CONFERIDO',
+        'ANEXADO_AO_KIT',
+        'ENTREGUE_AO_SOBRINHO'
+      ];
 
-        item.total++;
+      this.cadernos()
+        .filter(caderno =>
+          statusComEquipe.includes(caderno.status)
+        )
+        .forEach(caderno => {
+          const chave =
+            caderno.equipeMontagemKitId ?? null;
 
-        if (caderno.status === 'DIRECIONADO_EQUIPE_MONTAGEM') {
-          item.direcionados++;
-        }
+          const itemExistente = resumo.get(chave);
 
-        if (caderno.status === 'CONFERIDO') {
-          item.conferidos++;
-        }
+          const item: ResumoEquipeCaderno =
+            itemExistente ?? {
+              id: chave,
+              apelido:
+                caderno.equipeMontagemKitApelido?.trim() ||
+                'Sem equipe',
+              cor:
+                caderno
+                  .equipeMontagemKitCorIdentificacao ??
+                null,
+              total: 0,
+              direcionados: 0,
+              conferidos: 0,
+              noKit: 0,
+              entregues: 0
+            };
 
-        if (caderno.status === 'ANEXADO_AO_KIT') {
-          item.noKit++;
-        }
+          item.total++;
 
-        if (caderno.status === 'ENTREGUE_AO_SOBRINHO') {
-          item.entregues++;
-        }
+          switch (caderno.status) {
+            case 'DIRECIONADO_EQUIPE_MONTAGEM':
+              item.direcionados++;
+              break;
 
-        resumo.set(chave, item);
-      });
+            case 'CONFERIDO':
+              item.conferidos++;
+              break;
 
-    return Array.from(resumo.values())
-      .sort((a, b) => a.apelido.localeCompare(b.apelido, 'pt-BR'));
-  });
+            case 'ANEXADO_AO_KIT':
+              item.noKit++;
+              break;
+
+            case 'ENTREGUE_AO_SOBRINHO':
+              item.entregues++;
+              break;
+          }
+
+          resumo.set(chave, item);
+        });
+
+      return Array.from(resumo.values())
+        .sort((a, b) =>
+          a.apelido.localeCompare(
+            b.apelido,
+            'pt-BR'
+          )
+        );
+    });
 
   readonly cadernosComEquipe = computed(() =>
     this.cadernos().filter(caderno => !!caderno.equipeMontagemKitId)
@@ -948,8 +1149,11 @@ export class EventoOperacaoComponent implements OnInit {
     this.filtroCadernos.set(valor);
   }
 
-  alterarDuplaCadernoSelecionada(duplaId: number | null): void {
+  alterarDuplaCadernoSelecionada(
+    duplaId: number | null
+  ): void {
     this.duplaCadernoSelecionada.set(duplaId);
+    this.limparSelecaoCadernos();
   }
 
 
@@ -957,8 +1161,11 @@ export class EventoOperacaoComponent implements OnInit {
     this.equipeCadernoSelecionada.set(equipeId);
   }
 
-  alterarStatusCadernoSelecionado(status: StatusCadernoChoro | null): void {
+  alterarStatusCadernoSelecionado(
+    status: StatusCadernoChoro | null
+  ): void {
     this.statusCadernoSelecionado.set(status);
+    this.limparSelecaoCadernos();
   }
 
   filtrarCadernosPorEquipe(equipeId: number | null): void {
@@ -971,6 +1178,7 @@ export class EventoOperacaoComponent implements OnInit {
     this.equipeCadernoSelecionada.set(null);
     this.statusCadernoSelecionado.set(null);
     this.filtroCadernos.set('');
+    this.limparSelecaoCadernos();
   }
 
   alterarFiltroTiosOperacao(valor: string): void {
@@ -1041,12 +1249,12 @@ export class EventoOperacaoComponent implements OnInit {
             tipoImpressao === 'CRACHAS'
               ? this.nomeArquivoCrachas()
               : tipoImpressao === 'CARTEIRINHAS'
-              ? this.nomeArquivoCarteirinhas()
-              : tipoImpressao === 'LISTA_ENCONTRISTAS'
-              ? this.nomeArquivoListaPresenca('ENCONTRISTAS')
-              : tipoImpressao === 'LISTA_TIOS_CARONA'
-              ? this.nomeArquivoListaPresenca('TIOS_CARONA')
-              : this.nomeArquivoEtiquetasQr()
+                ? this.nomeArquivoCarteirinhas()
+                : tipoImpressao === 'LISTA_ENCONTRISTAS'
+                  ? this.nomeArquivoListaPresenca('ENCONTRISTAS')
+                  : tipoImpressao === 'LISTA_TIOS_CARONA'
+                    ? this.nomeArquivoListaPresenca('TIOS_CARONA')
+                    : this.nomeArquivoEtiquetasQr()
           );
         },
         error: erro => {
@@ -1906,13 +2114,15 @@ export class EventoOperacaoComponent implements OnInit {
 
   private statusCadernoAgrupa(statusAtual: StatusCadernoChoro, statusFiltro: StatusCadernoChoro): boolean {
     if (statusFiltro === 'PERDIDO') {
-      return ['PERDIDO', 'SUBSTITUIDO'].includes(statusAtual);
+      return statusAtual === 'PERDIDO' ||
+        statusAtual === 'DANIFICADO' ||
+        statusAtual === 'SUBSTITUIDO';
     }
 
     return statusAtual === statusFiltro;
   }
 
-  private normalizarCorHex(cor?: string): string {
+  private normalizarCorHex(cor?: string | null): string {
     if (!cor || !/^#[0-9a-fA-F]{6}$/.test(cor.trim())) {
       return '#64748b';
     }
@@ -2232,5 +2442,423 @@ export class EventoOperacaoComponent implements OnInit {
     this.codigoSobrinhoForm.markAsPristine();
     this.codigoSobrinhoForm.markAsUntouched();
     this.codigoSobrinhoForm.updateValueAndValidity();
+  }
+
+  alterarTipoOperacaoLoteCaderno(
+    tipo: TipoOperacaoLoteCaderno
+  ): void {
+    if (
+      this.tipoOperacaoLoteCaderno() === tipo
+    ) {
+      return;
+    }
+
+    this.tipoOperacaoLoteCaderno.set(tipo);
+    this.limparSelecaoCadernos();
+  }
+
+  cadernoElegivelParaOperacaoLote(
+    caderno: CadernoChoro
+  ): boolean {
+    if (!caderno.viaAtual) {
+      return false;
+    }
+
+    switch (this.tipoOperacaoLoteCaderno()) {
+      case 'ENTREGA':
+        return caderno.status === 'PENDENTE';
+
+      case 'RECEBIMENTO':
+        return caderno.status ===
+          'ENTREGUE_A_DUPLA';
+
+      case 'RECOLHIMENTO':
+        return caderno.status === 'CANCELADO' &&
+          caderno.recolhimentoPendente;
+
+      default:
+        return false;
+    }
+  }
+
+  cadernoSelecionadoParaOperacao(
+    cadernoId: number
+  ): boolean {
+    return this.cadernosSelecionadosIds().has(
+      cadernoId
+    );
+  }
+
+  alterarSelecaoCaderno(
+    caderno: CadernoChoro,
+    selecionado: boolean
+  ): void {
+    if (
+      selecionado &&
+      !this.cadernoElegivelParaOperacaoLote(caderno)
+    ) {
+      return;
+    }
+
+    const ids = new Set(
+      this.cadernosSelecionadosIds()
+    );
+
+    if (selecionado) {
+      const selecionados =
+        this.cadernosSelecionadosOperacaoLote();
+
+      const duplaDiferente =
+        selecionados.length > 0 &&
+        selecionados[0].duplaId !==
+        caderno.duplaId;
+
+      if (duplaDiferente) {
+        this.toastWarn(
+          'Selecione cadernos de uma única dupla por operação.'
+        );
+        return;
+      }
+
+      ids.add(caderno.id);
+    } else {
+      ids.delete(caderno.id);
+    }
+
+    this.cadernosSelecionadosIds.set(ids);
+  }
+
+  alterarSelecaoTodosCadernosVisiveis(
+    selecionado: boolean
+  ): void {
+    const elegiveis =
+      this.cadernosElegiveisOperacaoLote();
+
+    if (!selecionado) {
+      const ids = new Set(
+        this.cadernosSelecionadosIds()
+      );
+
+      elegiveis.forEach(caderno =>
+        ids.delete(caderno.id)
+      );
+
+      this.cadernosSelecionadosIds.set(ids);
+      return;
+    }
+
+    if (elegiveis.length === 0) {
+      return;
+    }
+
+    /*
+     * Uma operação só pode envolver uma dupla.
+     *
+     * Quando o filtro exibe mais de uma dupla, selecionamos
+     * somente a primeira dupla elegível e avisamos o usuário.
+     */
+    const duplaId = elegiveis[0].duplaId;
+
+    const mesmaDupla = elegiveis.filter(
+      caderno => caderno.duplaId === duplaId
+    );
+
+    this.cadernosSelecionadosIds.set(
+      new Set(mesmaDupla.map(caderno => caderno.id))
+    );
+
+    if (mesmaDupla.length !== elegiveis.length) {
+      this.toastWarn(
+        'Foram selecionados somente os cadernos da primeira dupla visível. Filtre uma dupla para selecionar todos os seus registros.'
+      );
+    }
+  }
+
+  limparSelecaoCadernos(): void {
+    this.cadernosSelecionadosIds.set(
+      new Set<number>()
+    );
+
+    this.tioOperacaoLoteCadernoId.set(null);
+    this.observacaoOperacaoLoteCaderno.set('');
+  }
+
+  abrirOperacaoLoteCaderno(): void {
+    if (!this.podeAbrirOperacaoLoteCaderno()) {
+      this.toastWarn(
+        'Selecione ao menos um caderno elegível de uma única dupla.'
+      );
+      return;
+    }
+
+    const opcoesTios =
+      this.tiosDaDuplaOperacaoLote();
+
+    if (opcoesTios.length === 0) {
+      this.toastWarn(
+        'A dupla selecionada não possui tio carona ativo disponível para registrar a operação.'
+      );
+      return;
+    }
+
+    this.tioOperacaoLoteCadernoId.set(
+      opcoesTios.length === 1
+        ? opcoesTios[0].value
+        : null
+    );
+
+    this.observacaoOperacaoLoteCaderno.set('');
+    this.operacaoLoteCadernoVisivel.set(true);
+  }
+
+  fecharOperacaoLoteCaderno(): void {
+    if (this.processandoCadernos()) {
+      return;
+    }
+
+    this.operacaoLoteCadernoVisivel.set(false);
+    this.tioOperacaoLoteCadernoId.set(null);
+    this.observacaoOperacaoLoteCaderno.set('');
+  }
+
+  alterarTioOperacaoLoteCaderno(
+    tioCaronaEventoId: number | null
+  ): void {
+    this.tioOperacaoLoteCadernoId.set(
+      tioCaronaEventoId
+    );
+  }
+
+  alterarObservacaoOperacaoLoteCaderno(
+    observacao: string
+  ): void {
+    this.observacaoOperacaoLoteCaderno.set(
+      observacao
+    );
+  }
+
+  tituloOperacaoLoteCaderno(): string {
+    switch (this.tipoOperacaoLoteCaderno()) {
+      case 'ENTREGA':
+        return 'Entregar cadernos à dupla';
+
+      case 'RECEBIMENTO':
+        return 'Receber cadernos da dupla';
+
+      case 'RECOLHIMENTO':
+        return 'Recolher cadernos cancelados';
+
+      default:
+        return 'Operação dos cadernos';
+    }
+  }
+
+  descricaoOperacaoLoteCaderno(): string {
+    switch (this.tipoOperacaoLoteCaderno()) {
+      case 'ENTREGA':
+        return 'Confirme os exemplares físicos entregues à dupla e identifique o tio que os recebeu.';
+
+      case 'RECEBIMENTO':
+        return 'Confirme os exemplares devolvidos pela dupla e identifique o tio que realizou a devolução.';
+
+      case 'RECOLHIMENTO':
+        return 'Confirme o recolhimento físico dos exemplares cancelados que ainda estavam com a dupla.';
+
+      default:
+        return '';
+    }
+  }
+
+  labelBotaoOperacaoLoteCaderno(): string {
+    switch (this.tipoOperacaoLoteCaderno()) {
+      case 'ENTREGA':
+        return 'Confirmar entrega';
+
+      case 'RECEBIMENTO':
+        return 'Confirmar recebimento';
+
+      case 'RECOLHIMENTO':
+        return 'Confirmar recolhimento';
+
+      default:
+        return 'Confirmar';
+    }
+  }
+
+  iconeOperacaoLoteCaderno(): string {
+    switch (this.tipoOperacaoLoteCaderno()) {
+      case 'ENTREGA':
+        return 'fa-solid fa-hand-holding-heart';
+
+      case 'RECEBIMENTO':
+        return 'fa-solid fa-people-carry-box';
+
+      case 'RECOLHIMENTO':
+        return 'fa-solid fa-rotate-left';
+
+      default:
+        return 'fa-solid fa-check';
+    }
+  }
+
+  severityOperacaoLoteCaderno():
+    | 'info'
+    | 'warn'
+    | 'danger' {
+    switch (this.tipoOperacaoLoteCaderno()) {
+      case 'ENTREGA':
+        return 'info';
+
+      case 'RECEBIMENTO':
+        return 'warn';
+
+      case 'RECOLHIMENTO':
+        return 'danger';
+    }
+  }
+
+  solicitarConfirmacaoOperacaoLoteCaderno(): void {
+    if (!this.podeConfirmarOperacaoLoteCaderno()) {
+      this.toastWarn(
+        'Selecione o tio carona responsável pela operação.'
+      );
+      return;
+    }
+
+    const quantidade =
+      this.quantidadeCadernosSelecionados();
+
+    const dupla = this.duplaOperacaoLote();
+
+    this.confirmationService.confirm({
+      header: this.tituloOperacaoLoteCaderno(),
+      icon: 'fa-solid fa-triangle-exclamation',
+      message:
+        `Confirma a operação de ${quantidade} ` +
+        `caderno(s) da dupla ` +
+        `${dupla?.apelido || dupla?.codigo}?`,
+      acceptLabel: this.labelBotaoOperacaoLoteCaderno(),
+      rejectLabel: 'Voltar',
+      acceptButtonProps: {
+        severity: this.severityOperacaoLoteCaderno()
+      },
+      rejectButtonProps: {
+        severity: 'secondary',
+        variant: 'outlined'
+      },
+      accept: () =>
+        this.executarOperacaoLoteCaderno()
+    });
+  }
+
+  private executarOperacaoLoteCaderno(): void {
+    const selecionados =
+      this.cadernosSelecionadosOperacaoLote();
+
+    const dupla = this.duplaOperacaoLote();
+
+    const tioCaronaEventoId =
+      this.tioOperacaoLoteCadernoId();
+
+    if (
+      selecionados.length === 0 ||
+      !dupla ||
+      tioCaronaEventoId === null
+    ) {
+      this.toastWarn(
+        'Os dados da operação não estão completos.'
+      );
+      return;
+    }
+
+    const request = {
+      cadernoIds: selecionados.map(
+        caderno => caderno.id
+      ),
+      tioCaronaEventoId,
+      observacao:
+        this.observacaoOperacaoLoteCaderno()
+    };
+
+    const requisicao = (() => {
+      switch (this.tipoOperacaoLoteCaderno()) {
+        case 'ENTREGA':
+          return this.service
+            .entregarCadernosSelecionadosADupla(
+              this.eventoId,
+              dupla.id,
+              request
+            );
+
+        case 'RECEBIMENTO':
+          return this.service
+            .receberCadernosSelecionadosDaDupla(
+              this.eventoId,
+              dupla.id,
+              request
+            );
+
+        case 'RECOLHIMENTO':
+          return this.service
+            .recolherCadernosCanceladosDaDupla(
+              this.eventoId,
+              dupla.id,
+              request
+            );
+      }
+    })();
+
+    this.processandoCadernos.set(true);
+
+    requisicao
+      .pipe(
+        finalize(() =>
+          this.processandoCadernos.set(false)
+        )
+      )
+      .subscribe({
+        next: cadernosAtualizados => {
+          this.atualizarCadernosNaLista(
+            cadernosAtualizados
+          );
+
+          const mensagem =
+            this.mensagemSucessoOperacaoLote(
+              cadernosAtualizados.length
+            );
+
+          this.operacaoLoteCadernoVisivel.set(false);
+          this.limparSelecaoCadernos();
+          this.toastSuccess(mensagem);
+        },
+        error: erro => {
+          console.error(
+            'Erro na operação selecionada dos cadernos',
+            erro
+          );
+
+          this.toastError(
+            this.mensagemErro(
+              erro,
+              'Não foi possível concluir a operação dos cadernos.'
+            )
+          );
+        }
+      });
+  }
+
+  private mensagemSucessoOperacaoLote(
+    quantidade: number
+  ): string {
+    switch (this.tipoOperacaoLoteCaderno()) {
+      case 'ENTREGA':
+        return `${quantidade} caderno(s) entregue(s) à dupla.`;
+
+      case 'RECEBIMENTO':
+        return `${quantidade} caderno(s) recebido(s) e direcionado(s) às equipes.`;
+
+      case 'RECOLHIMENTO':
+        return `${quantidade} caderno(s) cancelado(s) recolhido(s).`;
+    }
   }
 }

@@ -4,23 +4,38 @@ import { Observable, forkJoin, map, of, switchMap } from 'rxjs';
 import { environment } from 'src/environments/environment';
 
 import {
-  DuplaTioCarona,
-  Evento,
-  Sobrinho,
-  SobrinhoDupla,
-  TioCaronaEvento,
-  OperacaoPresencaSobrinho,
   CadernoChoro,
+  CadernoChoroCancelarRequest,
   CadernoChoroGeracaoResponse,
   CadernoChoroHistorico,
-  StatusCadernoChoro,
+  CadernoChoroOcorrenciaRequest,
+  CadernoChoroOperacaoSelecionadaRequest,
+  CadernoChoroRecuperarRequest,
+  CadernoChoroSubstituicaoResponse,
+  CadernoChoroSubstituirRequest,
+  CadernoChoroTimeline,
+  CredencialEvento,
+  DuplaTioCarona,
+  Evento,
   ModeloCarteirinhaCredencial,
   ModeloCrachaCredencial,
   ModeloEtiquetaQr,
-  TipoCredencial,
+  OperacaoPresencaSobrinho,
+  Sobrinho,
+  SobrinhoDupla,
+  StatusCadernoChoro,
   StatusCredencial,
-  CredencialEvento,
+  TioCaronaEvento,
+  TipoCredencial
 } from '../../shared/models';
+
+type OperacaoCadernoEndpoint =
+  | 'conferir'
+  | 'anexar-ao-kit'
+  | 'entregar-ao-sobrinho'
+  | 'perdido'
+  | 'substituido'
+  | 'cancelado';
 
 @Injectable({
   providedIn: 'root'
@@ -83,16 +98,52 @@ export class EventoOperacaoService {
     );
   }
 
-  listarCadernos(eventoId: number): Observable<CadernoChoro[]> {
-    return this.http.get<CadernoChoro[]>(`${this.apiUrl}/eventos/${eventoId}/cadernos`);
+  listarCadernos(
+    eventoId: number
+  ): Observable<CadernoChoro[]> {
+    return this.http.get<CadernoChoro[]>(
+      `${this.apiUrl}/eventos/${eventoId}/cadernos`
+    );
+  }
+
+  listarCadernosPorDupla(
+    eventoId: number,
+    duplaId: number
+  ): Observable<CadernoChoro[]> {
+    return this.http.get<CadernoChoro[]>(
+      `${this.apiUrl}/eventos/${eventoId}/cadernos/duplas/${duplaId}`
+    );
+  }
+
+  listarViasCaderno(
+    eventoId: number,
+    sobrinhoId: number
+  ): Observable<CadernoChoro[]> {
+    return this.http.get<CadernoChoro[]>(
+      `${this.apiUrl}/eventos/${eventoId}/cadernos/encontristas/${sobrinhoId}/vias`
+    );
+  }
+
+  listarTimelineCaderno(
+    eventoId: number,
+    sobrinhoId: number
+  ): Observable<CadernoChoroTimeline> {
+    return this.http.get<CadernoChoroTimeline>(
+      `${this.apiUrl}/eventos/${eventoId}/cadernos/encontristas/${sobrinhoId}/timeline`
+    );
+  }
+
+  listarHistoricoCaderno(
+    eventoId: number,
+    cadernoId: number
+  ): Observable<CadernoChoroHistorico[]> {
+    return this.http.get<CadernoChoroHistorico[]>(
+      `${this.apiUrl}/eventos/${eventoId}/cadernos/${cadernoId}/historico`
+    );
   }
 
   listarCredenciais(eventoId: number): Observable<CredencialEvento[]> {
     return this.http.get<CredencialEvento[]>(`${this.apiUrl}/eventos/${eventoId}/credenciais`);
-  }
-
-  listarHistoricoCaderno(eventoId: number, cadernoId: number): Observable<CadernoChoroHistorico[]> {
-    return this.http.get<CadernoChoroHistorico[]>(`${this.apiUrl}/eventos/${eventoId}/cadernos/${cadernoId}/historico`);
   }
 
   baixarEtiquetasQrCode(
@@ -246,8 +297,101 @@ export class EventoOperacaoService {
     );
   }
 
-  gerarCadernos(eventoId: number): Observable<CadernoChoroGeracaoResponse> {
-    return this.http.post<CadernoChoroGeracaoResponse>(`${this.apiUrl}/eventos/${eventoId}/cadernos/gerar`, {});
+  gerarCadernos(
+    eventoId: number
+  ): Observable<CadernoChoroGeracaoResponse> {
+    return this.http.post<CadernoChoroGeracaoResponse>(
+      `${this.apiUrl}/eventos/${eventoId}/cadernos/gerar`,
+      {}
+    );
+  }
+
+  registrarOcorrenciaCaderno(
+    eventoId: number,
+    cadernoId: number,
+    request: CadernoChoroOcorrenciaRequest
+  ): Observable<CadernoChoro> {
+    return this.http.post<CadernoChoro>(
+      `${this.apiUrl}/eventos/${eventoId}/cadernos/${cadernoId}/ocorrencias`,
+      {
+        ...request,
+        observacao: request.observacao.trim()
+      }
+    );
+  }
+
+  recuperarCaderno(
+    eventoId: number,
+    cadernoId: number,
+    request: CadernoChoroRecuperarRequest
+  ): Observable<CadernoChoro> {
+    return this.http.post<CadernoChoro>(
+      `${this.apiUrl}/eventos/${eventoId}/cadernos/${cadernoId}/recuperar`,
+      {
+        observacao: request.observacao.trim()
+      }
+    );
+  }
+
+  entregarCadernosSelecionadosADupla(
+    eventoId: number,
+    duplaId: number,
+    request: CadernoChoroOperacaoSelecionadaRequest
+  ): Observable<CadernoChoro[]> {
+    return this.http.post<CadernoChoro[]>(
+      `${this.apiUrl}/eventos/${eventoId}/cadernos/duplas/${duplaId}/entregar-selecionados`,
+      this.normalizarOperacaoSelecionada(request)
+    );
+  }
+
+  receberCadernosSelecionadosDaDupla(
+    eventoId: number,
+    duplaId: number,
+    request: CadernoChoroOperacaoSelecionadaRequest
+  ): Observable<CadernoChoro[]> {
+    return this.http.post<CadernoChoro[]>(
+      `${this.apiUrl}/eventos/${eventoId}/cadernos/duplas/${duplaId}/receber-selecionados`,
+      this.normalizarOperacaoSelecionada(request)
+    );
+  }
+
+  recolherCadernosCanceladosDaDupla(
+    eventoId: number,
+    duplaId: number,
+    request: CadernoChoroOperacaoSelecionadaRequest
+  ): Observable<CadernoChoro[]> {
+    return this.http.post<CadernoChoro[]>(
+      `${this.apiUrl}/eventos/${eventoId}/cadernos/duplas/${duplaId}/recolher-cancelados`,
+      this.normalizarOperacaoSelecionada(request)
+    );
+  }
+
+  substituirViaCaderno(
+    eventoId: number,
+    cadernoId: number,
+    request: CadernoChoroSubstituirRequest
+  ): Observable<CadernoChoroSubstituicaoResponse> {
+    return this.http.post<CadernoChoroSubstituicaoResponse>(
+      `${this.apiUrl}/eventos/${eventoId}/cadernos/${cadernoId}/substituir`,
+      {
+        motivo: request.motivo,
+        observacao: request.observacao.trim()
+      }
+    );
+  }
+
+  cancelarViaCaderno(
+    eventoId: number,
+    cadernoId: number,
+    request: CadernoChoroCancelarRequest
+  ): Observable<CadernoChoro> {
+    return this.http.post<CadernoChoro>(
+      `${this.apiUrl}/eventos/${eventoId}/cadernos/${cadernoId}/cancelar`,
+      {
+        motivo: request.motivo,
+        observacao: request.observacao.trim()
+      }
+    );
   }
 
   entregarCadernosADupla(
@@ -323,12 +467,14 @@ export class EventoOperacaoService {
   private operarCaderno(
     eventoId: number,
     cadernoId: number,
-    operacao: string,
+    operacao: OperacaoCadernoEndpoint,
     observacao?: string
   ): Observable<CadernoChoro> {
     return this.http.post<CadernoChoro>(
       `${this.apiUrl}/eventos/${eventoId}/cadernos/${cadernoId}/${operacao}`,
-      { observacao: observacao?.trim() || undefined }
+      {
+        observacao: observacao?.trim() || undefined
+      }
     );
   }
 
@@ -367,5 +513,15 @@ export class EventoOperacaoService {
         observacao: observacao?.trim() || undefined
       }
     );
+  }
+
+  private normalizarOperacaoSelecionada(
+    request: CadernoChoroOperacaoSelecionadaRequest
+  ): CadernoChoroOperacaoSelecionadaRequest {
+    return {
+      cadernoIds: [...new Set(request.cadernoIds)],
+      tioCaronaEventoId: request.tioCaronaEventoId,
+      observacao: request.observacao?.trim() || undefined
+    };
   }
 }

@@ -254,30 +254,95 @@ export type StatusCadernoChoro =
   | 'ANEXADO_AO_KIT'
   | 'ENTREGUE_AO_SOBRINHO'
   | 'PERDIDO'
+  | 'DANIFICADO'
   | 'SUBSTITUIDO'
   | 'CANCELADO';
+
+export type MotivoEmissaoCaderno =
+  | 'GERACAO_INICIAL'
+  | 'SUBSTITUICAO_PERDA'
+  | 'SUBSTITUICAO_DANO'
+  | 'SUBSTITUICAO_ERRO'
+  | 'RETOMADA_PARTICIPACAO'
+  | 'OUTRO';
+
+export type MotivoCancelamentoCaderno =
+  | 'DESISTENCIA_ENCONTRISTA'
+  | 'NAO_PARTICIPOU_DO_EVENTO'
+  | 'ERRO_DE_CADASTRO'
+  | 'CADERNO_NAO_NECESSARIO'
+  | 'OUTRO';
+
+export type MotivoSubstituicaoCaderno =
+  | 'PERDA'
+  | 'DANO'
+  | 'ERRO_DE_IMPRESSAO'
+  | 'ERRO_DE_MONTAGEM'
+  | 'CONTEUDO_INUTILIZADO'
+  | 'OUTRO';
+
+export type TipoOcorrenciaCaderno =
+  | 'PERDA'
+  | 'DANO';
+
+export type TipoMovimentacaoCaderno =
+  | 'CADERNO_GERADO'
+  | 'ENTREGA_A_DUPLA'
+  | 'RECEBIMENTO_DA_DUPLA'
+  | 'DIRECIONAMENTO_EQUIPE'
+  | 'CONFERENCIA'
+  | 'ANEXACAO_KIT'
+  | 'ENTREGA_ENCONTRISTA'
+  | 'PERDA_REGISTRADA'
+  | 'DANO_REGISTRADO'
+  | 'CADERNO_RECUPERADO'
+  | 'CADERNO_SUBSTITUIDO'
+  | 'NOVA_VIA_GERADA'
+  | 'CADERNO_CANCELADO'
+  | 'DUPLA_ALTERADA'
+  | 'ENCONTRISTA_DESISTENTE'
+  | 'PARTICIPACAO_RETOMADA'
+  | 'RECOLHIMENTO_CONCLUIDO'
+  | 'MOVIMENTACAO_LEGADA';
 
 export interface CadernoChoro {
   id: number;
   eventoId: number;
+
   duplaId: number;
   duplaCodigo: string;
-  duplaApelido?: string;
+  duplaApelido?: string | null;
   tio1Nome: string;
   tio2Nome: string;
+
   sobrinhoId: number;
   sobrinhoNome: string;
-  equipeMontagemKitId?: number;
-  equipeMontagemKitApelido?: string;
-  equipeMontagemKitCorIdentificacao?: string;
+
+  equipeMontagemKitId?: number | null;
+  equipeMontagemKitApelido?: string | null;
+  equipeMontagemKitCorIdentificacao?: string | null;
+
   status: StatusCadernoChoro;
-  entregueADuplaEm?: string;
-  recebidoDaDuplaEm?: string;
-  direcionadoEquipeMontagemEm?: string;
-  conferidoEm?: string;
-  anexadoAoKitEm?: string;
-  entregueAoSobrinhoEm?: string;
-  observacao?: string;
+
+  numeroVia: number;
+  viaAtual: boolean;
+  recolhimentoPendente: boolean;
+  cadernoAnteriorId?: number | null;
+
+  motivoEmissao: MotivoEmissaoCaderno;
+  motivoCancelamento?: MotivoCancelamentoCaderno | null;
+  motivoSubstituicao?: MotivoSubstituicaoCaderno | null;
+  statusAnteriorOcorrencia?: StatusCadernoChoro | null;
+
+  entregueADuplaEm?: string | null;
+  recebidoDaDuplaEm?: string | null;
+  direcionadoEquipeMontagemEm?: string | null;
+  conferidoEm?: string | null;
+  anexadoAoKitEm?: string | null;
+  entregueAoSobrinhoEm?: string | null;
+  encerradoEm?: string | null;
+
+  observacao?: string | null;
   criadoEm: string;
 }
 
@@ -292,15 +357,78 @@ export interface CadernoChoroHistorico {
   id: number;
   eventoId: number;
   cadernoId: number;
+
+  numeroVia: number;
+
   duplaId: number;
   duplaCodigo: string;
+  duplaApelido?: string | null;
+
   sobrinhoId: number;
   sobrinhoNome: string;
-  equipeMontagemKitId?: number;
-  equipeMontagemKitApelido?: string;
+
+  equipeMontagemKitId?: number | null;
+  equipeMontagemKitApelido?: string | null;
+
+  tioCaronaEventoId?: number | null;
+  tioCaronaNome?: string | null;
+
+  usuarioResponsavelId?: number | null;
+  usuarioResponsavelNome?: string | null;
+
+  tipoMovimentacao: TipoMovimentacaoCaderno;
+  statusAnterior?: StatusCadernoChoro | null;
+  statusNovo?: StatusCadernoChoro | null;
+
+  /**
+   * Campo legado preservado temporariamente pelo backend.
+   */
   status: StatusCadernoChoro;
-  observacao?: string;
+
+  motivo?: string | null;
+  observacao?: string | null;
   ocorridoEm: string;
+}
+
+export interface CadernoChoroTimeline {
+  eventoId: number;
+  sobrinhoId: number;
+  sobrinhoNome: string;
+  numeroViaAtual: number;
+  cadernoAtualId: number;
+  vias: CadernoChoro[];
+  movimentacoes: CadernoChoroHistorico[];
+}
+
+export interface CadernoChoroSubstituicaoResponse {
+  viaSubstituida: CadernoChoro;
+  novaVia: CadernoChoro;
+}
+
+export interface CadernoChoroOperacaoSelecionadaRequest {
+  cadernoIds: number[];
+  tioCaronaEventoId: number;
+  observacao?: string;
+}
+
+export interface CadernoChoroOcorrenciaRequest {
+  tipo: TipoOcorrenciaCaderno;
+  impedeContinuacao: boolean;
+  observacao: string;
+}
+
+export interface CadernoChoroRecuperarRequest {
+  observacao: string;
+}
+
+export interface CadernoChoroSubstituirRequest {
+  motivo: MotivoSubstituicaoCaderno;
+  observacao: string;
+}
+
+export interface CadernoChoroCancelarRequest {
+  motivo: MotivoCancelamentoCaderno;
+  observacao: string;
 }
 
 
