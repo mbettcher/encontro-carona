@@ -16,6 +16,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDate;
 import java.util.Optional;
@@ -198,7 +199,7 @@ class SobrinhoServiceTest {
             String responsavelTelefone,
             String endereco
     ) {
-        return new Pessoa(
+        var pessoa = new Pessoa(
                 "Encontrista Teste",
                 telefone,
                 null,
@@ -209,5 +210,9 @@ class SobrinhoServiceTest {
                 endereco,
                 null
         );
+
+        ReflectionTestUtils.setField(pessoa, "id", 10L);
+
+        return pessoa;
     }
 }

@@ -37,6 +37,7 @@ import { CustomFormHelperService } from '../../shared/services/custom-form-helpe
 import { AuthService } from '../../core/auth/auth.service';
 import { TelefoneMaskDirective } from '../../shared/directives/telefone-mask.directive';
 import { EventoGestaoService } from './evento-gestao.service';
+import { extrairMensagemErro } from '../../shared/utils/http-error.util';
 
 type AbaGestao = 'TIOS' | 'DUPLAS' | 'SOBRINHOS' | 'VINCULOS' | 'EQUIPES' | 'CADERNOS';
 
@@ -1977,8 +1978,8 @@ export class EventoGestaoComponent implements OnInit {
         }
       },
       error: erro => {
-        console.error('Erro ao carregar paróquia/comunidades/comunidades/comunidades', erro);
-        this.toastError('Não foi possível carregar as paróquia/comunidades/comunidades/comunidades.');
+        console.error('Erro ao carregar paróquias e comunidades', erro);
+        this.toastError(this.mensagemErro(erro, 'Não foi possível carregar as paróquias e comunidades.'));
       }
     });
   }
@@ -1988,7 +1989,7 @@ export class EventoGestaoComponent implements OnInit {
       next: pessoas => this.pessoas.set(pessoas),
       error: erro => {
         console.error('Erro ao carregar pessoas', erro);
-        this.toastError('Não foi possível carregar as pessoas.');
+        this.toastError(this.mensagemErro(erro, 'Não foi possível carregar as pessoas.'));
       }
     });
   }
@@ -1998,7 +1999,7 @@ export class EventoGestaoComponent implements OnInit {
       next: tios => this.tiosCarona.set(tios),
       error: erro => {
         console.error('Erro ao carregar tios carona', erro);
-        this.toastError('Não foi possível carregar os tios carona do evento.');
+        this.toastError(this.mensagemErro(erro, 'Não foi possível carregar os tios carona do evento.'));
       }
     });
   }
@@ -2008,7 +2009,7 @@ export class EventoGestaoComponent implements OnInit {
       next: duplas => this.duplas.set(duplas),
       error: erro => {
         console.error('Erro ao carregar duplas', erro);
-        this.toastError('Não foi possível carregar as duplas.');
+        this.toastError(this.mensagemErro(erro, 'Não foi possível carregar as duplas.'));
       }
     });
   }
@@ -2018,7 +2019,7 @@ export class EventoGestaoComponent implements OnInit {
       next: sobrinhos => this.sobrinhos.set(sobrinhos),
       error: erro => {
         console.error('Erro ao carregar encontristas', erro);
-        this.toastError('Não foi possível carregar os encontristas.');
+        this.toastError(this.mensagemErro(erro, 'Não foi possível carregar os encontristas.'));
       }
     });
   }
@@ -2028,7 +2029,7 @@ export class EventoGestaoComponent implements OnInit {
       next: vinculos => this.vinculos.set(vinculos),
       error: erro => {
         console.error('Erro ao carregar vínculos', erro);
-        this.toastError('Não foi possível carregar os vínculos.');
+        this.toastError(this.mensagemErro(erro, 'Não foi possível carregar os vínculos.'));
       }
     });
   }
@@ -2038,7 +2039,7 @@ export class EventoGestaoComponent implements OnInit {
       next: equipes => this.equipesMontagemKit.set(equipes),
       error: erro => {
         console.error('Erro ao carregar equipes de montagem do kit', erro);
-        this.toastError('Não foi possível carregar as equipes de montagem do kit.');
+        this.toastError(this.mensagemErro(erro, 'Não foi possível carregar as equipes de montagem do kit.'));
       }
     });
   }
@@ -2099,65 +2100,55 @@ export class EventoGestaoComponent implements OnInit {
   }
 
   private mensagemErro(erro: unknown, fallback: string): string {
-    if (
-      typeof erro === 'object' &&
-      erro !== null &&
-      'error' in erro
-    ) {
-      const corpo = (erro as {
-        error?: {
-          message?: string;
-          detail?: string;
-          title?: string;
-          details?: string[];
-        };
-      }).error;
-
-      if (corpo?.details?.length) {
-        return corpo.details.join(' ');
-      }
-
-      return corpo?.message || corpo?.detail || corpo?.title || fallback;
-    }
-
-    return fallback;
+    return extrairMensagemErro(erro, fallback);
   }
 
   private mensagemValidacaoPessoaSobrinho(): string {
-    const campos: string[] = [];
+    const obrigatorios: string[] = [];
+    const invalidos: string[] = [];
 
-    if (this.pessoaSobrinhoForm.controls.pessoaId.hasError('required') ||
-      this.pessoaSobrinhoForm.controls.pessoaId.hasError('min')) {
-      campos.push('pessoa encontrista');
+    const pessoaId = this.pessoaSobrinhoForm.controls.pessoaId;
+
+    if (pessoaId.hasError('required') || pessoaId.hasError('min')) {
+      obrigatorios.push('pessoa encontrista');
     }
 
-    if (this.pessoaSobrinhoForm.controls.responsavelNome.hasError('required')) {
-      campos.push('nome do responsável');
+    const campos: Array<{
+      controle: FormControl<string>;
+      rotulo: string;
+    }> = [
+      {
+        controle: this.pessoaSobrinhoForm.controls.telefone,
+        rotulo: 'telefone'
+      },
+      {
+        controle: this.pessoaSobrinhoForm.controls.responsavelNome,
+        rotulo: 'nome do responsável'
+      },
+      {
+        controle: this.pessoaSobrinhoForm.controls.responsavelTelefone,
+        rotulo: 'telefone do responsável'
+      },
+      {
+        controle: this.pessoaSobrinhoForm.controls.dataNascimento,
+        rotulo: 'data de nascimento'
+      },
+      {
+        controle: this.pessoaSobrinhoForm.controls.endereco,
+        rotulo: 'endereço'
+      }
+    ];
+
+    for (const campo of campos) {
+      this.adicionarErroCampo(
+        campo.controle,
+        campo.rotulo,
+        obrigatorios,
+        invalidos
+      );
     }
 
-    if (this.pessoaSobrinhoForm.controls.responsavelTelefone.hasError('required')) {
-      campos.push('telefone do responsável');
-    }
-
-    if (this.pessoaSobrinhoForm.controls.dataNascimento.hasError('required')) {
-      campos.push('data de nascimento');
-    }
-
-    if (this.pessoaSobrinhoForm.controls.endereco.hasError('required')) {
-      campos.push('endereço');
-    }
-
-    if (campos.length === 0) {
-      return 'Revise os dados do encontrista antes de adicionar ao evento.';
-    }
-
-    if (campos.length === 1) {
-      return `Informe ${campos[0]}.`;
-    }
-
-    const ultimo = campos.pop();
-
-    return `Informe ${campos.join(', ')} e ${ultimo}.`;
+    return this.montarMensagemValidacao(obrigatorios, invalidos);
   }
 
   private mensagemValidacaoSobrinho(): string {
@@ -2168,40 +2159,97 @@ export class EventoGestaoComponent implements OnInit {
     return this.mensagemValidacaoFormularioSobrinho(this.sobrinhoEdicaoForm);
   }
 
-  private mensagemValidacaoFormularioSobrinho(formulario: any): string {
-    const campos: string[] = [];
+  private mensagemValidacaoFormularioSobrinho(
+    formulario: typeof this.sobrinhoForm
+  ): string {
+    const obrigatorios: string[] = [];
+    const invalidos: string[] = [];
 
-    if (formulario.controls.nome.hasError('required')) {
-      campos.push('nome do encontrista');
+    this.adicionarErroCampo(
+      formulario.controls.nome,
+      'nome do encontrista',
+      obrigatorios,
+      invalidos
+    );
+    this.adicionarErroCampo(
+      formulario.controls.telefone,
+      'telefone',
+      obrigatorios,
+      invalidos
+    );
+    this.adicionarErroCampo(
+      formulario.controls.responsavelNome,
+      'nome do responsável',
+      obrigatorios,
+      invalidos
+    );
+    this.adicionarErroCampo(
+      formulario.controls.responsavelTelefone,
+      'telefone do responsável',
+      obrigatorios,
+      invalidos
+    );
+    this.adicionarErroCampo(
+      formulario.controls.dataNascimento,
+      'data de nascimento',
+      obrigatorios,
+      invalidos
+    );
+    this.adicionarErroCampo(
+      formulario.controls.endereco,
+      'endereço',
+      obrigatorios,
+      invalidos
+    );
+
+    return this.montarMensagemValidacao(obrigatorios, invalidos);
+  }
+
+  private adicionarErroCampo(
+    controle: FormControl<string>,
+    rotulo: string,
+    obrigatorios: string[],
+    invalidos: string[]
+  ): void {
+    if (controle.hasError('required')) {
+      obrigatorios.push(rotulo);
+      return;
     }
 
-    if (formulario.controls.responsavelNome.hasError('required')) {
-      campos.push('nome do responsável');
+    if (controle.invalid) {
+      invalidos.push(rotulo);
+    }
+  }
+
+  private montarMensagemValidacao(
+    obrigatorios: string[],
+    invalidos: string[]
+  ): string {
+    const mensagens: string[] = [];
+
+    if (obrigatorios.length > 0) {
+      mensagens.push(
+        `Informe ${this.formatarListaCampos(obrigatorios)}.`
+      );
     }
 
-    if (formulario.controls.responsavelTelefone.hasError('required')) {
-      campos.push('telefone do responsável');
+    if (invalidos.length > 0) {
+      mensagens.push(
+        `Revise ${this.formatarListaCampos(invalidos)}.`
+      );
     }
 
-    if (formulario.controls.dataNascimento.hasError('required')) {
-      campos.push('data de nascimento');
-    }
+    return mensagens.length > 0
+      ? mensagens.join(' ')
+      : 'Revise os dados do encontrista antes de salvar.';
+  }
 
-    if (formulario.controls.endereco.hasError('required')) {
-      campos.push('endereço');
-    }
-
-    if (campos.length === 0) {
-      return 'Revise os dados do sobrinho antes de salvar.';
-    }
-
+  private formatarListaCampos(campos: string[]): string {
     if (campos.length === 1) {
-      return `Informe ${campos[0]}.`;
+      return campos[0];
     }
 
-    const ultimo = campos.pop();
-
-    return `Informe ${campos.join(', ')} e ${ultimo}.`;
+    return `${campos.slice(0, -1).join(', ')} e ${campos.at(-1)}`;
   }
 
   private possuiIntegranteEmOutraEquipe(pessoaIds: number[], equipeIdIgnorada?: number): boolean {
