@@ -18,8 +18,11 @@ export class QrScannerService {
   private video: HTMLVideoElement | null = null;
 
   suporteDisponivel(): boolean {
+    const mediaDevices = this.obterMediaDevices();
+
     return Boolean(
-      navigator.mediaDevices?.getUserMedia &&
+      mediaDevices &&
+      typeof mediaDevices.getUserMedia === 'function' &&
       window.isSecureContext
     );
   }
@@ -41,7 +44,12 @@ export class QrScannerService {
       return;
     }
 
-    if (!navigator.mediaDevices?.getUserMedia) {
+    const mediaDevices = this.obterMediaDevices();
+
+    if (
+      !mediaDevices ||
+      typeof mediaDevices.getUserMedia !== 'function'
+    ) {
       aoFalhar({
         estado: 'INDISPONIVEL',
         mensagem: 'Este navegador não oferece acesso compatível à câmera.'
@@ -78,22 +86,22 @@ export class QrScannerService {
 
       this.controls = deviceId
         ? await this.reader.decodeFromVideoDevice(
-            deviceId,
-            this.video,
-            callback
-          )
+          deviceId,
+          this.video,
+          callback
+        )
         : await this.reader.decodeFromConstraints(
-            {
-              audio: false,
-              video: {
-                facingMode: { ideal: 'environment' },
-                width: { ideal: 1280 },
-                height: { ideal: 720 }
-              }
-            },
-            this.video,
-            callback
-          );
+          {
+            audio: false,
+            video: {
+              facingMode: { ideal: 'environment' },
+              width: { ideal: 1280 },
+              height: { ideal: 720 }
+            }
+          },
+          this.video,
+          callback
+        );
     } catch (erro) {
       this.parar();
       aoFalhar(this.normalizarErro(erro));
@@ -101,11 +109,16 @@ export class QrScannerService {
   }
 
   async listarCameras(): Promise<QrCameraOption[]> {
-    if (!navigator.mediaDevices?.enumerateDevices) {
+    const mediaDevices = this.obterMediaDevices();
+
+    if (
+      !mediaDevices ||
+      typeof mediaDevices.enumerateDevices !== 'function'
+    ) {
       return [];
     }
 
-    const dispositivos = await navigator.mediaDevices.enumerateDevices();
+    const dispositivos = await mediaDevices.enumerateDevices();
 
     return dispositivos
       .filter(dispositivo => dispositivo.kind === 'videoinput')
@@ -139,6 +152,18 @@ export class QrScannerService {
     }
 
     this.video = null;
+  }
+
+  private obterMediaDevices(): MediaDevices | undefined {
+    if (typeof navigator === 'undefined') {
+      return undefined;
+    }
+
+    return (
+      navigator as Navigator & {
+        mediaDevices?: MediaDevices;
+      }
+    ).mediaDevices;
   }
 
   private erroIgnoravelDeLeitura(erro: unknown): boolean {

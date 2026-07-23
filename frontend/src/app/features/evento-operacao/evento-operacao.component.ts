@@ -50,6 +50,23 @@ import {
 } from '../../shared/models';
 import { AuthService } from '../../core/auth/auth.service';
 import { EventoOperacaoService } from './evento-operacao.service';
+import { QrScannerComponent } from '../../shared/qr-scanner/qr-scanner.component';
+import { QrCodeLeitura } from '../../shared/qr-scanner/qr-scanner.models';
+
+type TipoOperacaoScannerTio = 'CHECKIN' | 'CHECKOUT';
+
+type StatusResultadoScannerTio =
+  | 'SUCESSO'
+  | 'ATENCAO'
+  | 'ERRO';
+
+interface ResultadoScannerTio {
+  status: StatusResultadoScannerTio;
+  operacao: TipoOperacaoScannerTio;
+  mensagem: string;
+  pessoaNome?: string;
+  ocorridoEm: Date;
+}
 
 type OperacaoCadernoChoro =
   | 'CONFERIDO'
@@ -123,7 +140,8 @@ interface ResumoEquipeCaderno {
     TooltipModule,
     TagModule,
     TabsModule,
-    CheckboxModule
+    CheckboxModule,
+    QrScannerComponent
   ],
   templateUrl: './evento-operacao.component.html',
   styleUrls: ['./evento-operacao.component.scss']
@@ -147,6 +165,11 @@ export class EventoOperacaoComponent implements OnInit {
   readonly credenciais = signal<CredencialEvento[]>([]);
   readonly carregando = signal(false);
   readonly processandoCodigo = signal(false);
+  readonly scannerTioVisivel = signal(false);
+  readonly tipoOperacaoScannerTio =
+    signal<TipoOperacaoScannerTio>('CHECKIN');
+  readonly resultadoScannerTio =
+    signal<ResultadoScannerTio | null>(null);
   readonly evento = signal<Evento | null>(null);
   readonly processandoManual = signal<number | null>(null);
   readonly processandoPresencaSobrinho = signal<number | null>(null);
@@ -267,6 +290,18 @@ export class EventoOperacaoComponent implements OnInit {
 
   readonly possuiMultiplasViasTimeline = computed(
     () => this.totalViasTimelineCaderno() > 1
+  );
+
+  readonly tituloScannerTio = computed(() =>
+    this.tipoOperacaoScannerTio() === 'CHECKIN'
+      ? 'Check-in de Tio Carona'
+      : 'Check-out de Tio Carona'
+  );
+
+  readonly instrucaoScannerTio = computed(() =>
+    this.tipoOperacaoScannerTio() === 'CHECKIN'
+      ? 'Leia a credencial para registrar a entrada.'
+      : 'Leia a credencial para registrar a saída.'
   );
 
   readonly codigoForm = this.fb.nonNullable.group({
@@ -2479,43 +2514,200 @@ export class EventoOperacaoComponent implements OnInit {
     }
   }
 
+  abrirScannerTio(operacao: TipoOperacaoScannerTio): void {
+    if (!this.seguranca.podeEscrever()) {
+      this.toastWarn('Seu perfil não permite registrar check-in ou check-out.');
+      return;
+    }
+
+    this.tipoOperacaoScannerTio.set(operacao);
+    this.codigoForm.controls.tipoOperacao.setValue(operacao);
+    this.resultadoScannerTio.set(null);
+    this.scannerTioVisivel.set(true);
+  }
+
+  fecharScannerTio(): void {
+    if (this.processandoCodigo()) {
+      return;
+    }
+
+    this.scannerTioVisivel.set(false);
+    this.resultadoScannerTio.set(null);
+  }
+
+  alterarOperacaoScannerTio(
+    operacao: TipoOperacaoScannerTio
+  ): void {
+    if (this.processandoCodigo()) {
+      return;
+    }
+
+    this.tipoOperacaoScannerTio.set(operacao);
+    this.codigoForm.controls.tipoOperacao.setValue(operacao);
+    this.resultadoScannerTio.set(null);
+  }
+
+  aoLerQrTioCarona(leitura: QrCodeLeitura): void {
+    this.processarCodigoTioCarona(
+      leitura.texto,
+      this.tipoOperacaoScannerTio()
+    );
+  }
+
   registrarOperacaoPorCodigo(): void {
     if (this.codigoForm.invalid) {
       this.codigoForm.markAllAsTouched();
-      this.toastWarn('Informe o código da credencial para registrar a operação.');
+      this.toastWarn(
+        'Informe o código da credencial para registrar a operação.'
+      );
       return;
     }
 
     const valor = this.codigoForm.getRawValue();
-    const codigo = this.normalizarCodigoCredencial(valor.codigoIdentificacao);
-    this.codigoForm.controls.codigoIdentificacao.setValue(codigo, { emitEvent: false });
+
+    this.processarCodigoTioCarona(
+      valor.codigoIdentificacao,
+      valor.tipoOperacao
+    );
+  }
+
+  private processarCodigoTioCarona(
+    codigoInformado: string,
+    operacao: TipoOperacaoScannerTio
+  ): void {
+    if (this.processandoCodigo()) {
+      return;
+    }
+
+    const codigo =
+      this.normalizarCodigoCredencial(codigoInformado);
+
+    if (!codigo) {
+      this.registrarResultadoScannerTio({
+        status: 'ATENCAO',
+        operacao,
+        mensagem: 'Informe uma credencial válida.',
+        ocorridoEm: new Date()
+      });
+      return;
+    }
 
     this.processandoCodigo.set(true);
+    this.codigoForm.controls.codigoIdentificacao.setValue(
+      codigo,
+      { emitEvent: false }
+    );
 
     const requisicao =
-      valor.tipoOperacao === 'CHECKIN'
-        ? this.service.registrarCheckinPorCodigo(this.eventoId, codigo)
-        : this.service.registrarCheckoutPorCodigo(this.eventoId, codigo);
+      operacao === 'CHECKIN'
+        ? this.service.registrarCheckinPorCodigo(
+            this.eventoId,
+            codigo
+          )
+        : this.service.registrarCheckoutPorCodigo(
+            this.eventoId,
+            codigo
+          );
 
     requisicao
       .pipe(finalize(() => this.processandoCodigo.set(false)))
       .subscribe({
         next: tioAtualizado => {
           this.atualizarTioCaronaNaLista(tioAtualizado);
+          this.limparFormularioCodigoTio(operacao);
 
-          this.limparFormularioCodigoTio(valor.tipoOperacao);
+          const mensagem =
+            operacao === 'CHECKIN'
+              ? 'Check-in realizado com sucesso.'
+              : 'Check-out realizado com sucesso.';
+
+          this.registrarResultadoScannerTio({
+            status: 'SUCESSO',
+            operacao,
+            mensagem,
+            pessoaNome: tioAtualizado.pessoaNome,
+            ocorridoEm: new Date()
+          });
 
           this.toastSuccess(
-            valor.tipoOperacao === 'CHECKIN'
-              ? `Check-in registrado para ${tioAtualizado.pessoaNome}.`
-              : `Checkout registrado para ${tioAtualizado.pessoaNome}.`
+            `${mensagem.replace('.', '')} para ${tioAtualizado.pessoaNome}.`
           );
         },
         error: erro => {
-          console.error('Erro ao registrar operação por código', erro);
-          this.toastError(this.mensagemErro(erro, 'Não foi possível registrar a operação por código.'));
+          console.error(
+            'Erro ao registrar operação por QR Code',
+            erro
+          );
+
+          const mensagem = this.mensagemErro(
+            erro,
+            'Não foi possível registrar a operação por QR Code.'
+          );
+
+          this.registrarResultadoScannerTio({
+            status: this.erroOperacaoJaRealizada(mensagem)
+              ? 'ATENCAO'
+              : 'ERRO',
+            operacao,
+            mensagem,
+            ocorridoEm: new Date()
+          });
+
+          if (this.erroOperacaoJaRealizada(mensagem)) {
+            this.toastWarn(mensagem);
+          } else {
+            this.toastError(mensagem);
+          }
         }
       });
+  }
+
+  private registrarResultadoScannerTio(
+    resultado: ResultadoScannerTio
+  ): void {
+    this.resultadoScannerTio.set(resultado);
+  }
+
+  private erroOperacaoJaRealizada(
+    mensagem: string
+  ): boolean {
+    const mensagemNormalizada =
+      this.normalizarFiltro(mensagem);
+
+    return (
+      mensagemNormalizada.includes('ja realizou check-in') ||
+      mensagemNormalizada.includes('check-in ja realizado') ||
+      mensagemNormalizada.includes('ja possui check-in') ||
+      mensagemNormalizada.includes('ja realizou checkout') ||
+      mensagemNormalizada.includes('checkout ja realizado') ||
+      mensagemNormalizada.includes('ultimo registro ja e checkout')
+    );
+  }
+
+  classeResultadoScannerTio(
+    status: StatusResultadoScannerTio
+  ): string {
+    switch (status) {
+      case 'SUCESSO':
+        return 'resultado-sucesso';
+      case 'ATENCAO':
+        return 'resultado-atencao';
+      default:
+        return 'resultado-erro';
+    }
+  }
+
+  iconeResultadoScannerTio(
+    status: StatusResultadoScannerTio
+  ): string {
+    switch (status) {
+      case 'SUCESSO':
+        return 'fa-solid fa-circle-check';
+      case 'ATENCAO':
+        return 'fa-solid fa-triangle-exclamation';
+      default:
+        return 'fa-solid fa-circle-xmark';
+    }
   }
 
   registrarCheckinManual(tio: TioCaronaEvento): void {

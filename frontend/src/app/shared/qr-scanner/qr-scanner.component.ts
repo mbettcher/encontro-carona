@@ -114,10 +114,15 @@ export class QrScannerComponent
         return;
       }
 
-      if (
-        this.estado() === 'INATIVO' ||
-        this.estado() === 'PAUSADO'
-      ) {
+      if (this.estado() === 'PAUSADO') {
+        this.atualizarEstado(
+          'PRONTO',
+          'Pronto para a próxima leitura.'
+        );
+        return;
+      }
+
+      if (this.estado() === 'INATIVO') {
         void this.iniciar();
       }
     });
@@ -221,7 +226,7 @@ export class QrScannerComponent
     const repetido =
       this.ultimoCodigo() === texto &&
       agora - this.ultimaLeituraEm() <
-        this.tempoBloqueioMesmoCodigoMs();
+      this.tempoBloqueioMesmoCodigoMs();
 
     if (repetido) {
       return;

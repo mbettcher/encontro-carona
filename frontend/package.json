@@ -17,6 +17,7 @@
     "@fortawesome/fontawesome-free": "^7.0.0",
     "@primeuix/themes": "^2.0.3",
     "@zxing/browser": "^0.2.1",
+    "@zxing/library": "^0.23.0",
     "bootstrap": "5.3.8",
     "primeicons": "^7.0.0",
     "primeng": "^21.1.9",

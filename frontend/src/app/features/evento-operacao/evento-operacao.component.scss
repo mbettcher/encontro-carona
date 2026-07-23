@@ -1125,3 +1125,137 @@
     border-color: var(--bs-danger);
   }
 }
+
+/* Scanner contínuo de Tio Carona — 1.2.2B */
+.operacao-scanner-modos {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.operacao-scanner-modo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  border: 1px solid var(--bs-border-color);
+  border-radius: 0.85rem;
+  padding: 0.85rem 1rem;
+  background: var(--bs-body-bg);
+  color: var(--bs-body-color);
+  text-align: left;
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.operacao-scanner-modo:not(:disabled):hover {
+  border-color: var(--p-primary-color);
+  transform: translateY(-1px);
+}
+
+.operacao-scanner-modo.ativo {
+  border-color: var(--p-primary-color);
+  background:
+    color-mix(in srgb, var(--p-primary-color) 10%, transparent);
+  color: var(--p-primary-color);
+}
+
+.operacao-scanner-modo:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.operacao-scanner-modo > i {
+  width: 1.5rem;
+  font-size: 1.25rem;
+  text-align: center;
+}
+
+.operacao-scanner-modo span {
+  display: grid;
+}
+
+.operacao-scanner-modo small {
+  color: var(--bs-secondary-color);
+}
+
+.scanner-tio-inicio,
+.scanner-tio-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border: 1px solid var(--bs-border-color);
+  border-radius: 0.85rem;
+  padding: 1rem;
+}
+
+.scanner-tio-inicio {
+  background:
+    color-mix(in srgb, var(--p-primary-color) 6%, transparent);
+}
+
+.scanner-tio-toolbar {
+  margin-bottom: 0.75rem;
+  background: var(--bs-tertiary-bg);
+}
+
+.scanner-tio-operacao-atual {
+  font-size: 0.9rem;
+}
+
+.scanner-tio-resultado {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  margin-top: 1rem;
+  border: 1px solid currentColor;
+  border-radius: 0.85rem;
+  padding: 0.9rem 1rem;
+}
+
+.scanner-tio-resultado > i {
+  font-size: 1.65rem;
+}
+
+.scanner-tio-resultado > div {
+  display: grid;
+  gap: 0.1rem;
+}
+
+.scanner-tio-resultado strong {
+  font-size: 1.05rem;
+}
+
+.scanner-tio-resultado small {
+  opacity: 0.8;
+}
+
+.resultado-sucesso {
+  background: color-mix(in srgb, #16a34a 10%, transparent);
+  color: #15803d;
+}
+
+.resultado-atencao {
+  background: color-mix(in srgb, #d97706 10%, transparent);
+  color: #b45309;
+}
+
+.resultado-erro {
+  background: color-mix(in srgb, #dc2626 10%, transparent);
+  color: #b91c1c;
+}
+
+@media (max-width: 575.98px) {
+  .operacao-scanner-modos {
+    grid-template-columns: 1fr;
+  }
+
+  .scanner-tio-inicio,
+  .scanner-tio-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}

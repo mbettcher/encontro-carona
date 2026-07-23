@@ -357,71 +357,137 @@
 <p-tabpanel value="LEITURAS_QR">
   <div class="operacao-tab-content">
     <div class="row g-4">
-      <div class="col-12 col-xl-6">
+      <div class="col-12 col-xl-7">
         <p-card class="operation-action-card h-100">
           <div class="d-flex align-items-start gap-3 mb-3">
             <div class="action-icon mb-0">
-              <i class="fa-solid fa-qrcode"></i>
+              <i class="fa-solid fa-camera"></i>
             </div>
 
-            <div>
-              <h3 class="h6 mb-1">Check-in / Checkout por credencial</h3>
+            <div class="flex-grow-1">
+              <h3 class="h6 mb-1">
+                Leitura rápida — Tio Carona
+              </h3>
               <p class="text-body-secondary small mb-0">
-                Use leitor de QR Code ou código de barras para agilizar a entrada e saída dos tios carona.
+                Escolha a operação antes de abrir a câmera. Depois de cada
+                leitura, o scanner permanece pronto para a próxima pessoa.
               </p>
             </div>
           </div>
 
-          <form [formGroup]="codigoForm" (ngSubmit)="registrarOperacaoPorCodigo()" class="d-grid gap-3">
-            <div>
-              <label for="tipoOperacao" class="form-label">Operação</label>
+          <div class="operacao-scanner-modos">
+            <button
+              type="button"
+              class="operacao-scanner-modo"
+              [class.ativo]="tipoOperacaoScannerTio() === 'CHECKIN'"
+              [disabled]="processandoCodigo() || !seguranca.podeEscrever()"
+              (click)="alterarOperacaoScannerTio('CHECKIN')">
+              <i class="fa-solid fa-right-to-bracket"></i>
+              <span>
+                <strong>Check-in</strong>
+                <small>Registrar entrada</small>
+              </span>
+            </button>
 
-              <p-select inputId="tipoOperacao" formControlName="tipoOperacao" [options]="[
-                        { label: 'Registrar check-in', value: 'CHECKIN' },
-                        { label: 'Registrar checkout', value: 'CHECKOUT' }
-                      ]" optionLabel="label" optionValue="value" class="w-100" />
+            <button
+              type="button"
+              class="operacao-scanner-modo"
+              [class.ativo]="tipoOperacaoScannerTio() === 'CHECKOUT'"
+              [disabled]="processandoCodigo() || !seguranca.podeEscrever()"
+              (click)="alterarOperacaoScannerTio('CHECKOUT')">
+              <i class="fa-solid fa-right-from-bracket"></i>
+              <span>
+                <strong>Check-out</strong>
+                <small>Registrar saída</small>
+              </span>
+            </button>
+          </div>
+
+          @if (!scannerTioVisivel()) {
+            <div class="scanner-tio-inicio">
+              <div>
+                <strong>{{ tituloScannerTio() }}</strong>
+                <p class="mb-0 text-body-secondary small">
+                  {{ instrucaoScannerTio() }}
+                </p>
+              </div>
+
+              <p-button
+                label="Abrir câmera"
+                icon="fa-solid fa-camera"
+                [disabled]="!seguranca.podeEscrever()"
+                (onClick)="abrirScannerTio(tipoOperacaoScannerTio())">
+              </p-button>
             </div>
-
-            <div>
-              <label for="codigoIdentificacao" class="form-label">
-                QR Code ou código de barras
-              </label>
-
-              <div class="input-group">
-                <span class="input-group-text">
-                  <i class="fa-solid fa-barcode"></i>
+          } @else {
+            <div class="scanner-tio-toolbar">
+              <div>
+                <span class="scanner-tio-operacao-atual">
+                  Operação atual:
+                  <strong>
+                    {{
+                      tipoOperacaoScannerTio() === 'CHECKIN'
+                        ? 'CHECK-IN'
+                        : 'CHECK-OUT'
+                    }}
+                  </strong>
                 </span>
-
-                <input id="codigoIdentificacao" pInputText type="text" class="form-control"
-                  formControlName="codigoIdentificacao" placeholder="Aponte o leitor ou digite o código do tio carona"
-                  autocomplete="off" (keydown.enter)="aoPressionarEnterCodigo($event)" />
               </div>
 
-              @if (
-              codigoForm.controls.codigoIdentificacao.invalid &&
-              (
-              codigoForm.controls.codigoIdentificacao.touched ||
-              codigoForm.controls.codigoIdentificacao.dirty
-              )
-              ) {
-              <div class="form-text text-danger">
-                Informe o código da credencial do tio carona.
+              <p-button
+                label="Fechar câmera"
+                icon="fa-solid fa-camera-slash"
+                severity="secondary"
+                [disabled]="processandoCodigo()"
+                (onClick)="fecharScannerTio()">
+              </p-button>
+            </div>
+
+            <app-qr-scanner
+              [ativo]="scannerTioVisivel()"
+              [bloqueado]="processandoCodigo()"
+              [titulo]="tituloScannerTio()"
+              [tempoBloqueioMesmoCodigoMs]="900"
+              (qrCodeLido)="aoLerQrTioCarona($event)">
+            </app-qr-scanner>
+          }
+
+          @if (resultadoScannerTio(); as resultado) {
+            <div
+              class="scanner-tio-resultado"
+              [ngClass]="classeResultadoScannerTio(resultado.status)"
+              aria-live="assertive">
+              <i [class]="iconeResultadoScannerTio(resultado.status)"></i>
+
+              <div>
+                @if (resultado.pessoaNome) {
+                  <strong>{{ resultado.pessoaNome }}</strong>
+                }
+
+                <span>{{ resultado.mensagem }}</span>
+
+                <small>
+                  {{
+                    resultado.operacao === 'CHECKIN'
+                      ? 'Check-in'
+                      : 'Check-out'
+                  }}
+                  · {{ resultado.ocorridoEm | date:'HH:mm:ss' }}
+                </small>
               </div>
-              }
             </div>
+          }
 
-            <div class="alert alert-warning py-2 px-3 mb-0 small">
-              <i class="fa-solid fa-circle-info me-2"></i>
-              A leitura aceita credenciais do tipo Tio Carona. Credenciais de sobrinho serão recusadas neste campo.
-            </div>
-
-            <p-button type="submit" label="Processar leitura" icon="fa-solid fa-barcode" [loading]="processandoCodigo()"
-              [disabled]="!seguranca.podeEscrever()" />
-          </form>
+          <div class="alert alert-warning py-2 px-3 mt-3 mb-0 small">
+            <i class="fa-solid fa-circle-info me-2"></i>
+            Credenciais de Encontrista são recusadas neste leitor. Uma
+            operação repetida apenas informa o estado atual e não executa
+            automaticamente a operação oposta.
+          </div>
         </p-card>
       </div>
 
-      <div class="col-12 col-xl-6">
+      <div class="col-12 col-xl-5">
         <p-card class="operation-action-card h-100">
           <div class="d-flex align-items-start gap-3 mb-3">
             <div class="action-icon mb-0">
