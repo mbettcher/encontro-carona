@@ -462,21 +462,3 @@
         }
     }
 }
-
-
-/* Navegação da Gestão usando o mesmo PrimeNG p-tabs da Operação. */
-:host ::ng-deep .gestao-tabs .p-tablist {
-    overflow-x: auto;
-}
-
-:host ::ng-deep .gestao-tabs .p-tablist-tab-list {
-    min-width: max-content;
-}
-
-:host ::ng-deep .gestao-tabs .p-tab {
-    white-space: nowrap;
-}
-
-:host ::ng-deep .gestao-tabs .p-tabpanels {
-    display: none;
-}
