@@ -1,4 +1,3 @@
-
 @charset "UTF-8";
 
 @import "primeicons/primeicons.css";
@@ -627,4 +626,124 @@ textarea {
 .p-paginator .p-dropdown-panel {
   width: auto !important;
   min-width: 5.25rem;
+}
+
+/* ==========================================================================
+   Abas de Gestão e Operação do Evento — PrimeNG 21
+   ========================================================================== */
+
+p-tabs.gestao-tabs,
+p-tabs.operacao-tabs,
+.gestao-tabs.p-tabs,
+.operacao-tabs.p-tabs {
+  --evento-tabs-active-bg: var(--bs-blue-500, #0d6efd);
+  --evento-tabs-active-hover-bg: var(--bs-blue-600, #0a58ca);
+  --evento-tabs-active-color: #ffffff;
+  --evento-tabs-hover-bg: var(--bs-tertiary-bg, #f1f3f5);
+  --evento-tabs-text-color: var(--bs-secondary-color, #6c757d);
+  display: block;
+}
+
+p-tabs.gestao-tabs .p-tablist,
+p-tabs.operacao-tabs .p-tablist,
+.gestao-tabs.p-tabs .p-tablist,
+.operacao-tabs.p-tabs .p-tablist {
+  overflow-x: auto;
+  padding: 0.5rem;
+  border: 0 !important;
+  border-radius: 1rem;
+  background: #ffffff !important;
+  box-shadow: 0 0.125rem 0.75rem rgba(15, 23, 42, 0.06);
+}
+
+p-tabs.gestao-tabs .p-tablist-tab-list,
+p-tabs.operacao-tabs .p-tablist-tab-list,
+.gestao-tabs.p-tabs .p-tablist-tab-list,
+.operacao-tabs.p-tabs .p-tablist-tab-list {
+  display: flex;
+  gap: 0.5rem;
+  min-width: max-content;
+  border: 0 !important;
+  background: transparent !important;
+}
+
+p-tabs.gestao-tabs .p-tab,
+p-tabs.operacao-tabs .p-tab,
+.gestao-tabs.p-tabs .p-tab,
+.operacao-tabs.p-tabs .p-tab {
+  flex: 0 0 auto;
+  margin: 0 !important;
+  padding: 0.75rem 1rem !important;
+  border: 0 !important;
+  border-radius: 0.75rem;
+  background: transparent !important;
+  color: var(--evento-tabs-text-color) !important;
+  font-weight: 600;
+  white-space: nowrap;
+  transition:
+    background-color 0.2s ease-in-out,
+    color 0.2s ease-in-out;
+}
+
+p-tabs.gestao-tabs .p-tab:not(.p-tab-active):not([aria-selected='true']):hover,
+p-tabs.operacao-tabs .p-tab:not(.p-tab-active):not([aria-selected='true']):hover,
+.gestao-tabs.p-tabs .p-tab:not(.p-tab-active):not([aria-selected='true']):hover,
+.operacao-tabs.p-tabs .p-tab:not(.p-tab-active):not([aria-selected='true']):hover {
+  background: var(--evento-tabs-hover-bg) !important;
+  color: var(--bs-body-color, #212529) !important;
+}
+
+p-tabs.gestao-tabs .p-tab.p-tab-active,
+p-tabs.gestao-tabs .p-tab[aria-selected='true'],
+p-tabs.operacao-tabs .p-tab.p-tab-active,
+p-tabs.operacao-tabs .p-tab[aria-selected='true'],
+.gestao-tabs.p-tabs .p-tab.p-tab-active,
+.gestao-tabs.p-tabs .p-tab[aria-selected='true'],
+.operacao-tabs.p-tabs .p-tab.p-tab-active,
+.operacao-tabs.p-tabs .p-tab[aria-selected='true'] {
+  border: 0 !important;
+  background: var(--evento-tabs-active-bg) !important;
+  color: var(--evento-tabs-active-color) !important;
+  box-shadow: none !important;
+}
+
+p-tabs.gestao-tabs .p-tab.p-tab-active *,
+p-tabs.gestao-tabs .p-tab[aria-selected='true'] *,
+p-tabs.operacao-tabs .p-tab.p-tab-active *,
+p-tabs.operacao-tabs .p-tab[aria-selected='true'] *,
+.gestao-tabs.p-tabs .p-tab.p-tab-active *,
+.gestao-tabs.p-tabs .p-tab[aria-selected='true'] *,
+.operacao-tabs.p-tabs .p-tab.p-tab-active *,
+.operacao-tabs.p-tabs .p-tab[aria-selected='true'] * {
+  color: inherit !important;
+}
+
+p-tabs.gestao-tabs .p-tablist-active-bar,
+p-tabs.operacao-tabs .p-tablist-active-bar,
+.gestao-tabs.p-tabs .p-tablist-active-bar,
+.operacao-tabs.p-tabs .p-tablist-active-bar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  transform: none !important;
+}
+
+@media (max-width: 768px) {
+
+  p-tabs.gestao-tabs .p-tablist,
+  p-tabs.operacao-tabs .p-tablist,
+  .gestao-tabs.p-tabs .p-tablist,
+  .operacao-tabs.p-tabs .p-tablist {
+    padding: 0.4rem;
+    border-radius: 0.85rem;
+  }
+
+  p-tabs.gestao-tabs .p-tab,
+  p-tabs.operacao-tabs .p-tab,
+  .gestao-tabs.p-tabs .p-tab,
+  .operacao-tabs.p-tabs .p-tab {
+    padding: 0.7rem 0.9rem !important;
+  }
 }

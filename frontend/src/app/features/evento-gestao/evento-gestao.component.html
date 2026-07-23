@@ -85,40 +85,43 @@
     </div>
   </div>
 
-  <div class="gestao-tabs mb-4">
-    <button type="button" class="tab-button" [class.active]="abaAtiva() === 'TIOS'" (click)="alterarAba('TIOS')">
-      <i class="fa-solid fa-car-side me-2"></i>
-      Tios carona
-    </button>
+  <p-tabs
+    [value]="abaAtiva()"
+    (valueChange)="alterarAba($event)"
+    class="gestao-tabs mb-4"
+  >
+    <p-tablist>
+      <p-tab value="TIOS">
+        <i class="fa-solid fa-car-side me-2"></i>
+        Tios carona
+      </p-tab>
 
-    <button type="button" class="tab-button" [class.active]="abaAtiva() === 'DUPLAS'" (click)="alterarAba('DUPLAS')">
-      <i class="fa-solid fa-people-arrows me-2"></i>
-      Duplas
-    </button>
+      <p-tab value="DUPLAS">
+        <i class="fa-solid fa-people-arrows me-2"></i>
+        Duplas
+      </p-tab>
 
-    <button type="button" class="tab-button" [class.active]="abaAtiva() === 'SOBRINHOS'"
-      (click)="alterarAba('SOBRINHOS')">
-      <i class="fa-solid fa-child-reaching me-2"></i>
-      Encontristas
-    </button>
+      <p-tab value="SOBRINHOS">
+        <i class="fa-solid fa-child-reaching me-2"></i>
+        Encontristas
+      </p-tab>
 
-    <button type="button" class="tab-button" [class.active]="abaAtiva() === 'VINCULOS'"
-      (click)="alterarAba('VINCULOS')">
-      <i class="fa-solid fa-link me-2"></i>
-      Vínculos
-    </button>
+      <p-tab value="VINCULOS">
+        <i class="fa-solid fa-link me-2"></i>
+        Vínculos
+      </p-tab>
 
-    <button type="button" class="tab-button" [class.active]="abaAtiva() === 'EQUIPES'" (click)="alterarAba('EQUIPES')">
-      <i class="fa-solid fa-boxes-packing me-2"></i>
-      Equipes do kit
-    </button>
+      <p-tab value="EQUIPES">
+        <i class="fa-solid fa-boxes-packing me-2"></i>
+        Equipes do kit
+      </p-tab>
 
-    <button type="button" class="tab-button" [class.active]="abaAtiva() === 'CADERNOS'"
-      (click)="alterarAba('CADERNOS')">
-      <i class="fa-solid fa-book-bible me-2"></i>
-      Caderno de Mensagens
-    </button>
-  </div>
+      <p-tab value="CADERNOS">
+        <i class="fa-solid fa-book-bible me-2"></i>
+        Caderno de Mensagens
+      </p-tab>
+    </p-tablist>
+  </p-tabs>
 
   @if (abaAtiva() === 'TIOS') {
   <div class="row g-4">

@@ -305,29 +305,6 @@
   .operacao-tab-content {
     padding-top: 1rem;
   }
-
-  :host ::ng-deep {
-    .operacao-tabs {
-      .p-tablist {
-        overflow-x: auto;
-        border-bottom: 1px solid var(--bs-border-color);
-      }
-
-      .p-tab {
-        white-space: nowrap;
-        font-weight: 600;
-      }
-
-      .p-tabpanels {
-        padding: 0;
-        background: transparent;
-      }
-
-      .p-tabpanel {
-        padding: 0;
-      }
-    }
-  }
 }
 
 @media (max-width: 768px) {
@@ -344,6 +321,7 @@
     .table-search {
       max-width: 100%;
     }
+
   }
 
   .caderno-actions {
@@ -1145,5 +1123,114 @@
 
   .p-select.ng-invalid.ng-dirty {
     border-color: var(--bs-danger);
+  }
+}
+
+/* ==========================================================================
+   Abas da Operação — PrimeNG p-tabs
+   --------------------------------------------------------------------------
+   A personalização principal usa os design tokens oficiais do componente.
+   Como as variáveis CSS são aplicadas ao elemento raiz .operacao-tabs, elas
+   são herdadas por toda a estrutura interna do p-tabs.
+   ========================================================================== */
+
+.evento-operacao-page {
+  .operacao-tabs {
+    --p-tabs-transition-duration: 0.2s;
+
+    --p-tabs-tablist-background: #ffffff;
+    --p-tabs-tablist-border-width: 0;
+    --p-tabs-tablist-border-color: transparent;
+
+    --p-tabs-tab-background: transparent;
+    --p-tabs-tab-hover-background: var(--bs-tertiary-bg);
+    --p-tabs-tab-active-background: var(--bs-primary);
+
+    --p-tabs-tab-border-width: 0;
+    --p-tabs-tab-border-color: transparent;
+    --p-tabs-tab-hover-border-color: transparent;
+    --p-tabs-tab-active-border-color: transparent;
+
+    --p-tabs-tab-color: var(--bs-secondary-color);
+    --p-tabs-tab-hover-color: var(--bs-body-color);
+    --p-tabs-tab-active-color: #ffffff;
+
+    --p-tabs-tab-padding: 0.75rem 1rem;
+    --p-tabs-tab-font-weight: 600;
+    --p-tabs-tab-margin: 0;
+    --p-tabs-tab-gap: 0.5rem;
+
+    --p-tabs-active-bar-height: 0;
+    --p-tabs-active-bar-bottom: 0;
+    --p-tabs-active-bar-background: transparent;
+
+    --p-tabs-tabpanel-background: transparent;
+    --p-tabs-tabpanel-color: var(--bs-body-color);
+    --p-tabs-tabpanel-padding: 1rem 0 0;
+  }
+}
+
+/*
+ * Somente detalhes geométricos sem design token próprio.
+ * Este bloco fica obrigatoriamente no nível raiz do SCSS.
+ */
+:host ::ng-deep .operacao-tabs.p-tabs {
+  display: block;
+}
+
+:host ::ng-deep .operacao-tabs .p-tablist {
+  overflow-x: auto;
+  padding: 0.5rem;
+  border: 0;
+  border-radius: 1rem;
+  background: #ffffff;
+  box-shadow: 0 0.125rem 0.75rem rgba(15, 23, 42, 0.06);
+}
+
+:host ::ng-deep .operacao-tabs .p-tablist-tab-list {
+  display: flex;
+  gap: 0.5rem;
+  min-width: max-content;
+  border: 0;
+  background: transparent;
+}
+
+:host ::ng-deep .operacao-tabs .p-tab {
+  flex: 0 0 auto;
+  border: 0;
+  border-radius: 0.75rem;
+  white-space: nowrap;
+}
+
+/* Fallback explícito para o estado ativo, além dos design tokens. */
+:host ::ng-deep .operacao-tabs .p-tab.p-tab-active,
+:host ::ng-deep .operacao-tabs .p-tab[aria-selected='true'] {
+  border: 0;
+  background: var(--bs-primary);
+  color: #ffffff;
+}
+
+/* Elimina definitivamente a barra inferior do tema. */
+:host ::ng-deep .operacao-tabs .p-tablist-active-bar {
+  display: none;
+  width: 0;
+  height: 0;
+  background: transparent;
+}
+
+:host ::ng-deep .operacao-tabs .p-tabpanels,
+:host ::ng-deep .operacao-tabs .p-tabpanel {
+  padding: 0;
+  background: transparent;
+}
+
+@media (max-width: 768px) {
+  :host ::ng-deep .operacao-tabs .p-tablist {
+    padding: 0.4rem;
+    border-radius: 0.85rem;
+  }
+
+  :host ::ng-deep .operacao-tabs .p-tab {
+    padding: 0.7rem 0.9rem;
   }
 }

@@ -59,7 +59,11 @@
   </div>
   }
 
-  <p-tabs [value]="abaOperacaoAtiva()" (valueChange)="alterarAbaOperacao($event)" styleClass="operacao-tabs">
+  <p-tabs 
+    [value]="abaOperacaoAtiva()" 
+    (valueChange)="alterarAbaOperacao($event)" 
+    class="operacao-tabs"
+    >
     <p-tablist>
       <p-tab value="VISAO_GERAL">
         <i class="fa-solid fa-chart-pie me-2"></i>

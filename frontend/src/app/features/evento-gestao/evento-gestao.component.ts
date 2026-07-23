@@ -13,6 +13,7 @@ import { SelectModule } from 'primeng/select';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
+import { TabsModule } from 'primeng/tabs';
 import { TextareaModule } from 'primeng/textarea';
 import { TooltipModule } from 'primeng/tooltip';
 import { ToggleSwitchModule } from 'primeng/toggleswitch';
@@ -66,6 +67,7 @@ interface CorRapidaEquipe {
     MultiSelectModule,
     TableModule,
     TagModule,
+    TabsModule,
     TextareaModule,
     TooltipModule,
     ToggleSwitchModule,
@@ -595,8 +597,8 @@ export class EventoGestaoComponent implements OnInit {
     window.setTimeout(() => this.carregando.set(false), 600);
   }
 
-  alterarAba(aba: AbaGestao): void {
-    this.abaAtiva.set(aba);
+  alterarAba(aba: string | number | undefined): void {
+    this.abaAtiva.set((aba as AbaGestao) ?? 'TIOS');
   }
 
   alterarModoCadastroEncontrista(usarPessoaCadastrada: boolean): void {
