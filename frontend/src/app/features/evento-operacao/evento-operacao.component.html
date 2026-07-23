@@ -357,7 +357,9 @@
 <p-tabpanel value="LEITURAS_QR">
   <div class="operacao-tab-content">
     <div class="row g-4">
-      <div class="col-12 col-xl-6">
+      <div
+        class="col-12 col-xl-6 scanner-operacao-col"
+        [class.scanner-operacao-tela-cheia]="scannerTioTelaCheia()">
         <p-card class="operation-action-card h-100">
           <div class="d-flex align-items-start gap-3 mb-3">
             <div class="action-icon mb-0">
@@ -434,13 +436,31 @@
                 </span>
               </div>
 
-              <p-button
-                label="Fechar câmera"
-                icon="fa-solid fa-camera-slash"
-                severity="secondary"
-                [disabled]="processandoCodigo()"
-                (onClick)="fecharScannerTio()">
-              </p-button>
+              <div class="scanner-toolbar-acoes">
+                <p-button
+                  [label]="
+                    scannerTioTelaCheia()
+                      ? 'Sair da tela cheia'
+                      : 'Tela cheia'
+                  "
+                  [icon]="
+                    scannerTioTelaCheia()
+                      ? 'fa-solid fa-compress'
+                      : 'fa-solid fa-expand'
+                  "
+                  severity="secondary"
+                  [disabled]="processandoCodigo()"
+                  (onClick)="alternarTelaCheiaScannerTio()">
+                </p-button>
+
+                <p-button
+                  label="Fechar câmera"
+                  icon="fa-solid fa-camera-slash"
+                  severity="secondary"
+                  [disabled]="processandoCodigo()"
+                  (onClick)="fecharScannerTio()">
+                </p-button>
+              </div>
             </div>
 
             <app-qr-scanner
@@ -478,6 +498,71 @@
             </div>
           }
 
+          @if (scannerTioVisivel()) {
+            <section class="scanner-sessao">
+              <header class="scanner-sessao-header">
+                <div>
+                  <strong>Sessão atual</strong>
+                  <small>Últimas cinco leituras deste leitor</small>
+                </div>
+
+                <button
+                  type="button"
+                  class="btn btn-sm btn-outline-secondary"
+                  [disabled]="historicoScannerTio().length === 0"
+                  (click)="limparHistoricoScannerTio()">
+                  <i class="fa-solid fa-eraser me-1"></i>
+                  Limpar
+                </button>
+              </header>
+
+              <div class="scanner-contadores">
+                <span>
+                  <strong>{{ resumoSessaoScannerTio().total }}</strong>
+                  Leituras
+                </span>
+                <span class="contador-sucesso">
+                  <strong>{{ resumoSessaoScannerTio().sucessos }}</strong>
+                  Sucessos
+                </span>
+                <span class="contador-atencao">
+                  <strong>{{ resumoSessaoScannerTio().atencoes }}</strong>
+                  Avisos
+                </span>
+                <span class="contador-erro">
+                  <strong>{{ resumoSessaoScannerTio().erros }}</strong>
+                  Erros
+                </span>
+              </div>
+
+              @if (historicoScannerTio().length > 0) {
+                <div class="scanner-historico">
+                  @for (
+                    item of historicoScannerTio();
+                    track item.id
+                  ) {
+                    <article
+                      class="scanner-historico-item"
+                      [ngClass]="classeResultadoScannerTio(item.status)">
+                      <i [class]="iconeResultadoScannerTio(item.status)"></i>
+
+                      <div>
+                        <strong>
+                          {{ item.pessoaNome || item.titulo }}
+                        </strong>
+                        <span>{{ item.mensagem }}</span>
+                      </div>
+
+                      <time>
+                        {{ item.ocorridoEm | date:'HH:mm:ss' }}
+                      </time>
+                    </article>
+                  }
+                </div>
+              }
+            </section>
+          }
+
           <div class="alert alert-warning py-2 px-3 mt-3 mb-0 small">
             <i class="fa-solid fa-circle-info me-2"></i>
             Credenciais de Encontrista são recusadas neste leitor. Uma
@@ -487,7 +572,11 @@
         </p-card>
       </div>
 
-      <div class="col-12 col-xl-6">
+      <div
+        class="col-12 col-xl-6 scanner-operacao-col"
+        [class.scanner-operacao-tela-cheia]="
+          scannerEncontristaTelaCheia()
+        ">
         <p-card class="operation-action-card h-100">
           <div class="d-flex align-items-start gap-3 mb-3">
             <div class="action-icon mb-0">
@@ -602,13 +691,31 @@
                 </span>
               </div>
 
-              <p-button
-                label="Fechar câmera"
-                icon="fa-solid fa-camera-slash"
-                severity="secondary"
-                [disabled]="processandoCodigoSobrinho()"
-                (onClick)="fecharScannerEncontrista()">
-              </p-button>
+              <div class="scanner-toolbar-acoes">
+                <p-button
+                  [label]="
+                    scannerEncontristaTelaCheia()
+                      ? 'Sair da tela cheia'
+                      : 'Tela cheia'
+                  "
+                  [icon]="
+                    scannerEncontristaTelaCheia()
+                      ? 'fa-solid fa-compress'
+                      : 'fa-solid fa-expand'
+                  "
+                  severity="secondary"
+                  [disabled]="processandoCodigoSobrinho()"
+                  (onClick)="alternarTelaCheiaScannerEncontrista()">
+                </p-button>
+
+                <p-button
+                  label="Fechar câmera"
+                  icon="fa-solid fa-camera-slash"
+                  severity="secondary"
+                  [disabled]="processandoCodigoSobrinho()"
+                  (onClick)="fecharScannerEncontrista()">
+                </p-button>
+              </div>
             </div>
 
             <app-qr-scanner
@@ -657,6 +764,81 @@
                 </small>
               </div>
             </div>
+          }
+
+          @if (scannerEncontristaVisivel()) {
+            <section class="scanner-sessao">
+              <header class="scanner-sessao-header">
+                <div>
+                  <strong>Sessão atual</strong>
+                  <small>Últimas cinco leituras deste leitor</small>
+                </div>
+
+                <button
+                  type="button"
+                  class="btn btn-sm btn-outline-secondary"
+                  [disabled]="
+                    historicoScannerEncontrista().length === 0
+                  "
+                  (click)="limparHistoricoScannerEncontrista()">
+                  <i class="fa-solid fa-eraser me-1"></i>
+                  Limpar
+                </button>
+              </header>
+
+              <div class="scanner-contadores">
+                <span>
+                  <strong>
+                    {{ resumoSessaoScannerEncontrista().total }}
+                  </strong>
+                  Leituras
+                </span>
+                <span class="contador-sucesso">
+                  <strong>
+                    {{ resumoSessaoScannerEncontrista().sucessos }}
+                  </strong>
+                  Sucessos
+                </span>
+                <span class="contador-atencao">
+                  <strong>
+                    {{ resumoSessaoScannerEncontrista().atencoes }}
+                  </strong>
+                  Avisos
+                </span>
+                <span class="contador-erro">
+                  <strong>
+                    {{ resumoSessaoScannerEncontrista().erros }}
+                  </strong>
+                  Erros
+                </span>
+              </div>
+
+              @if (historicoScannerEncontrista().length > 0) {
+                <div class="scanner-historico">
+                  @for (
+                    item of historicoScannerEncontrista();
+                    track item.id
+                  ) {
+                    <article
+                      class="scanner-historico-item"
+                      [ngClass]="classeResultadoScannerTio(item.status)">
+                      <i [class]="iconeResultadoScannerTio(item.status)"></i>
+
+                      <div>
+                        <strong>
+                          {{ item.pessoaNome || item.titulo }}
+                        </strong>
+                        <span>{{ item.mensagem }}</span>
+                      </div>
+
+                      <time>
+                        {{ item.ocorridoEm | date:'HH:mm:ss' }}
+                      </time>
+                    </article>
+                  }
+                </div>
+              }
+            </section>
           }
 
           <div class="alert alert-warning py-2 px-3 mt-3 mb-0 small">

@@ -52,6 +52,9 @@ import { AuthService } from '../../core/auth/auth.service';
 import { EventoOperacaoService } from './evento-operacao.service';
 import { QrScannerComponent } from '../../shared/qr-scanner/qr-scanner.component';
 import { QrCodeLeitura } from '../../shared/qr-scanner/qr-scanner.models';
+import {
+  QrOperationalFeedbackService
+} from '../../shared/qr-scanner/qr-operational-feedback.service';
 
 type TipoOperacaoScannerTio = 'CHECKIN' | 'CHECKOUT';
 
@@ -71,6 +74,15 @@ interface ResultadoScannerTio {
 interface ResultadoScannerEncontrista {
   status: StatusResultadoScannerTio;
   operacao: OperacaoPresencaSobrinho;
+  mensagem: string;
+  pessoaNome?: string;
+  ocorridoEm: Date;
+}
+
+interface HistoricoLeituraScanner {
+  id: string;
+  status: StatusResultadoScannerTio;
+  titulo: string;
   mensagem: string;
   pessoaNome?: string;
   ocorridoEm: Date;
@@ -162,6 +174,8 @@ export class EventoOperacaoComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly messageService = inject(MessageService);
   private readonly confirmationService = inject(ConfirmationService);
+  private readonly qrFeedback =
+    inject(QrOperationalFeedbackService);
 
   readonly eventoId = Number(this.route.snapshot.paramMap.get('eventoId'));
 
@@ -178,6 +192,9 @@ export class EventoOperacaoComponent implements OnInit {
     signal<TipoOperacaoScannerTio>('CHECKIN');
   readonly resultadoScannerTio =
     signal<ResultadoScannerTio | null>(null);
+  readonly scannerTioTelaCheia = signal(false);
+  readonly historicoScannerTio =
+    signal<HistoricoLeituraScanner[]>([]);
   readonly evento = signal<Evento | null>(null);
   readonly processandoManual = signal<number | null>(null);
   readonly processandoPresencaSobrinho = signal<number | null>(null);
@@ -228,6 +245,9 @@ export class EventoOperacaoComponent implements OnInit {
     signal<OperacaoPresencaSobrinho>('PRESENTE');
   readonly resultadoScannerEncontrista =
     signal<ResultadoScannerEncontrista | null>(null);
+  readonly scannerEncontristaTelaCheia = signal(false);
+  readonly historicoScannerEncontrista =
+    signal<HistoricoLeituraScanner[]>([]);
   readonly abaOperacaoAtiva = signal<AbaOperacao>('VISAO_GERAL');
   readonly tipoOperacaoLoteCaderno =
     signal<TipoOperacaoLoteCaderno>('ENTREGA');
@@ -303,6 +323,16 @@ export class EventoOperacaoComponent implements OnInit {
 
   readonly possuiMultiplasViasTimeline = computed(
     () => this.totalViasTimelineCaderno() > 1
+  );
+
+  readonly resumoSessaoScannerTio = computed(() =>
+    this.resumirHistoricoScanner(this.historicoScannerTio())
+  );
+
+  readonly resumoSessaoScannerEncontrista = computed(() =>
+    this.resumirHistoricoScanner(
+      this.historicoScannerEncontrista()
+    )
   );
 
   readonly tituloScannerTio = computed(() =>
@@ -2558,6 +2588,7 @@ export class EventoOperacaoComponent implements OnInit {
     this.tipoOperacaoScannerTio.set(operacao);
     this.codigoForm.controls.tipoOperacao.setValue(operacao);
     this.resultadoScannerTio.set(null);
+    this.qrFeedback.preparar();
     this.scannerTioVisivel.set(true);
   }
 
@@ -2567,7 +2598,16 @@ export class EventoOperacaoComponent implements OnInit {
     }
 
     this.scannerTioVisivel.set(false);
+    this.scannerTioTelaCheia.set(false);
     this.resultadoScannerTio.set(null);
+  }
+
+  alternarTelaCheiaScannerTio(): void {
+    this.scannerTioTelaCheia.update(valor => !valor);
+  }
+
+  limparHistoricoScannerTio(): void {
+    this.historicoScannerTio.set([]);
   }
 
   alterarOperacaoScannerTio(
@@ -2701,6 +2741,22 @@ export class EventoOperacaoComponent implements OnInit {
     resultado: ResultadoScannerTio
   ): void {
     this.resultadoScannerTio.set(resultado);
+    this.qrFeedback.emitir(resultado.status);
+
+    this.adicionarHistoricoScanner(
+      this.historicoScannerTio,
+      {
+        id: this.criarIdHistoricoScanner(),
+        status: resultado.status,
+        titulo:
+          resultado.operacao === 'CHECKIN'
+            ? 'Check-in'
+            : 'Check-out',
+        mensagem: resultado.mensagem,
+        pessoaNome: resultado.pessoaNome,
+        ocorridoEm: resultado.ocorridoEm
+      }
+    );
   }
 
   private erroOperacaoJaRealizada(
@@ -2716,6 +2772,50 @@ export class EventoOperacaoComponent implements OnInit {
       mensagemNormalizada.includes('ja realizou checkout') ||
       mensagemNormalizada.includes('checkout ja realizado') ||
       mensagemNormalizada.includes('ultimo registro ja e checkout')
+    );
+  }
+
+  private adicionarHistoricoScanner(
+    historicoSignal: {
+      update(
+        updater: (
+          historico: HistoricoLeituraScanner[]
+        ) => HistoricoLeituraScanner[]
+      ): void;
+    },
+    item: HistoricoLeituraScanner
+  ): void {
+    historicoSignal.update(historico =>
+      [item, ...historico].slice(0, 5)
+    );
+  }
+
+  private resumirHistoricoScanner(
+    historico: HistoricoLeituraScanner[]
+  ): {
+    total: number;
+    sucessos: number;
+    atencoes: number;
+    erros: number;
+  } {
+    return {
+      total: historico.length,
+      sucessos: historico.filter(
+        item => item.status === 'SUCESSO'
+      ).length,
+      atencoes: historico.filter(
+        item => item.status === 'ATENCAO'
+      ).length,
+      erros: historico.filter(
+        item => item.status === 'ERRO'
+      ).length
+    };
+  }
+
+  private criarIdHistoricoScanner(): string {
+    return (
+      `${Date.now()}-` +
+      `${Math.random().toString(36).slice(2, 8)}`
     );
   }
 
@@ -2861,6 +2961,7 @@ export class EventoOperacaoComponent implements OnInit {
     this.operacaoScannerEncontrista.set(operacao);
     this.codigoSobrinhoForm.controls.operacao.setValue(operacao);
     this.resultadoScannerEncontrista.set(null);
+    this.qrFeedback.preparar();
     this.scannerEncontristaVisivel.set(true);
   }
 
@@ -2870,7 +2971,16 @@ export class EventoOperacaoComponent implements OnInit {
     }
 
     this.scannerEncontristaVisivel.set(false);
+    this.scannerEncontristaTelaCheia.set(false);
     this.resultadoScannerEncontrista.set(null);
+  }
+
+  alternarTelaCheiaScannerEncontrista(): void {
+    this.scannerEncontristaTelaCheia.update(valor => !valor);
+  }
+
+  limparHistoricoScannerEncontrista(): void {
+    this.historicoScannerEncontrista.set([]);
   }
 
   alterarOperacaoScannerEncontrista(
@@ -3003,6 +3113,21 @@ export class EventoOperacaoComponent implements OnInit {
     resultado: ResultadoScannerEncontrista
   ): void {
     this.resultadoScannerEncontrista.set(resultado);
+    this.qrFeedback.emitir(resultado.status);
+
+    this.adicionarHistoricoScanner(
+      this.historicoScannerEncontrista,
+      {
+        id: this.criarIdHistoricoScanner(),
+        status: resultado.status,
+        titulo: this.labelOperacaoScannerEncontrista(
+          resultado.operacao
+        ),
+        mensagem: resultado.mensagem,
+        pessoaNome: resultado.pessoaNome,
+        ocorridoEm: resultado.ocorridoEm
+      }
+    );
   }
 
   private erroPresencaEncontristaJaRegistrada(

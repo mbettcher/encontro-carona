@@ -1284,3 +1284,180 @@
 :host ::ng-deep .operation-action-card.h-100 .p-card-content {
   height: 100%;
 }
+
+/* Operação imersiva do scanner — 1.2.2D */
+.scanner-toolbar-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.scanner-operacao-tela-cheia {
+  position: fixed;
+  z-index: 1090;
+  inset: 0;
+  width: 100%;
+  max-width: none;
+  padding: 0.75rem;
+  overflow-y: auto;
+  background: rgba(15, 23, 42, 0.94);
+}
+
+:host ::ng-deep
+  .scanner-operacao-tela-cheia
+  .operation-action-card,
+:host ::ng-deep
+  .scanner-operacao-tela-cheia
+  .operation-action-card
+  .p-card {
+  min-height: calc(100dvh - 1.5rem);
+  border-radius: 1rem;
+}
+
+:host ::ng-deep
+  .scanner-operacao-tela-cheia
+  app-qr-scanner
+  .scanner-viewport {
+  min-height: min(58dvh, 42rem);
+  aspect-ratio: 16 / 9;
+}
+
+.scanner-sessao {
+  margin-top: 1rem;
+  border: 1px solid var(--bs-border-color);
+  border-radius: 0.85rem;
+  padding: 0.9rem;
+  background: var(--bs-tertiary-bg);
+}
+
+.scanner-sessao-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.scanner-sessao-header > div {
+  display: grid;
+}
+
+.scanner-sessao-header small {
+  color: var(--bs-secondary-color);
+}
+
+.scanner-contadores {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.scanner-contadores > span {
+  display: grid;
+  border-radius: 0.7rem;
+  padding: 0.65rem;
+  background: var(--bs-body-bg);
+  color: var(--bs-secondary-color);
+  font-size: 0.76rem;
+  text-align: center;
+}
+
+.scanner-contadores strong {
+  color: var(--bs-body-color);
+  font-size: 1.1rem;
+}
+
+.scanner-contadores .contador-sucesso strong {
+  color: #15803d;
+}
+
+.scanner-contadores .contador-atencao strong {
+  color: #b45309;
+}
+
+.scanner-contadores .contador-erro strong {
+  color: #b91c1c;
+}
+
+.scanner-historico {
+  display: grid;
+  gap: 0.45rem;
+  margin-top: 0.75rem;
+}
+
+.scanner-historico-item {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.65rem;
+  border: 1px solid currentColor;
+  border-radius: 0.7rem;
+  padding: 0.6rem 0.7rem;
+}
+
+.scanner-historico-item > div {
+  display: grid;
+  min-width: 0;
+}
+
+.scanner-historico-item span {
+  overflow: hidden;
+  font-size: 0.78rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.scanner-historico-item time {
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 767.98px) {
+  .scanner-operacao-tela-cheia {
+    padding: 0;
+  }
+
+  :host ::ng-deep
+    .scanner-operacao-tela-cheia
+    .operation-action-card
+    .p-card {
+    min-height: 100dvh;
+    border-radius: 0;
+  }
+
+  :host ::ng-deep
+    .scanner-operacao-tela-cheia
+    .operation-action-card
+    .p-card-body {
+    padding: 0.8rem;
+  }
+
+  :host ::ng-deep
+    .scanner-operacao-tela-cheia
+    app-qr-scanner
+    .scanner-viewport {
+    min-height: 48dvh;
+    aspect-ratio: 3 / 4;
+  }
+
+  .scanner-toolbar-acoes {
+    width: 100%;
+  }
+
+  .scanner-toolbar-acoes p-button {
+    flex: 1;
+  }
+
+  .scanner-contadores {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .scanner-historico-item {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .scanner-historico-item time {
+    grid-column: 2;
+  }
+}
