@@ -40,83 +40,83 @@ export class SobreVersaoComponent {
 
   readonly checklist: ChecklistGroup[] = [
     {
-      titulo: 'Segurança e acesso',
-      icon: 'fa-solid fa-shield-halved',
+      titulo: 'Pessoa e Encontrista',
+      icon: 'fa-solid fa-people-arrows',
       cor: 'primary',
       itens: [
         {
-          label: 'Login e JWT',
+          label: 'Vínculo com Pessoa',
           status: 'OK',
-          detalhe: 'Autenticação JWT, token Bearer, logout, troca de senha e expiração de sessão validados.'
+          detalhe: 'Encontristas podem ser vinculados a Pessoas cadastradas sem interromper registros exclusivos do evento.'
         },
         {
-          label: 'Perfis e permissões',
+          label: 'Herança protegida',
           status: 'OK',
-          detalhe: 'ADMIN, OPERADOR_ADMIN, OPERADOR_LEITURA e SOMENTE_LEITURA aplicados em rotas, menus e ações.'
+          detalhe: 'Dados existentes da Pessoa são herdados e bloqueados no formulário do Encontrista.'
         },
         {
-          label: 'Administração de usuários',
+          label: 'Complementação segura',
           status: 'OK',
-          detalhe: 'Criação, alteração de perfil, ativação, desativação e redefinição de senha disponíveis ao ADMIN.'
+          detalhe: 'Somente dados ausentes são complementados na Pessoa; valores existentes não são sobrescritos.'
         },
         {
-          label: 'Tratamento de acesso',
+          label: 'Snapshot histórico',
           status: 'OK',
-          detalhe: 'Respostas 401 e 403 tratadas sem derrubar indevidamente a navegação da aplicação.'
+          detalhe: 'O Encontrista mantém a cópia dos dados utilizados no evento, preservando o histórico da inscrição.'
         }
       ]
     },
     {
-      titulo: 'Gestão do evento',
-      icon: 'fa-solid fa-calendar-check',
+      titulo: 'Formulários e validações',
+      icon: 'fa-solid fa-list-check',
       cor: 'success',
       itens: [
         {
-          label: 'Cadastros principais',
+          label: 'Criação e edição',
           status: 'OK',
-          detalhe: 'Paróquias/Comunidades, pessoas, eventos, tios, duplas, encontristas e vínculos revisados.'
+          detalhe: 'Cadastro direto, Pessoa vinculada e edição de Encontrista foram revisados e homologados.'
         },
         {
-          label: 'Operação por credencial',
+          label: 'Campos herdados',
           status: 'OK',
-          detalhe: 'Leitura QR e operação manual de tios e encontristas funcionando com validação de credencial ativa.'
+          detalhe: 'Campos ausentes permanecem editáveis com obrigatoriedade e limites de tamanho preservados.'
         },
         {
-          label: 'Presença e históricos',
+          label: 'Estados assíncronos',
           status: 'OK',
-          detalhe: 'Históricos de check-in, checkout e presença por dia consolidados para a operação do evento.'
+          detalhe: 'Carregamentos e salvamentos utilizam coordenação real das requisições e encerramento com finalize.'
         },
         {
-          label: 'Central de impressão',
+          label: 'Mensagens da API',
           status: 'OK',
-          detalhe: 'Credenciais, crachás, carteirinhas, etiquetas e relatórios Jasper mantidos e revisados.'
+          detalhe: 'Erros de negócio, validação, conexão e permissão são apresentados de forma padronizada.'
         }
       ]
     },
     {
-      titulo: 'Caderno de Mensagens',
-      icon: 'fa-solid fa-book-open',
+      titulo: 'Banco e compatibilidade',
+      icon: 'fa-solid fa-database',
       cor: 'info',
       itens: [
         {
-          label: 'Seleção operacional',
+          label: 'Migration V17',
           status: 'OK',
-          detalhe: 'Entrega, recebimento e recolhimento trabalham com seleção explícita de cadernos da mesma dupla.'
+          detalhe: 'Pessoa recebeu responsável, telefone do responsável e endereço como campos opcionais.'
         },
         {
-          label: 'Timeline consolidada',
+          label: 'Registros legados',
           status: 'OK',
-          detalhe: 'Histórico cronológico por encontrista reúne todas as vias, movimentações, responsáveis e transições.'
+          detalhe: 'Encontristas antigos sem pessoa_id continuam válidos e operacionais.'
         },
         {
-          label: 'Ocorrências e recuperação',
+          label: 'Backfill controlado',
           status: 'OK',
-          detalhe: 'Perda, dano informativo ou impeditivo e recuperação da etapa anterior foram estruturados.'
+          detalhe: 'Dados legados de Encontristas vinculados complementam somente campos vazios da Pessoa.'
         },
         {
-          label: 'Versionamento e cancelamento',
+          label: 'Unicidade por evento',
           status: 'OK',
-          detalhe: 'Substituição cria nova via; cancelamento registra motivo e controla recolhimento físico pendente.'
+          detalhe: 'A mesma Pessoa não pode ser vinculada mais de uma vez como Encontrista no mesmo evento.'
         }
       ]
     },
@@ -126,24 +126,24 @@ export class SobreVersaoComponent {
       cor: 'warning',
       itens: [
         {
-          label: 'Fluxos legados',
+          label: 'Testes automatizados',
           status: 'OK',
-          detalhe: 'Chamadas e endpoints antigos do Caderno de Mensagens foram removidos após homologação.'
+          detalhe: 'Testes de complementação, proteção contra sobrescrita, snapshot e duplicidade foram aprovados.'
         },
         {
-          label: 'Validação dos formulários',
+          label: 'Testes funcionais',
           status: 'OK',
-          detalhe: 'Ações especiais exigem campos obrigatórios, bloqueiam envio duplicado e limpam o estado após sucesso.'
+          detalhe: 'Criação, edição, troca, limpeza, herança e complementação foram homologadas.'
         },
         {
-          label: 'Responsividade e UX',
+          label: 'Frontend e backend',
           status: 'OK',
-          detalhe: 'Tabelas, diálogos, timeline, alertas e estados desabilitados foram revisados para uso operacional.'
+          detalhe: 'Aplicações compiladas, executadas e validadas em conjunto após os pacotes do ciclo 1.2.1.'
         },
         {
-          label: 'Homologação',
+          label: 'Limpeza técnica',
           status: 'OK',
-          detalhe: 'Frontend buildado, backend executado e principais cenários da versão 1.2.0 testados e aprovados.'
+          detalhe: 'Validações, mensagens e estilos das abas foram centralizados e revisados.'
         }
       ]
     }
