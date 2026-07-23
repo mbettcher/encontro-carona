@@ -1,0 +1,135 @@
+<section class="qr-scanner" [class]="classeEstado()">
+  <header class="scanner-header">
+    <div>
+      <h3>{{ titulo() }}</h3>
+      <p>{{ mensagem() }}</p>
+    </div>
+
+    <span class="scanner-status" aria-live="polite">
+      @switch (estado()) {
+        @case ('PRONTO') {
+          <i class="fa-solid fa-camera"></i>
+          Pronto
+        }
+        @case ('INICIANDO') {
+          <i class="fa-solid fa-spinner fa-spin"></i>
+          Iniciando
+        }
+        @case ('PROCESSANDO') {
+          <i class="fa-solid fa-spinner fa-spin"></i>
+          Processando
+        }
+        @case ('PAUSADO') {
+          <i class="fa-solid fa-pause"></i>
+          Pausado
+        }
+        @case ('PERMISSAO_NEGADA') {
+          <i class="fa-solid fa-camera-slash"></i>
+          Permissão negada
+        }
+        @case ('INDISPONIVEL') {
+          <i class="fa-solid fa-triangle-exclamation"></i>
+          Indisponível
+        }
+        @case ('ERRO') {
+          <i class="fa-solid fa-circle-exclamation"></i>
+          Erro
+        }
+        @default {
+          <i class="fa-solid fa-power-off"></i>
+          Inativo
+        }
+      }
+    </span>
+  </header>
+
+  <div class="scanner-viewport">
+    <video
+      #videoElement
+      autoplay
+      muted
+      playsinline
+      aria-label="Visualização da câmera para leitura do QR Code">
+    </video>
+
+    <div class="scanner-mask" aria-hidden="true">
+      <div class="scanner-frame">
+        <span class="corner corner-tl"></span>
+        <span class="corner corner-tr"></span>
+        <span class="corner corner-bl"></span>
+        <span class="corner corner-br"></span>
+
+        @if (pronto()) {
+          <span class="scan-line"></span>
+        }
+      </div>
+    </div>
+  </div>
+
+  @if (cameras().length > 1) {
+    <div class="scanner-camera">
+      <label for="qr-camera">Câmera</label>
+      <p-select
+        inputId="qr-camera"
+        [options]="cameras()"
+        optionLabel="label"
+        optionValue="deviceId"
+        [ngModel]="cameraSelecionadaId()"
+        (ngModelChange)="trocarCamera($event)"
+        placeholder="Selecione a câmera"
+        appendTo="body">
+      </p-select>
+    </div>
+  }
+
+  <div class="scanner-actions">
+    @if (
+      estado() === 'PERMISSAO_NEGADA' ||
+      estado() === 'INDISPONIVEL' ||
+      estado() === 'ERRO' ||
+      estado() === 'INATIVO'
+    ) {
+      <p-button
+        label="Tentar novamente"
+        icon="fa-solid fa-camera"
+        [disabled]="bloqueado()"
+        (onClick)="iniciar()">
+      </p-button>
+    }
+
+    @if (estado() === 'PROCESSANDO' && !bloqueado()) {
+      <p-button
+        label="Próxima leitura"
+        icon="fa-solid fa-forward"
+        severity="secondary"
+        (onClick)="rearmarAgora()">
+      </p-button>
+    }
+  </div>
+
+  @if (permitirDigitacaoManual()) {
+    <div class="scanner-manual">
+      <label for="qr-codigo-manual">Código manual</label>
+
+      <div class="manual-row">
+        <input
+          id="qr-codigo-manual"
+          type="text"
+          pInputText
+          autocomplete="off"
+          placeholder="Digite ou cole o conteúdo do QR Code"
+          [ngModel]="codigoManual()"
+          (ngModelChange)="codigoManual.set($event)"
+          (keyup.enter)="registrarCodigoManual()"
+          [disabled]="bloqueado()" />
+
+        <p-button
+          label="Processar"
+          icon="fa-solid fa-keyboard"
+          [disabled]="!codigoManual().trim() || bloqueado()"
+          (onClick)="registrarCodigoManual()">
+        </p-button>
+      </div>
+    </div>
+  }
+</section>
