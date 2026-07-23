@@ -1,7 +1,7 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormBuilder, FormControl, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { finalize } from 'rxjs';
+import { finalize, forkJoin } from 'rxjs';
 
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
@@ -49,6 +49,23 @@ interface OpcaoNumerica {
 interface CorRapidaEquipe {
   label: string;
   valor: string;
+}
+
+type CampoHerdadoEncontrista =
+  | 'telefone'
+  | 'dataNascimento'
+  | 'responsavelNome'
+  | 'responsavelTelefone'
+  | 'endereco';
+
+interface DadosComunsEncontristaForm {
+  telefone: string;
+  responsavelNome: string;
+  responsavelTelefone: string;
+  endereco: string;
+  dataNascimento: string;
+  restricaoAlimentar: string;
+  observacaoMedica: string;
 }
 
 @Component({
@@ -583,18 +600,52 @@ export class EventoGestaoComponent implements OnInit {
   }
 
   carregarTudo(): void {
+    if (this.carregando()) {
+      return;
+    }
+
     this.carregando.set(true);
 
-    this.carregarEvento();
-    this.carregarParoquiasComunidades();
-    this.carregarPessoas();
-    this.carregarTiosCarona();
-    this.carregarDuplas();
-    this.carregarSobrinhos();
-    this.carregarVinculos();
-    this.carregarEquipesMontagemKit();
+    forkJoin({
+      evento: this.service.buscarEvento(this.eventoId),
+      paroquias: this.service.listarParoquiasComunidades(),
+      pessoas: this.service.listarPessoas(),
+      tios: this.service.listarTiosCarona(this.eventoId),
+      duplas: this.service.listarDuplas(this.eventoId),
+      sobrinhos: this.service.listarSobrinhos(this.eventoId),
+      vinculos: this.service.listarVinculos(this.eventoId),
+      equipes: this.service.listarEquipesMontagemKit(this.eventoId)
+    })
+      .pipe(finalize(() => this.carregando.set(false)))
+      .subscribe({
+        next: resultado => {
+          this.evento.set(resultado.evento);
+          this.paroquiasComunidades.set(resultado.paroquias);
+          this.pessoas.set(resultado.pessoas);
+          this.tiosCarona.set(resultado.tios);
+          this.duplas.set(resultado.duplas);
+          this.sobrinhos.set(resultado.sobrinhos);
+          this.vinculos.set(resultado.vinculos);
+          this.equipesMontagemKit.set(resultado.equipes);
 
-    window.setTimeout(() => this.carregando.set(false), 600);
+          const paroquiaId = resultado.evento.paroquiaId ?? 0;
+          const controleParoquia =
+            this.duplaForm.controls.paroquiaComunidadeId;
+
+          if (!controleParoquia.value && paroquiaId > 0) {
+            controleParoquia.setValue(paroquiaId);
+          }
+        },
+        error: erro => {
+          console.error('Erro ao carregar a gestão do evento', erro);
+          this.toastError(
+            this.mensagemErro(
+              erro,
+              'Não foi possível carregar todos os dados da gestão do evento.'
+            )
+          );
+        }
+      });
   }
 
   alterarAba(aba: string | number | undefined): void {
@@ -683,41 +734,43 @@ export class EventoGestaoComponent implements OnInit {
     const id = Number(pessoaId ?? 0);
     const pessoa = this.pessoas().find(item => item.id === id) ?? null;
 
-    this.configurarCampoHerdado(
-      this.pessoaSobrinhoForm.controls.telefone,
+    this.aplicarCampoHerdadoPessoa(
+      'telefone',
       TelefoneMaskDirective.formatar(pessoa?.telefone ?? ''),
-      Boolean(pessoa?.telefone)
+      this.possuiTexto(pessoa?.telefone)
     );
-    this.configurarCampoHerdado(
-      this.pessoaSobrinhoForm.controls.dataNascimento,
+    this.aplicarCampoHerdadoPessoa(
+      'dataNascimento',
       pessoa?.dataNascimento?.substring(0, 10) ?? '',
-      Boolean(pessoa?.dataNascimento)
+      this.possuiTexto(pessoa?.dataNascimento)
     );
-    this.configurarCampoHerdado(
-      this.pessoaSobrinhoForm.controls.responsavelNome,
+    this.aplicarCampoHerdadoPessoa(
+      'responsavelNome',
       pessoa?.responsavelNome ?? '',
-      Boolean(pessoa?.responsavelNome)
+      this.possuiTexto(pessoa?.responsavelNome)
     );
-    this.configurarCampoHerdado(
-      this.pessoaSobrinhoForm.controls.responsavelTelefone,
+    this.aplicarCampoHerdadoPessoa(
+      'responsavelTelefone',
       TelefoneMaskDirective.formatar(pessoa?.responsavelTelefone ?? ''),
-      Boolean(pessoa?.responsavelTelefone)
+      this.possuiTexto(pessoa?.responsavelTelefone)
     );
-    this.configurarCampoHerdado(
-      this.pessoaSobrinhoForm.controls.endereco,
+    this.aplicarCampoHerdadoPessoa(
+      'endereco',
       pessoa?.endereco ?? '',
-      Boolean(pessoa?.endereco)
+      this.possuiTexto(pessoa?.endereco)
     );
 
     this.pessoaSobrinhoForm.markAsPristine();
     this.pessoaSobrinhoForm.markAsUntouched();
   }
 
-  private configurarCampoHerdado(
-    controle: FormControl<string>,
+  private aplicarCampoHerdadoPessoa(
+    campo: CampoHerdadoEncontrista,
     valor: string,
     bloquear: boolean
   ): void {
+    const controle = this.pessoaSobrinhoForm.controls[campo];
+
     controle.setValue(valor, { emitEvent: false });
 
     if (bloquear) {
@@ -725,14 +778,30 @@ export class EventoGestaoComponent implements OnInit {
       controle.disable({ emitEvent: false });
     } else {
       controle.enable({ emitEvent: false });
-      controle.setValidators([Validators.required]);
+      controle.setValidators(this.validadoresCampoHerdado(campo));
     }
 
     controle.updateValueAndValidity({ emitEvent: false });
   }
 
+  private validadoresCampoHerdado(
+    campo: CampoHerdadoEncontrista
+  ) {
+    switch (campo) {
+      case 'telefone':
+      case 'responsavelTelefone':
+        return [Validators.required, Validators.maxLength(30)];
+      case 'responsavelNome':
+        return [Validators.required, Validators.maxLength(150)];
+      case 'endereco':
+        return [Validators.required, Validators.maxLength(180)];
+      case 'dataNascimento':
+        return [Validators.required];
+    }
+  }
+
   campoPessoaSobrinhoHerdado(
-    campo: 'telefone' | 'dataNascimento' | 'responsavelNome' | 'responsavelTelefone' | 'endereco'
+    campo: CampoHerdadoEncontrista
   ): boolean {
     const pessoa = this.pessoaEncontristaSelecionada();
 
@@ -773,10 +842,11 @@ export class EventoGestaoComponent implements OnInit {
     this.service.adicionarTioCarona(this.eventoId, {
       pessoaId: Number(valor.pessoaId),
       observacoes: this.normalizarTextoOpcional(valor.observacoes)
-    }).subscribe({
+    })
+      .pipe(finalize(() => this.salvandoTio.set(false)))
+      .subscribe({
       next: () => {
         this.toastSuccess('Tio carona adicionado ao evento com sucesso.');
-        this.salvandoTio.set(false);
         this.limparFormularioTio();
         this.carregarTiosCarona();
       },
@@ -788,8 +858,12 @@ export class EventoGestaoComponent implements OnInit {
           message: erro.message
         });
 
-        this.toastError('Não foi possível adicionar o tio carona ao evento. Confira se ele já não foi adicionado.');
-        this.salvandoTio.set(false);
+        this.toastError(
+          this.mensagemErro(
+            erro,
+            'Não foi possível adicionar o tio carona ao evento. Confira se ele já não foi adicionado.'
+          )
+        );
       }
     });
   }
@@ -822,10 +896,11 @@ export class EventoGestaoComponent implements OnInit {
       tio2Id: Number(valor.tio2Id),
       paroquiaComunidadeId: Number(valor.paroquiaComunidadeId),
       apelido: this.normalizarTextoOpcional(valor.apelido)
-    }).subscribe({
+    })
+      .pipe(finalize(() => this.salvandoDupla.set(false)))
+      .subscribe({
       next: () => {
         this.toastSuccess('Dupla criada com sucesso.');
-        this.salvandoDupla.set(false);
         this.limparFormularioDupla();
         this.carregarDuplas();
         this.carregarVinculos();
@@ -839,8 +914,12 @@ export class EventoGestaoComponent implements OnInit {
           message: erro.message
         });
 
-        this.toastError(this.mensagemErro(erro, 'Não foi possível criar a dupla. Confira se os tios já não estão em outra dupla ativa.'));
-        this.salvandoDupla.set(false);
+        this.toastError(
+          this.mensagemErro(
+            erro,
+            'Não foi possível criar a dupla. Confira se os tios já não estão em outra dupla ativa.'
+          )
+        );
       }
     });
   }
@@ -865,26 +944,28 @@ export class EventoGestaoComponent implements OnInit {
 
     this.service.adicionarPessoaComoSobrinho(this.eventoId, {
       pessoaId: Number(valor.pessoaId),
-      telefone: this.normalizarTextoOpcional(valor.telefone),
-      responsavelNome: this.normalizarTextoOpcional(valor.responsavelNome),
-      responsavelTelefone: this.normalizarTextoOpcional(valor.responsavelTelefone),
-      endereco: this.normalizarTextoOpcional(valor.endereco),
-      dataNascimento: this.normalizarTextoOpcional(valor.dataNascimento),
-      restricaoAlimentar: this.normalizarTextoOpcional(valor.restricaoAlimentar),
-      observacaoMedica: this.normalizarTextoOpcional(valor.observacaoMedica)
-    }).subscribe({
-      next: () => {
-        this.toastSuccess('Pessoa adicionada como encontrista do evento com sucesso.');
-        this.salvandoPessoaSobrinho.set(false);
-        this.limparFormularioPessoaSobrinho();
-        this.carregarSobrinhos();
-      },
-      error: erro => {
-        console.error('Erro ao adicionar pessoa como encontrista', erro);
-        this.toastError(this.mensagemErro(erro, 'Não foi possível adicionar a pessoa como encontrista do evento.'));
-        this.salvandoPessoaSobrinho.set(false);
-      }
-    });
+      ...this.montarDadosComunsEncontrista(valor)
+    })
+      .pipe(finalize(() => this.salvandoPessoaSobrinho.set(false)))
+      .subscribe({
+        next: () => {
+          this.toastSuccess(
+            'Pessoa adicionada como encontrista do evento com sucesso.'
+          );
+          this.limparFormularioPessoaSobrinho();
+          this.carregarPessoas();
+          this.carregarSobrinhos();
+        },
+        error: erro => {
+          console.error('Erro ao adicionar pessoa como encontrista', erro);
+          this.toastError(
+            this.mensagemErro(
+              erro,
+              'Não foi possível adicionar a pessoa como encontrista do evento.'
+            )
+          );
+        }
+      });
   }
 
   criarSobrinho(): void {
@@ -902,26 +983,25 @@ export class EventoGestaoComponent implements OnInit {
 
     this.service.criarSobrinho(this.eventoId, {
       nome: valor.nome.trim(),
-      telefone: this.normalizarTextoOpcional(valor.telefone),
-      responsavelNome: this.normalizarTextoOpcional(valor.responsavelNome),
-      responsavelTelefone: this.normalizarTextoOpcional(valor.responsavelTelefone),
-      endereco: this.normalizarTextoOpcional(valor.endereco),
-      dataNascimento: this.normalizarTextoOpcional(valor.dataNascimento),
-      restricaoAlimentar: this.normalizarTextoOpcional(valor.restricaoAlimentar),
-      observacaoMedica: this.normalizarTextoOpcional(valor.observacaoMedica)
-    }).subscribe({
-      next: () => {
-        this.toastSuccess('Encontrista cadastrado com sucesso.');
-        this.salvandoSobrinho.set(false);
-        this.limparFormularioSobrinho();
-        this.carregarSobrinhos();
-      },
-      error: erro => {
-        console.error('Erro ao cadastrar encontrista', erro);
-        this.toastError(this.mensagemErro(erro, 'Não foi possível cadastrar o encontrista.'));
-        this.salvandoSobrinho.set(false);
-      }
-    });
+      ...this.montarDadosComunsEncontrista(valor)
+    })
+      .pipe(finalize(() => this.salvandoSobrinho.set(false)))
+      .subscribe({
+        next: () => {
+          this.toastSuccess('Encontrista cadastrado com sucesso.');
+          this.limparFormularioSobrinho();
+          this.carregarSobrinhos();
+        },
+        error: erro => {
+          console.error('Erro ao cadastrar encontrista', erro);
+          this.toastError(
+            this.mensagemErro(
+              erro,
+              'Não foi possível cadastrar o encontrista.'
+            )
+          );
+        }
+      });
   }
 
   vincularSobrinho(): void {
@@ -948,10 +1028,11 @@ export class EventoGestaoComponent implements OnInit {
     this.service.vincularSobrinho(this.eventoId, {
       sobrinhoId: Number(valor.sobrinhoId),
       duplaId: Number(valor.duplaId)
-    }).subscribe({
+    })
+      .pipe(finalize(() => this.salvandoVinculo.set(false)))
+      .subscribe({
       next: () => {
         this.toastSuccess('Encontrista vinculado à dupla com sucesso.');
-        this.salvandoVinculo.set(false);
         this.limparFormularioVinculo();
         this.carregarVinculos();
         this.carregarEquipesMontagemKit();
@@ -959,8 +1040,12 @@ export class EventoGestaoComponent implements OnInit {
       },
       error: erro => {
         console.error('Erro ao vincular encontrista', erro);
-        this.toastError(this.mensagemErro(erro, 'Não foi possível vincular o encontrista à dupla.'));
-        this.salvandoVinculo.set(false);
+        this.toastError(
+          this.mensagemErro(
+            erro,
+            'Não foi possível vincular o encontrista à dupla.'
+          )
+        );
       }
     });
   }
@@ -1429,13 +1514,7 @@ export class EventoGestaoComponent implements OnInit {
 
     this.service.atualizarSobrinho(this.eventoId, sobrinho.id, {
       nome: valor.nome.trim(),
-      telefone: this.normalizarTextoOpcional(valor.telefone),
-      responsavelNome: this.normalizarTextoOpcional(valor.responsavelNome),
-      responsavelTelefone: this.normalizarTextoOpcional(valor.responsavelTelefone),
-      endereco: this.normalizarTextoOpcional(valor.endereco),
-      dataNascimento: this.normalizarTextoOpcional(valor.dataNascimento),
-      restricaoAlimentar: this.normalizarTextoOpcional(valor.restricaoAlimentar),
-      observacaoMedica: this.normalizarTextoOpcional(valor.observacaoMedica)
+      ...this.montarDadosComunsEncontrista(valor)
     }).pipe(finalize(() => this.salvandoEdicaoSobrinho.set(false)))
       .subscribe({
         next: sobrinhoAtualizado => {
@@ -1991,6 +2070,29 @@ export class EventoGestaoComponent implements OnInit {
     });
   }
 
+  private montarDadosComunsEncontrista(
+    valor: DadosComunsEncontristaForm
+  ) {
+    return {
+      telefone: this.normalizarTextoOpcional(valor.telefone),
+      responsavelNome:
+        this.normalizarTextoOpcional(valor.responsavelNome),
+      responsavelTelefone:
+        this.normalizarTextoOpcional(valor.responsavelTelefone),
+      endereco: this.normalizarTextoOpcional(valor.endereco),
+      dataNascimento:
+        this.normalizarTextoOpcional(valor.dataNascimento),
+      restricaoAlimentar:
+        this.normalizarTextoOpcional(valor.restricaoAlimentar),
+      observacaoMedica:
+        this.normalizarTextoOpcional(valor.observacaoMedica)
+    };
+  }
+
+  private possuiTexto(valor: string | null | undefined): boolean {
+    return Boolean(valor?.trim());
+  }
+
   private normalizarTextoOpcional(valor: string): string | undefined {
     const texto = valor?.trim();
     return texto ? texto : undefined;
@@ -2183,15 +2285,19 @@ export class EventoGestaoComponent implements OnInit {
       observacaoMedica: ''
     });
 
-    for (const controle of [
-      this.pessoaSobrinhoForm.controls.telefone,
-      this.pessoaSobrinhoForm.controls.responsavelNome,
-      this.pessoaSobrinhoForm.controls.responsavelTelefone,
-      this.pessoaSobrinhoForm.controls.endereco,
-      this.pessoaSobrinhoForm.controls.dataNascimento
-    ]) {
+    const camposHerdados: CampoHerdadoEncontrista[] = [
+      'telefone',
+      'responsavelNome',
+      'responsavelTelefone',
+      'endereco',
+      'dataNascimento'
+    ];
+
+    for (const campo of camposHerdados) {
+      const controle = this.pessoaSobrinhoForm.controls[campo];
+
       controle.enable({ emitEvent: false });
-      controle.setValidators([Validators.required]);
+      controle.setValidators(this.validadoresCampoHerdado(campo));
       controle.updateValueAndValidity({ emitEvent: false });
     }
 
