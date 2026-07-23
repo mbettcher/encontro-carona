@@ -227,10 +227,17 @@ public class Pessoa {
             String responsavelTelefone,
             String endereco
     ) {
+        var telefoneNormalizado = normalizarTextoOpcional(telefone);
+        var responsavelNomeNormalizado =
+                normalizarTextoOpcional(responsavelNome);
+        var responsavelTelefoneNormalizado =
+                normalizarTextoOpcional(responsavelTelefone);
+        var enderecoNormalizado = normalizarTextoOpcional(endereco);
+
         boolean alterou = false;
 
-        if (semTexto(this.telefone) && possuiTexto(telefone)) {
-            this.telefone = telefone.trim();
+        if (semTexto(this.telefone) && telefoneNormalizado != null) {
+            this.telefone = telefoneNormalizado;
             alterou = true;
         }
 
@@ -239,18 +246,20 @@ public class Pessoa {
             alterou = true;
         }
 
-        if (semTexto(this.responsavelNome) && possuiTexto(responsavelNome)) {
-            this.responsavelNome = responsavelNome.trim();
+        if (semTexto(this.responsavelNome)
+                && responsavelNomeNormalizado != null) {
+            this.responsavelNome = responsavelNomeNormalizado;
             alterou = true;
         }
 
-        if (semTexto(this.responsavelTelefone) && possuiTexto(responsavelTelefone)) {
-            this.responsavelTelefone = responsavelTelefone.trim();
+        if (semTexto(this.responsavelTelefone)
+                && responsavelTelefoneNormalizado != null) {
+            this.responsavelTelefone = responsavelTelefoneNormalizado;
             alterou = true;
         }
 
-        if (semTexto(this.endereco) && possuiTexto(endereco)) {
-            this.endereco = endereco.trim();
+        if (semTexto(this.endereco) && enderecoNormalizado != null) {
+            this.endereco = enderecoNormalizado;
             alterou = true;
         }
 
@@ -269,8 +278,20 @@ public class Pessoa {
         return possuiTexto(endereco);
     }
 
+    private String normalizarTextoOpcional(String valor) {
+        if (valor == null) {
+            return null;
+        }
+
+        var normalizado = valor.trim();
+
+        return normalizado.isBlank()
+                ? null
+                : normalizado;
+    }
+
     private boolean possuiTexto(String valor) {
-        return valor != null && !valor.isBlank();
+        return normalizarTextoOpcional(valor) != null;
     }
 
     private boolean semTexto(String valor) {

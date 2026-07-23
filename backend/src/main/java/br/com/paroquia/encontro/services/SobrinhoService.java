@@ -504,6 +504,12 @@ public class SobrinhoService {
             );
         }
 
+        if (!dataNascimento.isBefore(LocalDate.now())) {
+            throw new BusinessException(
+                    "A data de nascimento deve ser uma data no passado."
+            );
+        }
+
         return dataNascimento;
     }
 
