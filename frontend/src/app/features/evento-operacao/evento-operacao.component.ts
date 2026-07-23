@@ -68,6 +68,14 @@ interface ResultadoScannerTio {
   ocorridoEm: Date;
 }
 
+interface ResultadoScannerEncontrista {
+  status: StatusResultadoScannerTio;
+  operacao: OperacaoPresencaSobrinho;
+  mensagem: string;
+  pessoaNome?: string;
+  ocorridoEm: Date;
+}
+
 type OperacaoCadernoChoro =
   | 'CONFERIDO'
   | 'ANEXADO_AO_KIT'
@@ -215,6 +223,11 @@ export class EventoOperacaoComponent implements OnInit {
   readonly motivoCancelamentoCaderno =
     signal<MotivoCancelamentoCaderno | null>(null);
   readonly processandoCodigoSobrinho = signal(false);
+  readonly scannerEncontristaVisivel = signal(false);
+  readonly operacaoScannerEncontrista =
+    signal<OperacaoPresencaSobrinho>('PRESENTE');
+  readonly resultadoScannerEncontrista =
+    signal<ResultadoScannerEncontrista | null>(null);
   readonly abaOperacaoAtiva = signal<AbaOperacao>('VISAO_GERAL');
   readonly tipoOperacaoLoteCaderno =
     signal<TipoOperacaoLoteCaderno>('ENTREGA');
@@ -307,6 +320,28 @@ export class EventoOperacaoComponent implements OnInit {
   readonly codigoForm = this.fb.nonNullable.group({
     codigoIdentificacao: ['', [Validators.required, Validators.maxLength(80)]],
     tipoOperacao: ['CHECKIN' as 'CHECKIN' | 'CHECKOUT', [Validators.required]]
+  });
+
+  readonly tituloScannerEncontrista = computed(() => {
+    switch (this.operacaoScannerEncontrista()) {
+      case 'PRESENTE':
+        return 'Registrar presença do Encontrista';
+      case 'AUSENTE':
+        return 'Registrar ausência do Encontrista';
+      case 'DESISTENTE':
+        return 'Registrar desistência do Encontrista';
+    }
+  });
+
+  readonly instrucaoScannerEncontrista = computed(() => {
+    switch (this.operacaoScannerEncontrista()) {
+      case 'PRESENTE':
+        return 'Leia a credencial para marcar o encontrista como presente.';
+      case 'AUSENTE':
+        return 'Leia a credencial para marcar o encontrista como ausente.';
+      case 'DESISTENTE':
+        return 'Leia a credencial para registrar a desistência.';
+    }
   });
 
   readonly codigoSobrinhoForm = this.fb.nonNullable.group({
@@ -2813,41 +2848,200 @@ export class EventoOperacaoComponent implements OnInit {
     });
   }
 
+  abrirScannerEncontrista(
+    operacao: OperacaoPresencaSobrinho
+  ): void {
+    if (!this.seguranca.podeEscrever()) {
+      this.toastWarn(
+        'Seu perfil não permite registrar presença de encontristas.'
+      );
+      return;
+    }
+
+    this.operacaoScannerEncontrista.set(operacao);
+    this.codigoSobrinhoForm.controls.operacao.setValue(operacao);
+    this.resultadoScannerEncontrista.set(null);
+    this.scannerEncontristaVisivel.set(true);
+  }
+
+  fecharScannerEncontrista(): void {
+    if (this.processandoCodigoSobrinho()) {
+      return;
+    }
+
+    this.scannerEncontristaVisivel.set(false);
+    this.resultadoScannerEncontrista.set(null);
+  }
+
+  alterarOperacaoScannerEncontrista(
+    operacao: OperacaoPresencaSobrinho
+  ): void {
+    if (this.processandoCodigoSobrinho()) {
+      return;
+    }
+
+    this.operacaoScannerEncontrista.set(operacao);
+    this.codigoSobrinhoForm.controls.operacao.setValue(operacao);
+    this.resultadoScannerEncontrista.set(null);
+  }
+
+  aoLerQrEncontrista(leitura: QrCodeLeitura): void {
+    this.processarCodigoEncontrista(
+      leitura.texto,
+      this.operacaoScannerEncontrista()
+    );
+  }
+
   registrarPresencaSobrinhoPorCodigo(): void {
     if (this.codigoSobrinhoForm.invalid) {
       this.codigoSobrinhoForm.markAllAsTouched();
-      this.toastWarn('Informe o código da credencial do sobrinho.');
+      this.toastWarn(
+        'Informe o código da credencial do encontrista.'
+      );
       return;
     }
 
     const valor = this.codigoSobrinhoForm.getRawValue();
-    const codigo = this.normalizarCodigoCredencial(valor.codigoIdentificacao);
-    this.codigoSobrinhoForm.controls.codigoIdentificacao.setValue(codigo, { emitEvent: false });
+
+    this.processarCodigoEncontrista(
+      valor.codigoIdentificacao,
+      valor.operacao
+    );
+  }
+
+  private processarCodigoEncontrista(
+    codigoInformado: string,
+    operacao: OperacaoPresencaSobrinho
+  ): void {
+    if (this.processandoCodigoSobrinho()) {
+      return;
+    }
+
+    const codigo =
+      this.normalizarCodigoCredencial(codigoInformado);
+
+    if (!codigo) {
+      this.registrarResultadoScannerEncontrista({
+        status: 'ATENCAO',
+        operacao,
+        mensagem: 'Informe uma credencial válida.',
+        ocorridoEm: new Date()
+      });
+      return;
+    }
 
     this.processandoCodigoSobrinho.set(true);
+    this.codigoSobrinhoForm.controls.codigoIdentificacao.setValue(
+      codigo,
+      { emitEvent: false }
+    );
 
     this.service.registrarPresencaSobrinhoPorCodigo(
       this.eventoId,
       codigo,
-      valor.operacao,
-      'Leitura via QR Code'
+      operacao,
+      'Leitura via câmera do celular'
     )
-      .pipe(finalize(() => this.processandoCodigoSobrinho.set(false)))
+      .pipe(
+        finalize(() =>
+          this.processandoCodigoSobrinho.set(false)
+        )
+      )
       .subscribe({
         next: sobrinhoAtualizado => {
           this.atualizarSobrinhoNaLista(sobrinhoAtualizado);
+          this.limparFormularioCodigoSobrinho(operacao);
 
-          this.limparFormularioCodigoSobrinho(valor.operacao);
+          const statusAtual =
+            this.statusPresencaSobrinho(sobrinhoAtualizado);
+          const mensagem =
+            `${this.labelSobrinhoStatus(statusAtual)} registrado com sucesso.`;
+
+          this.registrarResultadoScannerEncontrista({
+            status: 'SUCESSO',
+            operacao,
+            mensagem,
+            pessoaNome: sobrinhoAtualizado.nome,
+            ocorridoEm: new Date()
+          });
 
           this.toastSuccess(
-            `${sobrinhoAtualizado.nome} marcado como ${this.labelSobrinhoStatus(this.statusPresencaSobrinho(sobrinhoAtualizado)).toLowerCase()}.`
+            `${sobrinhoAtualizado.nome} marcado como ` +
+            `${this.labelSobrinhoStatus(statusAtual).toLowerCase()}.`
           );
         },
         error: erro => {
-          console.error('Erro ao registrar presença por código', erro);
-          this.toastError(this.mensagemErro(erro, 'Não foi possível registrar a presença pela credencial.'));
+          console.error(
+            'Erro ao registrar presença por QR Code',
+            erro
+          );
+
+          const mensagem = this.mensagemErro(
+            erro,
+            'Não foi possível registrar a situação pela credencial.'
+          );
+          const repetida =
+            this.erroPresencaEncontristaJaRegistrada(mensagem);
+
+          this.registrarResultadoScannerEncontrista({
+            status: repetida ? 'ATENCAO' : 'ERRO',
+            operacao,
+            mensagem,
+            ocorridoEm: new Date()
+          });
+
+          if (repetida) {
+            this.toastWarn(mensagem);
+          } else {
+            this.toastError(mensagem);
+          }
         }
       });
+  }
+
+  private registrarResultadoScannerEncontrista(
+    resultado: ResultadoScannerEncontrista
+  ): void {
+    this.resultadoScannerEncontrista.set(resultado);
+  }
+
+  private erroPresencaEncontristaJaRegistrada(
+    mensagem: string
+  ): boolean {
+    const mensagemNormalizada =
+      this.normalizarFiltro(mensagem);
+
+    return (
+      mensagemNormalizada.includes('presenca ja registrada') ||
+      mensagemNormalizada.includes('ausencia ja registrada') ||
+      mensagemNormalizada.includes('desistencia ja registrada') ||
+      mensagemNormalizada.includes('situacao ja esta registrada')
+    );
+  }
+
+  labelOperacaoScannerEncontrista(
+    operacao: OperacaoPresencaSobrinho
+  ): string {
+    switch (operacao) {
+      case 'PRESENTE':
+        return 'Presença';
+      case 'AUSENTE':
+        return 'Ausência';
+      case 'DESISTENTE':
+        return 'Desistência';
+    }
+  }
+
+  registrarResultadoScannerEncontristaClasse(
+    status: StatusResultadoScannerTio
+  ): string {
+    return this.classeResultadoScannerTio(status);
+  }
+
+  registrarResultadoScannerEncontristaIcone(
+    status: StatusResultadoScannerTio
+  ): string {
+    return this.iconeResultadoScannerTio(status);
   }
 
   aoPressionarEnterCodigoSobrinho(event: Event): void {

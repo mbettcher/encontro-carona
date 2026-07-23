@@ -357,7 +357,7 @@
 <p-tabpanel value="LEITURAS_QR">
   <div class="operacao-tab-content">
     <div class="row g-4">
-      <div class="col-12 col-xl-7">
+      <div class="col-12 col-xl-6">
         <p-card class="operation-action-card h-100">
           <div class="d-flex align-items-start gap-3 mb-3">
             <div class="action-icon mb-0">
@@ -487,68 +487,184 @@
         </p-card>
       </div>
 
-      <div class="col-12 col-xl-5">
+      <div class="col-12 col-xl-6">
         <p-card class="operation-action-card h-100">
           <div class="d-flex align-items-start gap-3 mb-3">
             <div class="action-icon mb-0">
               <i class="fa-solid fa-child-reaching"></i>
             </div>
 
-            <div>
-              <h3 class="h6 mb-1">Presença do sobrinho por credencial</h3>
+            <div class="flex-grow-1">
+              <h3 class="h6 mb-1">
+                Leitura rápida — Encontrista
+              </h3>
               <p class="text-body-secondary small mb-0">
-                Use o leitor de QR Code para registrar presença, ausência ou desistência do sobrinho.
+                Escolha a situação antes de abrir a câmera. O leitor
+                permanece disponível para registrar a próxima credencial.
               </p>
             </div>
           </div>
 
-          <form [formGroup]="codigoSobrinhoForm" (ngSubmit)="registrarPresencaSobrinhoPorCodigo()" class="d-grid gap-3">
-            <div>
-              <label for="operacaoPresencaSobrinhoCodigo" class="form-label">Operação</label>
+          <div class="operacao-scanner-modos operacao-encontrista-modos">
+            <button
+              type="button"
+              class="operacao-scanner-modo"
+              [class.ativo]="
+                operacaoScannerEncontrista() === 'PRESENTE'
+              "
+              [disabled]="
+                processandoCodigoSobrinho() ||
+                !seguranca.podeEscrever()
+              "
+              (click)="
+                alterarOperacaoScannerEncontrista('PRESENTE')
+              ">
+              <i class="fa-solid fa-user-check"></i>
+              <span>
+                <strong>Presente</strong>
+                <small>Confirmar participação</small>
+              </span>
+            </button>
 
-              <p-select inputId="operacaoPresencaSobrinhoCodigo" formControlName="operacao" [options]="[
-                        { label: 'Marcar presente', value: 'PRESENTE' },
-                        { label: 'Marcar ausente', value: 'AUSENTE' },
-                        { label: 'Marcar desistente', value: 'DESISTENTE' }
-                      ]" optionLabel="label" optionValue="value" class="w-100" />
+            <button
+              type="button"
+              class="operacao-scanner-modo"
+              [class.ativo]="
+                operacaoScannerEncontrista() === 'AUSENTE'
+              "
+              [disabled]="
+                processandoCodigoSobrinho() ||
+                !seguranca.podeEscrever()
+              "
+              (click)="
+                alterarOperacaoScannerEncontrista('AUSENTE')
+              ">
+              <i class="fa-solid fa-user-clock"></i>
+              <span>
+                <strong>Ausente</strong>
+                <small>Registrar ausência</small>
+              </span>
+            </button>
+
+            <button
+              type="button"
+              class="operacao-scanner-modo modo-desistente"
+              [class.ativo]="
+                operacaoScannerEncontrista() === 'DESISTENTE'
+              "
+              [disabled]="
+                processandoCodigoSobrinho() ||
+                !seguranca.podeEscrever()
+              "
+              (click)="
+                alterarOperacaoScannerEncontrista('DESISTENTE')
+              ">
+              <i class="fa-solid fa-user-xmark"></i>
+              <span>
+                <strong>Desistente</strong>
+                <small>Encerrar participação</small>
+              </span>
+            </button>
+          </div>
+
+          @if (!scannerEncontristaVisivel()) {
+            <div class="scanner-tio-inicio">
+              <div>
+                <strong>{{ tituloScannerEncontrista() }}</strong>
+                <p class="mb-0 text-body-secondary small">
+                  {{ instrucaoScannerEncontrista() }}
+                </p>
+              </div>
+
+              <p-button
+                label="Abrir câmera"
+                icon="fa-solid fa-camera"
+                [disabled]="!seguranca.podeEscrever()"
+                (onClick)="
+                  abrirScannerEncontrista(
+                    operacaoScannerEncontrista()
+                  )
+                ">
+              </p-button>
             </div>
-
-            <div>
-              <label for="codigoIdentificacaoSobrinho" class="form-label">
-                QR Code ou código da credencial
-              </label>
-
-              <div class="input-group">
-                <span class="input-group-text">
-                  <i class="fa-solid fa-qrcode"></i>
+          } @else {
+            <div class="scanner-tio-toolbar">
+              <div>
+                <span class="scanner-tio-operacao-atual">
+                  Situação atual:
+                  <strong>
+                    {{
+                      labelOperacaoScannerEncontrista(
+                        operacaoScannerEncontrista()
+                      ).toUpperCase()
+                    }}
+                  </strong>
                 </span>
-
-                <input id="codigoIdentificacaoSobrinho" pInputText type="text" class="form-control"
-                  formControlName="codigoIdentificacao" placeholder="Aponte o leitor ou digite o código do sobrinho"
-                  autocomplete="off" (keydown.enter)="aoPressionarEnterCodigoSobrinho($event)" />
               </div>
 
-              @if (
-              codigoSobrinhoForm.controls.codigoIdentificacao.invalid &&
-              (
-              codigoSobrinhoForm.controls.codigoIdentificacao.touched ||
-              codigoSobrinhoForm.controls.codigoIdentificacao.dirty
-              )
-              ) {
-              <div class="form-text text-danger">
-                Informe o código da credencial do sobrinho.
+              <p-button
+                label="Fechar câmera"
+                icon="fa-solid fa-camera-slash"
+                severity="secondary"
+                [disabled]="processandoCodigoSobrinho()"
+                (onClick)="fecharScannerEncontrista()">
+              </p-button>
+            </div>
+
+            <app-qr-scanner
+              [ativo]="scannerEncontristaVisivel()"
+              [bloqueado]="processandoCodigoSobrinho()"
+              [titulo]="tituloScannerEncontrista()"
+              [tempoBloqueioMesmoCodigoMs]="900"
+              (qrCodeLido)="aoLerQrEncontrista($event)">
+            </app-qr-scanner>
+          }
+
+          @if (
+            resultadoScannerEncontrista();
+            as resultado
+          ) {
+            <div
+              class="scanner-tio-resultado"
+              [ngClass]="
+                registrarResultadoScannerEncontristaClasse(
+                  resultado.status
+                )
+              "
+              aria-live="assertive">
+              <i
+                [class]="
+                  registrarResultadoScannerEncontristaIcone(
+                    resultado.status
+                  )
+                ">
+              </i>
+
+              <div>
+                @if (resultado.pessoaNome) {
+                  <strong>{{ resultado.pessoaNome }}</strong>
+                }
+
+                <span>{{ resultado.mensagem }}</span>
+
+                <small>
+                  {{
+                    labelOperacaoScannerEncontrista(
+                      resultado.operacao
+                    )
+                  }}
+                  · {{ resultado.ocorridoEm | date:'HH:mm:ss' }}
+                </small>
               </div>
-              }
             </div>
+          }
 
-            <div class="alert alert-warning py-2 px-3 mb-0 small">
-              <i class="fa-solid fa-circle-info me-2"></i>
-              A leitura aceita credenciais do tipo Sobrinho. Credenciais de tio carona serão recusadas neste campo.
-            </div>
-
-            <p-button type="submit" label="Registrar presença" icon="fa-solid fa-qrcode" severity="success"
-              [loading]="processandoCodigoSobrinho()" [disabled]="!seguranca.podeEscrever()" />
-          </form>
+          <div class="alert alert-warning py-2 px-3 mt-3 mb-0 small">
+            <i class="fa-solid fa-circle-info me-2"></i>
+            Credenciais de Tio Carona são recusadas neste leitor.
+            Repetir a mesma situação apenas exibe um aviso e não gera
+            novo registro.
+          </div>
         </p-card>
       </div>
     </div>

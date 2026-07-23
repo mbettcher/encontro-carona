@@ -280,6 +280,12 @@ public class SobrinhoService {
             case DESISTENTE -> SobrinhoStatus.DESISTENTE;
         };
 
+        if (statusAnterior == novoStatus) {
+            throw new BusinessException(
+                    mensagemOperacaoPresencaJaRealizada(novoStatus)
+            );
+        }
+
         var presenca = sobrinhoPresencaRepository.save(
                 new SobrinhoPresenca(
                         sobrinho.getEvento(),
@@ -303,6 +309,20 @@ public class SobrinhoService {
                 sobrinho,
                 presenca
         );
+    }
+
+    private String mensagemOperacaoPresencaJaRealizada(
+            SobrinhoStatus status
+    ) {
+        return switch (status) {
+            case PRESENTE -> "Presença já registrada para este encontrista.";
+
+            case AUSENTE -> "Ausência já registrada para este encontrista.";
+
+            case DESISTENTE -> "Desistência já registrada para este encontrista.";
+
+            default -> "Esta situação já está registrada para o encontrista.";
+        };
     }
 
     private void integrarCadernoComMudancaParticipacao(

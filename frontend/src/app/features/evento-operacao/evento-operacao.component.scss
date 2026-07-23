@@ -1259,3 +1259,28 @@
     flex-direction: column;
   }
 }
+
+/* Scanner contínuo de Encontrista — 1.2.2C */
+.operacao-encontrista-modos {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.operacao-scanner-modo.modo-desistente.ativo {
+  border-color: #dc2626;
+  background: color-mix(in srgb, #dc2626 10%, transparent);
+  color: #b91c1c;
+}
+
+@media (max-width: 991.98px) {
+  .operacao-encontrista-modos {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Equalização dos cards de leitura QR — hotfix 1.2.2C */
+:host ::ng-deep .operation-action-card.h-100,
+:host ::ng-deep .operation-action-card.h-100 .p-card,
+:host ::ng-deep .operation-action-card.h-100 .p-card-body,
+:host ::ng-deep .operation-action-card.h-100 .p-card-content {
+  height: 100%;
+}
