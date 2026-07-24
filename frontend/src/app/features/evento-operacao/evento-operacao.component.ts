@@ -55,6 +55,9 @@ import { QrCodeLeitura } from '../../shared/qr-scanner/qr-scanner.models';
 import {
   QrOperationalFeedbackService
 } from '../../shared/qr-scanner/qr-operational-feedback.service';
+import {
+  validarCredencialQr
+} from '../../shared/qr-scanner/qr-credential-validation.util';
 
 type TipoOperacaoScannerTio = 'CHECKIN' | 'CHECKOUT';
 
@@ -2654,14 +2657,27 @@ export class EventoOperacaoComponent implements OnInit {
       return;
     }
 
-    const codigo =
-      this.normalizarCodigoCredencial(codigoInformado);
+    const validacao = validarCredencialQr(codigoInformado);
+    const codigo = validacao.codigo;
 
-    if (!codigo) {
+    if (!validacao.valida) {
+      this.registrarResultadoScannerTio({
+        status: 'ERRO',
+        operacao,
+        mensagem:
+          validacao.mensagem ??
+          'Informe uma credencial válida.',
+        ocorridoEm: new Date()
+      });
+      return;
+    }
+
+    if (validacao.tipo !== 'TIO_CARONA') {
       this.registrarResultadoScannerTio({
         status: 'ATENCAO',
         operacao,
-        mensagem: 'Informe uma credencial válida.',
+        mensagem:
+          'Esta credencial pertence a um Encontrista. Use o leitor correto.',
         ocorridoEm: new Date()
       });
       return;
@@ -2719,16 +2735,18 @@ export class EventoOperacaoComponent implements OnInit {
             'Não foi possível registrar a operação por QR Code.'
           );
 
+          const atencao =
+            this.erroOperacaoJaRealizada(mensagem) ||
+            this.erroOperacionalCredencial(mensagem);
+
           this.registrarResultadoScannerTio({
-            status: this.erroOperacaoJaRealizada(mensagem)
-              ? 'ATENCAO'
-              : 'ERRO',
+            status: atencao ? 'ATENCAO' : 'ERRO',
             operacao,
             mensagem,
             ocorridoEm: new Date()
           });
 
-          if (this.erroOperacaoJaRealizada(mensagem)) {
+          if (atencao) {
             this.toastWarn(mensagem);
           } else {
             this.toastError(mensagem);
@@ -3027,14 +3045,27 @@ export class EventoOperacaoComponent implements OnInit {
       return;
     }
 
-    const codigo =
-      this.normalizarCodigoCredencial(codigoInformado);
+    const validacao = validarCredencialQr(codigoInformado);
+    const codigo = validacao.codigo;
 
-    if (!codigo) {
+    if (!validacao.valida) {
+      this.registrarResultadoScannerEncontrista({
+        status: 'ERRO',
+        operacao,
+        mensagem:
+          validacao.mensagem ??
+          'Informe uma credencial válida.',
+        ocorridoEm: new Date()
+      });
+      return;
+    }
+
+    if (validacao.tipo !== 'ENCONTRISTA') {
       this.registrarResultadoScannerEncontrista({
         status: 'ATENCAO',
         operacao,
-        mensagem: 'Informe uma credencial válida.',
+        mensagem:
+          'Esta credencial pertence a um Tio Carona. Use o leitor correto.',
         ocorridoEm: new Date()
       });
       return;
@@ -3090,17 +3121,18 @@ export class EventoOperacaoComponent implements OnInit {
             erro,
             'Não foi possível registrar a situação pela credencial.'
           );
-          const repetida =
-            this.erroPresencaEncontristaJaRegistrada(mensagem);
+          const atencao =
+            this.erroPresencaEncontristaJaRegistrada(mensagem) ||
+            this.erroOperacionalCredencial(mensagem);
 
           this.registrarResultadoScannerEncontrista({
-            status: repetida ? 'ATENCAO' : 'ERRO',
+            status: atencao ? 'ATENCAO' : 'ERRO',
             operacao,
             mensagem,
             ocorridoEm: new Date()
           });
 
-          if (repetida) {
+          if (atencao) {
             this.toastWarn(mensagem);
           } else {
             this.toastError(mensagem);
@@ -3127,6 +3159,22 @@ export class EventoOperacaoComponent implements OnInit {
         pessoaNome: resultado.pessoaNome,
         ocorridoEm: resultado.ocorridoEm
       }
+    );
+  }
+
+  private erroOperacionalCredencial(
+    mensagem: string
+  ): boolean {
+    const texto = this.normalizarFiltro(mensagem);
+
+    return (
+      texto.includes('credencial nao encontrada') ||
+      texto.includes('credencial nao pertence ao evento') ||
+      texto.includes('credencial nao esta ativa') ||
+      texto.includes('nao pertence a um tio carona') ||
+      texto.includes('nao pertence a um sobrinho') ||
+      texto.includes('sem vinculo operacional') ||
+      texto.includes('nao ha check-in aberto')
     );
   }
 
@@ -3654,6 +3702,42 @@ export class EventoOperacaoComponent implements OnInit {
       }
 
       return corpo?.message || corpo?.detail || corpo?.title || fallback;
+    }
+
+    if (
+      typeof erro === 'object' &&
+      erro !== null &&
+      'status' in erro
+    ) {
+      const status = Number(
+        (erro as { status?: number }).status
+      );
+
+      if (status === 0) {
+        return (
+          'Não foi possível comunicar com o servidor. ' +
+          'Verifique a conexão e tente novamente.'
+        );
+      }
+
+      if (status === 401) {
+        return (
+          'Sua sessão expirou. Entre novamente no sistema.'
+        );
+      }
+
+      if (status === 403) {
+        return (
+          'Seu perfil não possui permissão para esta operação.'
+        );
+      }
+
+      if (status >= 500) {
+        return (
+          'O servidor não conseguiu concluir a operação. ' +
+          'Tente novamente em instantes.'
+        );
+      }
     }
 
     return fallback;

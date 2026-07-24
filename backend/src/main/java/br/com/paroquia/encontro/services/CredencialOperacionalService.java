@@ -84,6 +84,31 @@ public class CredencialOperacionalService {
             throw new BusinessException("Código da credencial é obrigatório.");
         }
 
-        return codigo.trim();
+        var codigoNormalizado = codigo
+                .trim()
+                .replaceAll("\\s+", "")
+                .toUpperCase(java.util.Locale.ROOT);
+
+        if (codigoNormalizado.length() > 80) {
+            throw new BusinessException(
+                    "Código da credencial deve ter no máximo 80 caracteres."
+            );
+        }
+
+        if (!codigoNormalizado.matches("[A-Z0-9_-]+")) {
+            throw new BusinessException(
+                    "Código da credencial possui caracteres inválidos."
+            );
+        }
+
+        if (!codigoNormalizado.matches(
+                "(TC|SB)-E\\d{4,}-\\d{6}(?:-R\\d{2})?"
+        )) {
+            throw new BusinessException(
+                    "Formato da credencial é inválido."
+            );
+        }
+
+        return codigoNormalizado;
     }
 }
